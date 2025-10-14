@@ -1,11 +1,11 @@
-package com.example.map_mid_term
+package com.example.map_mid_term.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import android.widget.TextView
+import androidx.fragment.app.Fragment
 
 class ProfileFragment : Fragment() {
     override fun onCreateView(

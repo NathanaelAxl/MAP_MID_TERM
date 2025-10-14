@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:padding="24dp"
     android:background="#F5F5F5"
-    tools:context=".LoginActivity">
+    tools:context=".activities.LoginActivity">
 
     <!-- Logo Koperasi -->
     <ImageView
