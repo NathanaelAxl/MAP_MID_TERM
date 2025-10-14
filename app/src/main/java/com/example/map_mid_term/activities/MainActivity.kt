@@ -6,8 +6,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.map_mid_term.fragments.ProfileFragment
 import com.example.map_mid_term.R
+import com.example.map_mid_term.fragments.CameraFragment
+import com.example.map_mid_term.fragments.LocationFragment
+import com.example.map_mid_term.fragments.LoansFragment
+import com.example.map_mid_term.fragments.ProfileFragment
+import com.example.map_mid_term.fragments.SavingsFragment
+
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
