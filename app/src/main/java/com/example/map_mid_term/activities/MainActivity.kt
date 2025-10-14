@@ -24,46 +24,45 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // === Ambil data anggota dari Intent ===
+        // === Ambil data login dari intent ===
         val memberId = intent.getStringExtra("memberId")
         val member = DummyData.members.find { it.id == memberId }
-
         member?.let {
             Toast.makeText(this, "Selamat datang, ${it.name}!", Toast.LENGTH_SHORT).show()
         }
 
-        // === Inisialisasi View ===
+        // === Setup Navigation ===
         drawerLayout = findViewById(R.id.drawerLayout)
-        val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottomNavigation)
-        val navigationView = findViewById<NavigationView>(R.id.navigationView)
-
-        // ✅ Ambil NavController dengan cara yang benar
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
 
-        // === AppBarConfiguration agar tombol hamburger sinkron ===
+        // === Toolbar ===
+        val toolbar: androidx.appcompat.widget.Toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        // === Top Level Destinations (untuk tombol hamburger) ===
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.savingsFragment,
                 R.id.loansFragment,
                 R.id.profileFragment
             ),
-            drawerLayout
+            drawerLayout // ← ini penting supaya muncul hamburger icon
         )
 
-        // === Setup Toolbar ===
-        val toolbar: androidx.appcompat.widget.Toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
+        // === Sinkronisasi Toolbar dengan NavController ===
         setupActionBarWithNavController(navController, appBarConfiguration)
 
-        // === Hubungkan BottomNavigationView ke NavController ===
+        // === Bottom Navigation ===
+        val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottomNavigation)
         bottomNavigation.setupWithNavController(navController)
 
-        // === Hubungkan Navigation Drawer ke NavController ===
+        // === Drawer Navigation ===
+        val navigationView = findViewById<NavigationView>(R.id.navigationView)
         navigationView.setupWithNavController(navController)
 
-        // === Handle Logout manual (karena tidak ada di nav_graph) ===
+        // === Logout manual ===
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.menu_logout -> {
@@ -80,12 +79,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // === Support tombol Up (Back atau Hamburger) ===
+    // === Support tombol hamburger ===
     override fun onSupportNavigateUp(): Boolean {
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
-
         return NavigationUI.navigateUp(navController, appBarConfiguration)
+                || super.onSupportNavigateUp()
     }
 }
