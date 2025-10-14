@@ -1,14 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.LoansFragment">
+    android:background="#FAFAFA">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="16dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content">
 
-</FrameLayout>
+        <TextView
+            android:id="@+id/tvTitleLoans"
+            android:text="Pinjaman Anggota"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#00796B"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:id="@+id/tvLoanAmount"
+            android:text="Total Pinjaman: Rp 5.000.000"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvTenor"
+            android:text="Tenor: 12 Bulan"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvCicilan"
+            android:text="Cicilan per bulan: Rp 450.000"
+            android:textSize="16sp"
+            android:layout_marginBottom="24dp" />
+
+        <Button
+            android:id="@+id/btnAjukanPinjaman"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ajukan Pinjaman Baru"
+            android:backgroundTint="#00796B"
+            android:textColor="#FFFFFF" />
+
+    </LinearLayout>
+</ScrollView>

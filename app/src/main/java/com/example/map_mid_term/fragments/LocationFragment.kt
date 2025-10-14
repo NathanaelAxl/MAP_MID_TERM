@@ -7,11 +7,11 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.map_mid_term.R
 
-class SavingsFragment : Fragment() {
+class LocationFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_savings, container, false)
+        return inflater.inflate(R.layout.fragment_location, container, false)
     }
 }
