@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.homeFragment, R.id.savingsFragment, R.id.loansFragment,
-                R.id.profileFragment, R.id.cameraFragment, R.id.locationFragment
+                R.id.profileFragment, R.id.cameraFragment, R.id.historyFragment, R.id.profileFragment
             ),
             drawerLayout
         )

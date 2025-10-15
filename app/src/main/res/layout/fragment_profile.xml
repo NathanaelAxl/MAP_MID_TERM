@@ -21,7 +21,7 @@
         android:id="@+id/tvMemberName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Nama: Sooth Tamren"
+        android:text="Nama: Nima Tamren"
         android:textSize="18sp"
         android:layout_marginBottom="8dp"/>
 
@@ -37,7 +37,7 @@
         android:id="@+id/tvMemberEmail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Email: sooth@example.com"
+        android:text="Email: nima@example.com"
         android:textSize="18sp"
         android:layout_marginBottom="8dp"/>
 

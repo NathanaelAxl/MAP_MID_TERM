@@ -3,18 +3,22 @@
 
     <item
         android:id="@+id/homeFragment"
-        android:icon="@android:drawable/ic_dialog_info" android:title="Beranda" />
+        android:icon="@drawable/ic_home"
+        android:title="Beranda" />
 
     <item
-        android:id="@+id/savingsFragment" android:icon="@android:drawable/ic_menu_save"
-        android:title="Simpanan" />
+        android:id="@+id/loansFragment"
+        android:icon="@drawable/ic_loan"
+        android:title="Pinjaman" />
 
     <item
-        android:id="@+id/cameraFragment" android:icon="@android:drawable/ic_menu_camera"
-        android:title="Scan" />
+        android:id="@+id/historyFragment"
+        android:icon="@drawable/ic_history"
+        android:title="Riwayat" />
 
     <item
-        android:id="@+id/locationFragment" android:icon="@android:drawable/ic_menu_mylocation"
-        android:title="Lokasi" />
+        android:id="@+id/profileFragment"
+        android:icon="@drawable/ic_profile"
+        android:title="Profil" />
 
 </menu>
