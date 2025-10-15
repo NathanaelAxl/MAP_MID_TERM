@@ -12,24 +12,32 @@
         android:textSize="22sp"
         android:textStyle="bold"
         android:textColor="#00796B"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="16dp" />
 
     <TextView
         android:id="@+id/tvSaldoPokok"
         android:text="Simpanan Pokok: Rp 500.000"
         android:textSize="16sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="8dp" />
 
     <TextView
         android:id="@+id/tvSaldoWajib"
         android:text="Simpanan Wajib: Rp 200.000"
         android:textSize="16sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="8dp" />
 
     <TextView
         android:id="@+id/tvSaldoSukarela"
         android:text="Simpanan Sukarela: Rp 150.000"
         android:textSize="16sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="24dp" />
 
     <Button
