@@ -1,44 +1,145 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="24dp"
-    android:gravity="center_horizontal"
-    android:background="@android:color/white">
+    android:background="@color/bon">
 
-    <TextView
-        android:id="@+id/tvProfileTitle"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Profil Anggota"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:textColor="@android:color/black"
-        android:layout_marginBottom="16dp"/>
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <TextView
-        android:id="@+id/tvMemberName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Nama: Nima Tamren"
-        android:textSize="18sp"
-        android:layout_marginBottom="8dp"/>
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/ic_pemandangan"
+            android:padding="20dp"
+            android:elevation="2dp">
 
-    <TextView
-        android:id="@+id/tvMemberID"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="ID Anggota: 001"
-        android:textSize="18sp"
-        android:layout_marginBottom="8dp"/>
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/prim" />
+        </LinearLayout>
 
-    <TextView
-        android:id="@+id/tvMemberEmail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Email: nima@example.com"
-        android:textSize="18sp"
-        android:layout_marginBottom="8dp"/>
+        <!-- Card Profil Utama -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-30dp"
+            android:elevation="4dp"
+            app:cardCornerRadius="12dp">
 
-</LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:gravity="center_vertical">
+
+                <!-- Avatar -->
+                <TextView
+                    android:id="@+id/tvAvatar"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:gravity="center"
+                    android:text=""
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:textColor="@android:color/white"
+                    android:background="@drawable/ic_profile"
+                    android:layout_marginEnd="12dp"/>
+
+                <!-- Nama & Info -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_weight="1">
+
+                    <TextView
+                        android:id="@+id/tvMemberName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="nathanael axl"
+                        android:textStyle="bold"
+                        android:textSize="18sp"
+                        android:textColor="@color/black"/>
+
+                    <TextView
+                        android:id="@+id/tvMemberEmail"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="naxljaconiah@gmail.com"
+                        android:textSize="14sp"
+                        android:textColor="@color/black"/>
+
+                    <TextView
+                        android:id="@+id/tvMemberPhone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="+6281295731556"
+                        android:textSize="14sp"
+                        android:textColor="@color/black"/>
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_edit"
+                    android:contentDescription="Edit Profil"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Section: Preferensi -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Preferensi"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="8dp"
+            android:textColor="@color/black"/>
+
+        <include layout="@layout/item_profile_option"
+            android:id="@+id/itemSecurity"
+            android:tag="Keamanan akun"/>
+
+        <include layout="@layout/item_profile_option"
+            android:id="@+id/itemPayment"
+            android:tag="Metode pembayaran"/>
+
+        <include layout="@layout/item_profile_option"
+            android:id="@+id/itemAddress"
+            android:tag="Alamat tersimpan"/>
+
+        <!-- Section: Aplikasi -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pengaturan aplikasi"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="8dp"
+            android:textColor="@color/black"/>
+
+        <include layout="@layout/item_profile_option"
+            android:id="@+id/itemLanguage"
+            android:tag="Bahasa"/>
+
+        <include layout="@layout/item_profile_option"
+            android:id="@+id/itemAccessibility"
+            android:tag="Aksesibilitas"/>
+
+    </LinearLayout>
+</ScrollView>
