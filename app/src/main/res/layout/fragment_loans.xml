@@ -12,7 +12,7 @@
 
         <TextView
             android:id="@+id/tvTitleLoans"
-            android:text="Pinjaman Anggota"
+            android:layout_width="wrap_content"   android:layout_height="wrap_content"  android:text="Pinjaman Anggota"
             android:textSize="22sp"
             android:textStyle="bold"
             android:textColor="#00796B"
@@ -20,19 +20,19 @@
 
         <TextView
             android:id="@+id/tvLoanAmount"
-            android:text="Total Pinjaman: Rp 5.000.000"
+            android:layout_width="wrap_content"   android:layout_height="wrap_content"  android:text="Total Pinjaman: Rp 5.000.000"
             android:textSize="16sp"
             android:layout_marginBottom="8dp" />
 
         <TextView
             android:id="@+id/tvTenor"
-            android:text="Tenor: 12 Bulan"
+            android:layout_width="wrap_content"   android:layout_height="wrap_content"  android:text="Tenor: 12 Bulan"
             android:textSize="16sp"
             android:layout_marginBottom="8dp" />
 
         <TextView
             android:id="@+id/tvCicilan"
-            android:text="Cicilan per bulan: Rp 450.000"
+            android:layout_width="wrap_content"   android:layout_height="wrap_content"  android:text="Cicilan per bulan: Rp 450.000"
             android:textSize="16sp"
             android:layout_marginBottom="24dp" />
 

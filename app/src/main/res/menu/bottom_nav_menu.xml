@@ -1,14 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
     <item
-        android:id="@+id/nav_savings"
-        android:icon="@android:drawable/ic_menu_save"
+        android:id="@+id/homeFragment"
+        android:icon="@android:drawable/ic_dialog_info" android:title="Beranda" />
+
+    <item
+        android:id="@+id/savingsFragment" android:icon="@android:drawable/ic_menu_save"
         android:title="Simpanan" />
+
     <item
-        android:id="@+id/nav_camera"
-        android:icon="@android:drawable/ic_menu_camera"
+        android:id="@+id/cameraFragment" android:icon="@android:drawable/ic_menu_camera"
         android:title="Scan" />
+
     <item
-        android:id="@+id/nav_location"
-        android:icon="@android:drawable/ic_menu_mylocation"
+        android:id="@+id/locationFragment" android:icon="@android:drawable/ic_menu_mylocation"
         android:title="Lokasi" />
+
 </menu>

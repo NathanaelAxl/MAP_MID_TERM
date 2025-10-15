@@ -3,7 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/savingsFragment">
+    app:startDestination="@id/homeFragment"> <fragment
+    android:id="@+id/homeFragment"
+    android:name="com.example.map_mid_term.fragments.HomeFragment"
+    android:label="Beranda"
+    tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/savingsFragment"
@@ -22,5 +26,17 @@
         android:name="com.example.map_mid_term.fragments.ProfileFragment"
         android:label="Profil"
         tools:layout="@layout/fragment_profile" />
+
+    <fragment
+        android:id="@+id/cameraFragment"
+        android:name="com.example.map_mid_term.fragments.CameraFragment"
+        android:label="Scan"
+        tools:layout="@layout/fragment_camera" />
+
+    <fragment
+        android:id="@+id/locationFragment"
+        android:name="com.example.map_mid_term.fragments.LocationFragment"
+        android:label="Lokasi"
+        tools:layout="@layout/fragment_location" />
 
 </navigation>

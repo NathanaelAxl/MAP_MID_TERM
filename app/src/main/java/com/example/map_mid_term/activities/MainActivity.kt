@@ -5,86 +5,67 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
+import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.map_mid_term.R
+import com.example.map_mid_term.databinding.ActivityMainBinding
 import com.example.map_mid_term.model.DummyData
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var binding: ActivityMainBinding
     private lateinit var appBarConfiguration: AppBarConfiguration
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        // === Ambil data login dari intent ===
         val memberId = intent.getStringExtra("memberId")
         val member = DummyData.members.find { it.id == memberId }
         member?.let {
             Toast.makeText(this, "Selamat datang, ${it.name}!", Toast.LENGTH_SHORT).show()
         }
 
-        // === Setup Navigation ===
-        drawerLayout = findViewById(R.id.drawerLayout)
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val drawerLayout: DrawerLayout = binding.drawerLayout
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
 
-        // === Toolbar ===
-        val toolbar: androidx.appcompat.widget.Toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar)
 
-        // === Top Level Destinations (untuk tombol hamburger) ===
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.savingsFragment,
-                R.id.loansFragment,
-                R.id.profileFragment
+                R.id.homeFragment, R.id.savingsFragment, R.id.loansFragment,
+                R.id.profileFragment, R.id.cameraFragment, R.id.locationFragment
             ),
-            drawerLayout // ← ini penting supaya muncul hamburger icon
+            drawerLayout
         )
 
-        // === Sinkronisasi Toolbar dengan NavController ===
         setupActionBarWithNavController(navController, appBarConfiguration)
+        binding.bottomNavigation.setupWithNavController(navController)
 
-        // === Bottom Navigation ===
-        val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottomNavigation)
-        bottomNavigation.setupWithNavController(navController)
+        binding.navigationView.setNavigationItemSelectedListener { menuItem ->
+            val handled = NavigationUI.onNavDestinationSelected(menuItem, navController)
 
-        // === Drawer Navigation ===
-        val navigationView = findViewById<NavigationView>(R.id.navigationView)
-        navigationView.setupWithNavController(navController)
-
-        // === Logout manual ===
-        navigationView.setNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.menu_logout -> {
+            if (handled) {
+                drawerLayout.closeDrawers()
+            } else {
+                if (menuItem.itemId == R.id.menu_logout) {
                     startActivity(Intent(this, LoginActivity::class.java))
                     finish()
-                    true
-                }
-                else -> {
-                    NavigationUI.onNavDestinationSelected(menuItem, navController)
-                    drawerLayout.closeDrawers()
-                    true
                 }
             }
+            true
         }
     }
 
-    // === Support tombol hamburger ===
     override fun onSupportNavigateUp(): Boolean {
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val navController = navHostFragment.navController
-        return NavigationUI.navigateUp(navController, appBarConfiguration)
-                || super.onSupportNavigateUp()
+        val navController = findNavController(R.id.nav_host_fragment)
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 }
