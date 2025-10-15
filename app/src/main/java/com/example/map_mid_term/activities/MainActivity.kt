@@ -21,12 +21,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var appBarConfiguration: AppBarConfiguration
 
+    // VARIABEL INI DIPINDAH KE SINI AGAR BISA DIAKSES FRAGMENT
+    var memberId: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val memberId = intent.getStringExtra("memberId")
+        // Nilainya diisi di sini
+        memberId = intent.getStringExtra("memberId")
         val member = DummyData.members.find { it.id == memberId }
         member?.let {
             Toast.makeText(this, "Selamat datang, ${it.name}!", Toast.LENGTH_SHORT).show()
@@ -40,8 +44,7 @@ class MainActivity : AppCompatActivity() {
 
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.homeFragment, R.id.savingsFragment, R.id.loansFragment,
-                R.id.profileFragment, R.id.cameraFragment, R.id.historyFragment, R.id.profileFragment
+                R.id.homeFragment, R.id.loansFragment, R.id.historyFragment, R.id.profileFragment
             ),
             drawerLayout
         )
@@ -51,7 +54,6 @@ class MainActivity : AppCompatActivity() {
 
         binding.navigationView.setNavigationItemSelectedListener { menuItem ->
             val handled = NavigationUI.onNavDestinationSelected(menuItem, navController)
-
             if (handled) {
                 drawerLayout.closeDrawers()
             } else {

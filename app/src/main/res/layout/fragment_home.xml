@@ -28,25 +28,21 @@
             android:layout_marginTop="16dp"
             app:cardCornerRadius="12dp"
             app:cardElevation="4dp">
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="20dp">
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="TOTAL SIMPANAN ANDA"
                     android:textSize="14sp"
                     android:textStyle="bold" />
-
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp">
-
                     <TextView
                         android:id="@+id/tv_total_balance"
                         android:layout_width="wrap_content"
@@ -55,7 +51,6 @@
                         android:textColor="@color/black"
                         android:textSize="32sp"
                         android:textStyle="bold" />
-
                     <ImageView
                         android:id="@+id/iv_toggle_balance"
                         android:layout_width="24dp"
@@ -64,85 +59,19 @@
                         android:layout_centerVertical="true"
                         android:src="@drawable/ic_eye_open" />
                 </RelativeLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="8dp"
-                    android:background="?android:attr/listDivider" />
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
                     android:text="Rincian:" />
-
-                <TextView
-                    android:id="@+id/tv_simpanan_pokok"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Simpanan Pokok: Rp 250.000" />
                 <TextView
                     android:id="@+id/tv_simpanan_wajib"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="Simpanan Wajib: Rp 1.200.000" />
-                <TextView
-                    android:id="@+id/tv_simpanan_sukarela"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Simpanan Sukarela: Rp 100.000" />
-
             </LinearLayout>
         </androidx.cardview.widget.CardView>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Status Pinjaman"
-            android:textColor="@color/black"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            app:cardCornerRadius="12dp"
-            app:strokeColor="@color/prim"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:padding="16dp">
-
-                <ImageView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/ic_loan"
-                    app:tint="@color/prim" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:text="Anda belum memiliki pinjaman aktif." />
-
-                <Button
-                    android:id="@+id/btn_ajukan_pinjaman"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Ajukan" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:layout_width="wrap_content"
@@ -157,65 +86,72 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:baselineAligned="false"
             android:orientation="horizontal">
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_pinjaman"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="8dp"
                 android:layout_weight="1"
                 app:cardCornerRadius="12dp"
-                android:clickable="true"
-                android:focusable="true">
+                app:strokeColor="@color/prim"
+                app:strokeWidth="1dp">
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:gravity="center"
                     android:padding="16dp">
                     <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_loan"/>
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_loan"
+                        app:tint="?attr/colorPrimary" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="Pinjaman"/>
+                        android:text="Anda belum memiliki pinjaman."
+                        android:textSize="12sp"/>
+                    <Button
+                        android:id="@+id/btn_ajukan_pinjaman_cepat"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="-8dp"
+                        android:text="Ajukan" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
-            <View
-                android:layout_width="16dp"
-                android:layout_height="0dp"/>
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_simpanan"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
                 android:layout_weight="1"
                 app:cardCornerRadius="12dp"
                 android:clickable="true"
                 android:focusable="true">
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
+                    android:layout_height="match_parent"
                     android:gravity="center"
+                    android:orientation="vertical"
                     android:padding="16dp">
                     <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_savings"/> <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Simpanan"/>
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_savings"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Simpanan"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
         </LinearLayout>
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -238,7 +174,5 @@
                 android:text="Libur layanan kantor pada tanggal 17 Oktober 2025. Transaksi digital tetap berjalan normal." />
 
         </androidx.cardview.widget.CardView>
-
-
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

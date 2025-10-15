@@ -10,11 +10,21 @@
         android:name="com.example.map_mid_term.fragments.HomeFragment"
         android:label="Beranda"
         tools:layout="@layout/fragment_home" />
+
+    <action
+        android:id="@+id/action_homeFragment_to_loanApplicationFragment"
+        app:destination="@id/loanApplicationFragment" />
+
     <fragment
         android:id="@+id/loansFragment"
-        android:name="com.example.map_mid_term.fragments.LoansFragment"
+        android:name="com.example.map_mid_term.fragments.LoanFragment"
         android:label="Pinjaman"
-        tools:layout="@layout/fragment_loans" />
+        tools:layout="@layout/fragment_loans">
+        <action
+            android:id="@+id/action_loansFragment_to_loanApplicationFragment"
+            app:destination="@id/loanApplicationFragment" />
+    </fragment>
+
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.example.map_mid_term.fragments.ProfileFragment"
@@ -28,14 +38,9 @@
         tools:layout="@layout/fragment_history" />
 
     <fragment
-        android:id="@+id/savingsFragment"
-        android:name="com.example.map_mid_term.fragments.SavingsFragment"
-        android:label="Simpanan"
-        tools:layout="@layout/fragment_savings" />
-    <fragment
-        android:id="@+id/cameraFragment"
-        android:name="com.example.map_mid_term.fragments.CameraFragment"
-        android:label="Scan"
-        tools:layout="@layout/fragment_camera" />
+        android:id="@+id/loanApplicationFragment"
+        android:name="com.example.map_mid_term.fragments.LoanApplicationFragment"
+        android:label="Formulir Pengajuan Pinjaman"
+        tools:layout="@layout/fragment_loan_application" />
 
 </navigation>
