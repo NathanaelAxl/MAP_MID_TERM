@@ -40,6 +40,7 @@ class HomeFragment : Fragment() {
         setupQuickActions(memberId)
     }
 
+    // FUNGSI INI SEKARANG BERDIRI SENDIRI DENGAN BENAR
     private fun setupGreeting(memberId: String?) {
         if (memberId != null) {
             val member = DummyData.members.find { it.id == memberId }
@@ -52,19 +53,21 @@ class HomeFragment : Fragment() {
         }
     }
 
+    // FUNGSI INI SEKARANG BERDIRI SENDIRI DENGAN BENAR
     private fun setupBalanceToggle() {
         binding.ivToggleBalance.setOnClickListener {
             if (isBalanceVisible) {
                 binding.tvTotalBalance.text = getString(R.string.balance_hidden)
                 binding.ivToggleBalance.setImageResource(R.drawable.ic_eye_close)
             } else {
-                binding.tvTotalBalance.text = "Rp 1.550.000,00"
+                binding.tvTotalBalance.text = "Rp 1.550.000,00" // Nanti bisa diganti data dinamis
                 binding.ivToggleBalance.setImageResource(R.drawable.ic_eye_open)
             }
             isBalanceVisible = !isBalanceVisible
         }
     }
 
+    // FUNGSI INI SEKARANG BERDIRI SENDIRI DENGAN BENAR
     private fun setupQuickActions(memberId: String?) {
         // Cek pengajuan pinjaman terakhir dari anggota yang sedang login
         val application = DummyData.loanApplications.lastOrNull { it.memberId == memberId }
@@ -73,8 +76,11 @@ class HomeFragment : Fragment() {
             // JIKA ADA PENGAJUAN, tampilkan status
             binding.tvPinjamanTitle.text = "Status Pinjaman"
             binding.tvPinjamanStatus.text = application.status
+
             binding.cardPinjaman.setOnClickListener {
-                Toast.makeText(context, "Status Pengajuan Anda: ${application.status}", Toast.LENGTH_SHORT).show()
+                // Buat action untuk navigasi sambil mengirim ID aplikasi
+                val action = HomeFragmentDirections.actionHomeFragmentToLoanStatusDetailFragment(application.id)
+                findNavController().navigate(action)
             }
 
             // Atur warna ikon berdasarkan status
@@ -95,7 +101,7 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // Listener untuk kartu lain
+        // Listener untuk kartu lain (tetap sama)
         binding.cardSimpanan.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_savingsFragment)
         }
@@ -105,8 +111,10 @@ class HomeFragment : Fragment() {
         }
     }
 
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 }
+
