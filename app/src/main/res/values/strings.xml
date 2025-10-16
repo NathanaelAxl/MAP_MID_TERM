@@ -24,5 +24,25 @@
     <string name="balance_hidden">Rp ••••••••</string>
     <string name="opening_savings_detail">Membuka halaman detail simpanan...</string>
 
+    <string name="admin_dashboard_title">Dashboard Pengurus Koperasi</string>
+
+    <string name="total_savings_icon">ic_savings</string>
+    <string name="total_savings">Total Simpanan</string>
+    <string name="total_loan_icon">ic_loan</string>
+    <string name="total_loan">Total Pinjaman</string>
+
+
+    <string name="admin_features">Fitur Pengurus</string>
+    <string name="member_data">Data Anggota</string>
+    <string name="loan_data">Data Pinjaman</string>
+    <string name="transactions">Transaksi</string>
+    <string name="reports">Laporan</string>
+    <string name="notifications">Notifikasi</string>
+    <string name="cooperative_cash">Kas Koperasi</string>
+
+
+    <string name="default_total_savings">Rp 120.000.000</string>
+    <string name="default_total_loan">Rp 85.000.000</string>
+
 
 </resources>
