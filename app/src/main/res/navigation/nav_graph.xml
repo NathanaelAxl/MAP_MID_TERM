@@ -10,7 +10,6 @@
         android:name="com.example.map_mid_term.fragments.HomeFragment"
         android:label="Beranda"
         tools:layout="@layout/fragment_home">
-        <!-- SEMUA ACTION UNTUK HOMEFRAGMENT SEKARANG ADA DI DALAM SINI -->
         <action
             android:id="@+id/action_homeFragment_to_loanApplicationFragment"
             app:destination="@id/loanApplicationFragment" />
@@ -26,7 +25,15 @@
         android:id="@+id/transactionFragment"
         android:name="com.example.map_mid_term.fragments.TransactionFragment"
         android:label="Transaksi"
-        tools:layout="@layout/fragment_transaction" />
+        tools:layout="@layout/fragment_transaction">
+        <action
+            android:id="@+id/action_transactionFragment_to_paymentDetailFragment"
+            app:destination="@id/paymentDetailFragment" />
+        <!-- JEMBATAN DARI TRANSAKSI KE TAMBAH SIMPANAN -->
+        <action
+            android:id="@+id/action_transactionFragment_to_addSavingsFragment"
+            app:destination="@id/addSavingsFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/historyFragment"
@@ -39,7 +46,6 @@
         android:name="com.example.map_mid_term.fragments.ProfileFragment"
         android:label="Profil"
         tools:layout="@layout/fragment_profile">
-        <!-- LANGKAH 4: ACTION KE EDIT PROFIL DITAMBAHKAN DI SINI -->
         <action
             android:id="@+id/action_profileFragment_to_editProfileFragment"
             app:destination="@id/editProfileFragment" />
@@ -63,12 +69,48 @@
         android:label="Laporan Bulanan"
         tools:layout="@layout/fragment_monthly_report" />
 
-    <!-- LANGKAH 4: FRAGMENT BARU UNTUK EDIT PROFIL DIDAFTARKAN DI SINI -->
     <fragment
         android:id="@+id/editProfileFragment"
         android:name="com.example.map_mid_term.fragments.EditProfileFragment"
         android:label="Edit Profil"
         tools:layout="@layout/fragment_edit_profile" />
+
+    <fragment
+        android:id="@+id/paymentDetailFragment"
+        android:name="com.example.map_mid_term.fragments.PaymentDetailFragment"
+        android:label="Detail Pembayaran"
+        tools:layout="@layout/fragment_payment_detail">
+        <action
+            android:id="@+id/action_paymentDetailFragment_to_virtualAccountFragment"
+            app:destination="@id/virtualAccountFragment" />
+        <action
+            android:id="@+id/action_paymentDetailFragment_to_uploadProofFragment"
+            app:destination="@id/uploadProofFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/virtualAccountFragment"
+        android:name="com.example.map_mid_term.fragments.VirtualAccountFragment"
+        android:label="Pembayaran Virtual Account"
+        tools:layout="@layout/fragment_virtual_account" />
+
+    <fragment
+        android:id="@+id/uploadProofFragment"
+        android:name="com.example.map_mid_term.fragments.UploadProofFragment"
+        android:label="Unggah Bukti Bayar"
+        tools:layout="@layout/fragment_upload_proof" />
+
+    <!-- FRAGMENT BARU UNTUK TAMBAH SIMPANAN -->
+    <fragment
+        android:id="@+id/addSavingsFragment"
+        android:name="com.example.map_mid_term.fragments.AddSavingsFragment"
+        android:label="Tambah Simpanan"
+        tools:layout="@layout/fragment_add_savings">
+        <!-- JEMBATAN DARI TAMBAH SIMPANAN KE DETAIL PEMBAYARAN -->
+        <action
+            android:id="@+id/action_addSavingsFragment_to_paymentDetailFragment"
+            app:destination="@id/paymentDetailFragment" />
+    </fragment>
 
 </navigation>
 
