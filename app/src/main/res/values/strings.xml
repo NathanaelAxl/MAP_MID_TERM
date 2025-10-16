@@ -1,3 +1,27 @@
 <resources>
     <string name="app_name">MAP_MID_TERM</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_camera">CameraActivity</string>
+    <string name="open_drawer">Open Drawer</string>
+    <string name="close_drawer">Close Drawer</string>
+
+    <string-array name="months_array">
+        <item>Oktober</item>
+        <item>September</item>
+        <item>Agustus</item>
+        <item>Juli</item>
+        <item>Juni</item>
+        <item>Mei</item>
+        <item>April</item>
+        <item>Maret</item>
+        <item>Februari</item>
+        <item>Januari</item>
+    </string-array>
+
+    <string name="welcome_greeting">Selamat Datang, %1$s!</string>
+    <string name="welcome_default">Selamat Datang!</string>
+    <string name="balance_hidden">Rp ••••••••</string>
+    <string name="opening_savings_detail">Membuka halaman detail simpanan...</string>
+
 </resources>

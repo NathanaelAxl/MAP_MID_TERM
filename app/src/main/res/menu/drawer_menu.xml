@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/homeFragment" android:title="Home"
+        android:icon="@android:drawable/ic_menu_view" />
+
+    <item
+        android:id="@+id/loansFragment"
+        android:title="Pinjaman"
+        android:icon="@android:drawable/ic_menu_info_details" />
+    <item
+        android:id="@+id/profileFragment"
+        android:title="Profil"
+        android:icon="@android:drawable/ic_menu_manage" />
+    <item
+        android:id="@+id/menu_logout"
+        android:title="Logout"
+        android:icon="@android:drawable/ic_lock_power_off" />
+</menu>

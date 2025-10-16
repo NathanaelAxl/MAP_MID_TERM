@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.map_mid_term.fragments.HomeFragment"
+        android:label="Beranda"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_homeFragment_to_loanApplicationFragment"
+            app:destination="@id/loanApplicationFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_savingsFragment"
+            app:destination="@id/savingsFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_monthlyReportFragment"
+            app:destination="@id/monthlyReportFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/transactionFragment"
+        android:name="com.example.map_mid_term.fragments.TransactionFragment"
+        android:label="Transaksi"
+        tools:layout="@layout/fragment_transaction">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/historyFragment"
+        android:name="com.example.map_mid_term.fragments.HistoryFragment"
+        android:label="Riwayat"
+        tools:layout="@layout/fragment_history" />
+
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.map_mid_term.fragments.ProfileFragment"
+        android:label="Profil"
+        tools:layout="@layout/fragment_profile" />
+
+    <fragment
+        android:id="@+id/savingsFragment"
+        android:name="com.example.map_mid_term.fragments.SavingsFragment"
+        android:label="Simpanan"
+        tools:layout="@layout/fragment_savings" />
+
+    <fragment
+        android:id="@+id/loanApplicationFragment"
+        android:name="com.example.map_mid_term.fragments.LoanApplicationFragment"
+        android:label="Formulir Pengajuan Pinjaman"
+        tools:layout="@layout/fragment_loan_application" />
+
+    <fragment
+        android:id="@+id/monthlyReportFragment"
+        android:name="com.example.map_mid_term.fragments.MonthlyReportFragment"
+        android:label="Laporan Bulanan"
+        tools:layout="@layout/fragment_monthly_report" />
+
+</navigation>
