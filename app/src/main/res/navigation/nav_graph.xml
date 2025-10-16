@@ -10,6 +10,7 @@
         android:name="com.example.map_mid_term.fragments.HomeFragment"
         android:label="Beranda"
         tools:layout="@layout/fragment_home">
+        <!-- SEMUA ACTION UNTUK HOMEFRAGMENT SEKARANG ADA DI DALAM SINI -->
         <action
             android:id="@+id/action_homeFragment_to_loanApplicationFragment"
             app:destination="@id/loanApplicationFragment" />
@@ -25,9 +26,7 @@
         android:id="@+id/transactionFragment"
         android:name="com.example.map_mid_term.fragments.TransactionFragment"
         android:label="Transaksi"
-        tools:layout="@layout/fragment_transaction">
-
-    </fragment>
+        tools:layout="@layout/fragment_transaction" />
 
     <fragment
         android:id="@+id/historyFragment"
@@ -39,7 +38,12 @@
         android:id="@+id/profileFragment"
         android:name="com.example.map_mid_term.fragments.ProfileFragment"
         android:label="Profil"
-        tools:layout="@layout/fragment_profile" />
+        tools:layout="@layout/fragment_profile">
+        <!-- LANGKAH 4: ACTION KE EDIT PROFIL DITAMBAHKAN DI SINI -->
+        <action
+            android:id="@+id/action_profileFragment_to_editProfileFragment"
+            app:destination="@id/editProfileFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/savingsFragment"
@@ -59,4 +63,12 @@
         android:label="Laporan Bulanan"
         tools:layout="@layout/fragment_monthly_report" />
 
+    <!-- LANGKAH 4: FRAGMENT BARU UNTUK EDIT PROFIL DIDAFTARKAN DI SINI -->
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="com.example.map_mid_term.fragments.EditProfileFragment"
+        android:label="Edit Profil"
+        tools:layout="@layout/fragment_edit_profile" />
+
 </navigation>
+
