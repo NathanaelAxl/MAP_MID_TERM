@@ -1,4 +1,3 @@
-// File: app/src/main/java/com/example/map_mid_term/fragments/TransactionFragment.kt
 package com.example.map_mid_term.fragments
 
 import android.os.Bundle
@@ -27,7 +26,7 @@ class TransactionFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Simulasi jika user punya pinjaman aktif. Ubah jadi 'false' untuk menyembunyikan kartu.
+        // Simulasi jika user punya pinjaman aktif.
         val userHasActiveLoan = true
 
         if (userHasActiveLoan) {
@@ -52,10 +51,7 @@ class TransactionFragment : Fragment() {
             Toast.makeText(context, "Membuka halaman tambah simpanan...", Toast.LENGTH_SHORT).show()
         }
 
-        binding.cardAjukanPinjaman.setOnClickListener {
-            // Arahkan ke formulir pengajuan pinjaman
-            findNavController().navigate(R.id.action_transactionFragment_to_loanApplicationFragment)
-        }
+        // LISTENER UNTUK AJUKAN PINJAMAN SUDAH DIHAPUS DARI SINI
     }
 
     override fun onDestroyView() {

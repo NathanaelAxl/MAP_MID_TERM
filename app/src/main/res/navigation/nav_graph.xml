@@ -26,9 +26,7 @@
         android:name="com.example.map_mid_term.fragments.TransactionFragment"
         android:label="Transaksi"
         tools:layout="@layout/fragment_transaction">
-        <action
-            android:id="@+id/action_transactionFragment_to_loanApplicationFragment"
-            app:destination="@id/loanApplicationFragment" />
+
     </fragment>
 
     <fragment
