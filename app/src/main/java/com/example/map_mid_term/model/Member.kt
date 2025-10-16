@@ -6,5 +6,6 @@ data class Member(
     val address: String,
     val phone: String,
     val email: String,
-    val password: String
+    val password: String,
+    val role: String = "member"
 )

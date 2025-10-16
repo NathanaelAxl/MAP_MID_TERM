@@ -1,7 +1,6 @@
 package com.example.map_mid_term.model
 
 object DummyData {
-
     val members = listOf(
         Member(
             id = "M001",
@@ -9,7 +8,8 @@ object DummyData {
             address = "Jl. Mawar No.12, Jakarta",
             phone = "08123456789",
             email = "andi@koperasi.com",
-            password = "1234"
+            password = "1234",
+            role = "member"
         ),
         Member(
             id = "M002",
@@ -17,7 +17,8 @@ object DummyData {
             address = "Jl. Melati No.8, Bandung",
             phone = "08129876543",
             email = "budi@koperasi.com",
-            password = "5678"
+            password = "5678",
+            role = "member"
         ),
         Member(
             id = "M003",
@@ -25,13 +26,24 @@ object DummyData {
             address = "Jl. Anggrek No.21, Surabaya",
             phone = "08121234567",
             email = "citra@koperasi.com",
-            password = "9999"
+            password = "9999",
+            role = "member"
+        ),
+
+        Member(
+            id = "A001",
+            name = "Admin Koperasi",
+            address = "Jl. Melur No.5, Jakarta",
+            phone = "0813000000",
+            email = "admin@koperasi.com",
+            password = "admin123",
+            role = "pengurus"
         )
     )
 
     val loans = listOf(
-        Loan("L001", "M001", 5000000.0, 5.0),
-        Loan("L002", "M002", 3000000.0, 4.5),
-        Loan("L003", "M003", 7000000.0, 6.0)
+        Loan(id = "L001", memberId = "M001", amount = 5000000.0, interestRate = 5.0),
+        Loan(id = "L002", memberId = "M002", amount = 3000000.0, interestRate = 4.5),
+        Loan(id = "L003", memberId = "M003", amount = 7000000.0, interestRate = 6.0)
     )
 }

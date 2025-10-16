@@ -22,19 +22,26 @@ class LoginActivity : AppCompatActivity() {
             val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString().trim()
 
-            // Cari user berdasarkan email dan password
             val member = DummyData.members.find {
                 it.email == email && it.password == password
             }
 
             if (member != null) {
-                // Jika cocok
-                val intent = Intent(this, MainActivity::class.java)
-                intent.putExtra("memberId", member.id) // kirim id member ke dashboard
-                startActivity(intent)
+                if (member.role == "pengurus") {
+                    // Jika role pengurus, arahkan ke dashboard admin (bisa fragment berbeda)
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.putExtra("memberId", member.id)
+                    intent.putExtra("isAdmin", true) // kirim flag tambahan
+                    startActivity(intent)
+                } else {
+                    // Jika anggota biasa
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.putExtra("memberId", member.id)
+                    intent.putExtra("isAdmin", false)
+                    startActivity(intent)
+                }
                 finish()
             } else {
-                // Jika tidak cocok -> tampilkan alert dialog
                 AlertDialog.Builder(this)
                     .setTitle("Login Gagal")
                     .setMessage("Email atau password salah. Silakan coba lagi.")
@@ -42,5 +49,6 @@ class LoginActivity : AppCompatActivity() {
                     .show()
             }
         }
+
     }
 }
