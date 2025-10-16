@@ -28,16 +28,14 @@ class LoginActivity : AppCompatActivity() {
 
             if (member != null) {
                 if (member.role == "pengurus") {
-                    // Jika role pengurus, arahkan ke dashboard admin (bisa fragment berbeda)
-                    val intent = Intent(this, MainActivity::class.java)
+                    // Login sebagai admin
+                    val intent = Intent(this, AdminActivity::class.java)
                     intent.putExtra("memberId", member.id)
-                    intent.putExtra("isAdmin", true) // kirim flag tambahan
                     startActivity(intent)
                 } else {
-                    // Jika anggota biasa
+                    // Login sebagai member biasa
                     val intent = Intent(this, MainActivity::class.java)
                     intent.putExtra("memberId", member.id)
-                    intent.putExtra("isAdmin", false)
                     startActivity(intent)
                 }
                 finish()
@@ -49,6 +47,5 @@ class LoginActivity : AppCompatActivity() {
                     .show()
             }
         }
-
     }
 }

@@ -7,5 +7,5 @@ data class Member(
     val phone: String,
     val email: String,
     val password: String,
-    val role: String = "member"
+    val role: String
 )
