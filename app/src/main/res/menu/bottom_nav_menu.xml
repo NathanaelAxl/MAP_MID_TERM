@@ -7,9 +7,9 @@
         android:title="Beranda" />
 
     <item
-        android:id="@+id/loansFragment"
-        android:icon="@drawable/ic_loan"
-        android:title="Pinjaman" />
+        android:id="@+id/transactionFragment"
+        android:icon="@drawable/ic_transaction"
+        android:title="Transaksi" />
 
     <item
         android:id="@+id/historyFragment"

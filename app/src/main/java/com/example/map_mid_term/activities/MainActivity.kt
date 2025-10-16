@@ -1,3 +1,4 @@
+// File: app/src/main/java/com/example/map_mid_term/activities/MainActivity.kt
 package com.example.map_mid_term.activities
 
 import android.content.Intent
@@ -21,7 +22,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var appBarConfiguration: AppBarConfiguration
 
-    // VARIABEL INI DIPINDAH KE SINI AGAR BISA DIAKSES FRAGMENT
     var memberId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,7 +29,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Nilainya diisi di sini
         memberId = intent.getStringExtra("memberId")
         val member = DummyData.members.find { it.id == memberId }
         member?.let {
@@ -42,9 +41,13 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
 
+        // GANTI loansFragment MENJADI transactionFragment DI SINI
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.homeFragment, R.id.loansFragment, R.id.historyFragment, R.id.profileFragment
+                R.id.homeFragment,
+                R.id.transactionFragment, // <-- INI YANG BARU
+                R.id.historyFragment,
+                R.id.profileFragment
             ),
             drawerLayout
         )
