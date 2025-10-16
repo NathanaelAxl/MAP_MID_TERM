@@ -11,6 +11,9 @@
         android:label="Beranda"
         tools:layout="@layout/fragment_home">
         <action
+            android:id="@+id/action_homeFragment_to_loanStatusDetailFragment"
+            app:destination="@id/loanStatusDetailFragment" />
+        <action
             android:id="@+id/action_homeFragment_to_loanApplicationFragment"
             app:destination="@id/loanApplicationFragment" />
         <action
@@ -29,7 +32,6 @@
         <action
             android:id="@+id/action_transactionFragment_to_paymentDetailFragment"
             app:destination="@id/paymentDetailFragment" />
-        <!-- JEMBATAN DARI TRANSAKSI KE TAMBAH SIMPANAN -->
         <action
             android:id="@+id/action_transactionFragment_to_addSavingsFragment"
             app:destination="@id/addSavingsFragment" />
@@ -80,6 +82,7 @@
         android:name="com.example.map_mid_term.fragments.PaymentDetailFragment"
         android:label="Detail Pembayaran"
         tools:layout="@layout/fragment_payment_detail">
+        <!-- DUA ACTION YANG HILANG SEKARANG DITAMBAHKAN DI SINI -->
         <action
             android:id="@+id/action_paymentDetailFragment_to_virtualAccountFragment"
             app:destination="@id/virtualAccountFragment" />
@@ -100,16 +103,24 @@
         android:label="Unggah Bukti Bayar"
         tools:layout="@layout/fragment_upload_proof" />
 
-    <!-- FRAGMENT BARU UNTUK TAMBAH SIMPANAN -->
     <fragment
         android:id="@+id/addSavingsFragment"
         android:name="com.example.map_mid_term.fragments.AddSavingsFragment"
         android:label="Tambah Simpanan"
         tools:layout="@layout/fragment_add_savings">
-        <!-- JEMBATAN DARI TAMBAH SIMPANAN KE DETAIL PEMBAYARAN -->
         <action
             android:id="@+id/action_addSavingsFragment_to_paymentDetailFragment"
             app:destination="@id/paymentDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/loanStatusDetailFragment"
+        android:name="com.example.map_mid_term.fragments.LoanStatusDetailFragment"
+        android:label="Detail Status Pinjaman"
+        tools:layout="@layout/fragment_loan_status_detail">
+        <argument
+            android:name="applicationId"
+            app:argType="string" />
     </fragment>
 
 </navigation>
