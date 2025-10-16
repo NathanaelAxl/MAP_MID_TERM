@@ -4,5 +4,5 @@ data class Transaction(
     val description: String,
     val date: String,
     val amount: Double,
-    val type: String
+    val type: String // “credit” atau “debit”
 )

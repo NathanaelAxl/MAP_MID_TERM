@@ -52,6 +52,13 @@ class AdminActivity : AppCompatActivity() {
         cardCash.setOnClickListener {
             Toast.makeText(this, "Kelola Kas Koperasi", Toast.LENGTH_SHORT).show()
         }
+        cardLoans.setOnClickListener {
+            startActivity(Intent(this, LoanListActivity::class.java))
+        }
+        cardTransactions.setOnClickListener {
+            startActivity(Intent(this, TransactionListActivity::class.java))
+        }
+
     }
 
     // ✅ Letakkan di luar onCreate(), bukan di dalam
@@ -59,4 +66,6 @@ class AdminActivity : AppCompatActivity() {
         onBackPressedDispatcher.onBackPressed()
         return true
     }
+
+
 }

@@ -51,5 +51,13 @@ object DummyData {
     // Ini adalah daftar untuk PENGAJUAN PINJAMAN BARU
     // Kita gunakan 'mutableListOf' agar bisa ditambah datanya saat user mengajukan
     val loanApplications = mutableListOf<LoanApplication>()
+
+    val adminTransactions = listOf(
+        AdminTransaction("T001", "M001", "Simpanan", 500000.0, "Setoran bulanan", "2025-10-01"),
+        AdminTransaction("T002", "M002", "Pinjaman", 1000000.0, "Pembayaran pinjaman", "2025-10-05"),
+        AdminTransaction("T003", "M003", "Simpanan", 250000.0, "Simpanan tambahan", "2025-10-10")
+    )
+
+
 }
 

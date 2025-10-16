@@ -38,6 +38,16 @@
         <activity
             android:name=".activities.MemberListActivity"
             android:exported="false" />
+        <activity
+            android:name=".activities.LoanListActivity"
+            android:exported="false"
+            android:label="Data Pinjaman"
+            android:theme="@style/Theme.MAP_MID_TERM" />
+        <activity
+            android:name=".activities.TransactionListActivity"
+            android:exported="false"
+            android:label="Data Transaksi"
+            android:theme="@style/Theme.MAP_MID_TERM" />
 
     </application>
 </manifest>
