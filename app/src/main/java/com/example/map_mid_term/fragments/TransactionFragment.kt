@@ -26,32 +26,23 @@ class TransactionFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Simulasi jika user punya pinjaman aktif.
         val userHasActiveLoan = true
+        binding.cardUpcomingPayment.visibility = if (userHasActiveLoan) View.VISIBLE else View.GONE
 
-        if (userHasActiveLoan) {
-            binding.cardUpcomingPayment.visibility = View.VISIBLE
-        } else {
-            binding.cardUpcomingPayment.visibility = View.GONE
-        }
+        // --- Setup Listeners (Diperbarui) ---
 
-        // --- Setup Listeners ---
         binding.btnPayNow.setOnClickListener {
-            // TODO: Nanti arahkan ke halaman detail pembayaran
-            Toast.makeText(context, "Membuka halaman pembayaran...", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_transactionFragment_to_paymentDetailFragment)
         }
 
         binding.cardBayarAngsuran.setOnClickListener {
-            // TODO: Nanti arahkan ke halaman detail pembayaran
-            Toast.makeText(context, "Membuka halaman pembayaran...", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_transactionFragment_to_paymentDetailFragment)
         }
 
+        // KODE INI DIPERBARUI
         binding.cardTambahSimpanan.setOnClickListener {
-            // TODO: Nanti arahkan ke halaman tambah simpanan
-            Toast.makeText(context, "Membuka halaman tambah simpanan...", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_transactionFragment_to_addSavingsFragment)
         }
-
-        // LISTENER UNTUK AJUKAN PINJAMAN SUDAH DIHAPUS DARI SINI
     }
 
     override fun onDestroyView() {
