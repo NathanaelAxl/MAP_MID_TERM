@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.map_mid_term.R
@@ -27,13 +28,19 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        // Mengambil Nama Pengguna Secara Dinamis
+    // Gunakan onResume() agar UI selalu update saat kembali ke halaman ini
+    override fun onResume() {
+        super.onResume()
         val parentActivity = activity as? MainActivity
         val memberId = parentActivity?.memberId
 
+        // Panggil fungsi-fungsi setup
+        setupGreeting(memberId)
+        setupBalanceToggle()
+        setupQuickActions(memberId)
+    }
+
+    private fun setupGreeting(memberId: String?) {
         if (memberId != null) {
             val member = DummyData.members.find { it.id == memberId }
             member?.let {
@@ -43,24 +50,52 @@ class HomeFragment : Fragment() {
         } else {
             binding.tvGreeting.text = getString(R.string.welcome_default)
         }
+    }
 
-        // Logika untuk Toggle Saldo
+    private fun setupBalanceToggle() {
         binding.ivToggleBalance.setOnClickListener {
             if (isBalanceVisible) {
                 binding.tvTotalBalance.text = getString(R.string.balance_hidden)
                 binding.ivToggleBalance.setImageResource(R.drawable.ic_eye_close)
             } else {
-                binding.tvTotalBalance.text = "Rp 1.550.000,00" // Nanti ganti data dinamis
+                binding.tvTotalBalance.text = "Rp 1.550.000,00"
                 binding.ivToggleBalance.setImageResource(R.drawable.ic_eye_open)
             }
             isBalanceVisible = !isBalanceVisible
         }
+    }
 
-        // Listener untuk Tombol Akses Cepat
-        binding.cardPinjaman.setOnClickListener {
-            findNavController().navigate(R.id.action_homeFragment_to_loanApplicationFragment)
+    private fun setupQuickActions(memberId: String?) {
+        // Cek pengajuan pinjaman terakhir dari anggota yang sedang login
+        val application = DummyData.loanApplications.lastOrNull { it.memberId == memberId }
+
+        if (application != null) {
+            // JIKA ADA PENGAJUAN, tampilkan status
+            binding.tvPinjamanTitle.text = "Status Pinjaman"
+            binding.tvPinjamanStatus.text = application.status
+            binding.cardPinjaman.setOnClickListener {
+                Toast.makeText(context, "Status Pengajuan Anda: ${application.status}", Toast.LENGTH_SHORT).show()
+            }
+
+            // Atur warna ikon berdasarkan status
+            val statusColor = when (application.status) {
+                "Diterima" -> ContextCompat.getColor(requireContext(), R.color.green_status)
+                "Ditolak" -> ContextCompat.getColor(requireContext(), R.color.red_status)
+                else -> ContextCompat.getColor(requireContext(), R.color.orange_status)
+            }
+            binding.ivPinjamanIcon.setColorFilter(statusColor)
+
+        } else {
+            // JIKA TIDAK ADA PENGAJUAN, tampilkan tombol "Ajukan"
+            binding.tvPinjamanTitle.text = "Pinjaman"
+            binding.tvPinjamanStatus.text = "Ajukan pinjaman baru"
+            binding.ivPinjamanIcon.clearColorFilter() // Hapus filter warna
+            binding.cardPinjaman.setOnClickListener {
+                findNavController().navigate(R.id.action_homeFragment_to_loanApplicationFragment)
+            }
         }
 
+        // Listener untuk kartu lain
         binding.cardSimpanan.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_savingsFragment)
         }

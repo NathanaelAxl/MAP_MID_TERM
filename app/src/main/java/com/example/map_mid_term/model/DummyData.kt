@@ -29,7 +29,6 @@ object DummyData {
             password = "9999",
             role = "member"
         ),
-
         Member(
             id = "A001",
             name = "Admin Koperasi",
@@ -41,9 +40,16 @@ object DummyData {
         )
     )
 
+    // Ini adalah daftar untuk pinjaman yang SUDAH DISETUJUI
     val loans = listOf(
         Loan(id = "L001", memberId = "M001", amount = 5000000.0, interestRate = 5.0),
         Loan(id = "L002", memberId = "M002", amount = 3000000.0, interestRate = 4.5),
         Loan(id = "L003", memberId = "M003", amount = 7000000.0, interestRate = 6.0)
     )
+
+    // --- BAGIAN INI YANG PERLU ANDA TAMBAHKAN ---
+    // Ini adalah daftar untuk PENGAJUAN PINJAMAN BARU
+    // Kita gunakan 'mutableListOf' agar bisa ditambah datanya saat user mengajukan
+    val loanApplications = mutableListOf<LoanApplication>()
 }
+
