@@ -35,6 +35,9 @@
             android:label="@string/title_activity_camera"
             android:theme="@style/Theme.MAP_MID_TERM" />
         <activity android:name=".activities.AdminActivity" />
+        <activity
+            android:name=".activities.MemberListActivity"
+            android:exported="false" />
 
     </application>
 </manifest>
