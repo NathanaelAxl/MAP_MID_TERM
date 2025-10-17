@@ -1,25 +1,12 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.MAP_MID_TERM" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- Warna untuk tema user -->
+        <item name="colorPrimary">@color/prim</item>
+        <item name="colorSecondary">@color/sec</item>
+        <item name="android:statusBarColor">@color/prim</item>
+        <item name="android:navigationBarColor">@color/white</item>
     </style>
 
     <style name="Theme.MAP_MID_TERM" parent="Base.Theme.MAP_MID_TERM" />
-
-    <style name="AdminMenuItem">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_margin">8dp</item>
-        <item name="android:gravity">center</item>
-        <item name="android:layout_columnWeight">1</item>
-    </style>
-
-    <style name="AdminMenuText">
-        <item name="android:layout_marginTop">6dp</item>
-        <item name="android:textColor">@color/black</item>
-        <item name="android:textSize">12sp</item>
-        <item name="android:gravity">center</item>
-    </style>
-
 </resources>

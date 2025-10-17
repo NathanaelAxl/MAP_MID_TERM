@@ -2,10 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Izin Kamera & Lokasi -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
+
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
@@ -18,6 +20,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MAP_MID_TERM">
+
+        <!-- ========= USER SIDE ========= -->
         <activity
             android:name=".activities.LoginActivity"
             android:exported="true">
@@ -26,37 +30,66 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".activities.MainActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:label="Beranda" />
+
         <activity
             android:name=".activities.CameraActivity"
             android:exported="false"
             android:label="@string/title_activity_camera"
             android:theme="@style/Theme.MAP_MID_TERM" />
-        <activity android:name=".activities.AdminActivity" />
+
+        <!-- ========= ADMIN SIDE ========= -->
+        <activity
+            android:name=".activities.AdminActivity"
+            android:exported="false"
+            android:label="Dashboard Admin"
+            android:theme="@style/Theme.MAP_MID_TERM.Admin" />
+
         <activity
             android:name=".activities.MemberListActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:label="Data Anggota"
+            android:theme="@style/Theme.MAP_MID_TERM.Admin" />
+
         <activity
             android:name=".activities.LoanListActivity"
             android:exported="false"
             android:label="Data Pinjaman"
-            android:theme="@style/Theme.MAP_MID_TERM" />
+            android:theme="@style/Theme.MAP_MID_TERM.Admin" />
+
         <activity
             android:name=".activities.TransactionListActivity"
             android:exported="false"
             android:label="Data Transaksi"
-            android:theme="@style/Theme.MAP_MID_TERM" />
-        <activity android:name=".activities.AdminReportActivity"
+            android:theme="@style/Theme.MAP_MID_TERM.Admin" />
+
+        <activity
+            android:name=".activities.AdminReportActivity"
             android:exported="false"
-            android:label="Laporan Koperasi" />
-        <activity android:name=".activities.AdminNotificationActivity" />
-        <activity android:name=".activities.AdminLoanDetailActivity" />
-        <activity android:name=".activities.CashManagementActivity" />
-        <activity android:name=".activities.AdminNotificationActivity" />
-        <activity android:name=".activities.AdminLoanDetailActivity" />
-        <activity android:name=".activities.AdminLoanDetailActivity" />
+            android:label="Laporan Koperasi"
+            android:theme="@style/Theme.MAP_MID_TERM.Admin" />
+
+        <activity
+            android:name=".activities.AdminNotificationActivity"
+            android:exported="false"
+            android:label="Notifikasi Pengajuan"
+            android:theme="@style/Theme.MAP_MID_TERM.Admin" />
+
+        <activity
+            android:name=".activities.AdminLoanDetailActivity"
+            android:exported="false"
+            android:label="Detail Pinjaman"
+            android:theme="@style/Theme.MAP_MID_TERM.Admin" />
+
+        <activity
+            android:name=".activities.CashManagementActivity"
+            android:exported="false"
+            android:label="Kas Koperasi"
+            android:theme="@style/Theme.MAP_MID_TERM.Admin" />
 
     </application>
 </manifest>
