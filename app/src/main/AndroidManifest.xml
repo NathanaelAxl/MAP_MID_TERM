@@ -90,6 +90,11 @@
             android:exported="false"
             android:label="Kas Koperasi"
             android:theme="@style/Theme.MAP_MID_TERM.Admin" />
+        <activity
+            android:name=".activities.AdminNotificationDetailActivity"
+            android:exported="false"
+            android:label="Detail Notifikasi"
+            android:theme="@style/Theme.MAP_MID_TERM.Admin" />
 
     </application>
 </manifest>

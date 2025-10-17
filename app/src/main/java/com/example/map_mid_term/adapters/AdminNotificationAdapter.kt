@@ -3,25 +3,21 @@ package com.example.map_mid_term.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.TextView
-import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.map_mid_term.R
-import com.example.map_mid_term.model.Loan
+import com.example.map_mid_term.model.AdminNotification
 
 class AdminNotificationAdapter(
-    private val loanList: List<Loan>,
-    private val onItemClick: (Loan) -> Unit
+    private val items: List<AdminNotification>,
+    private val onItemClick: (AdminNotification) -> Unit
 ) : RecyclerView.Adapter<AdminNotificationAdapter.ViewHolder>() {
 
-    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvLoanId: TextView = view.findViewById(R.id.tvLoanId)
         val tvMemberId: TextView = view.findViewById(R.id.tvMemberId)
         val tvAmount: TextView = view.findViewById(R.id.tvAmount)
         val tvStatus: TextView = view.findViewById(R.id.tvStatus)
-        val btnDetail: Button = view.findViewById(R.id.btnDetail)
-        val cardContainer: CardView = view.findViewById(R.id.cardContainer)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -31,18 +27,16 @@ class AdminNotificationAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val loan = loanList[position]
+        val item = items[position]
+        holder.tvLoanId.text = "ID Pinjaman: ${item.loanId}"
+        holder.tvMemberId.text = "Anggota: ${item.memberId}"
+        holder.tvAmount.text = "Jumlah: Rp ${item.amount}"
+        holder.tvStatus.text = "Status: ${item.status}"
 
-        holder.tvLoanId.text = "ID Pinjaman: ${loan.id}"
-        holder.tvMemberId.text = "Anggota: ${loan.memberId}"
-        holder.tvAmount.text = "Jumlah: Rp ${loan.amount}"
-        holder.tvStatus.text = "Status: ${loan.status}"
-
-        // Klik tombol Detail → buka halaman detail
-        holder.btnDetail.setOnClickListener {
-            onItemClick(loan)
+        holder.itemView.setOnClickListener {
+            onItemClick(item)
         }
     }
 
-    override fun getItemCount(): Int = loanList.size
+    override fun getItemCount() = items.size
 }

@@ -2,9 +2,9 @@ package com.example.map_mid_term.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.map_mid_term.R
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.card.MaterialCardView
 
 class AdminActivity : AppCompatActivity() {
@@ -12,37 +12,26 @@ class AdminActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_admin_dashboard)
 
-        val adminName = "Admin Koperasi"
-        findViewById<TextView>(R.id.tvAdminWelcome).text = "Halo, $adminName 👋"
+        val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
+        toolbar.title = "Dashboard Admin"
+        toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
-        val cardMembers = findViewById<MaterialCardView>(R.id.cardManageMembers)
-        val cardLoans = findViewById<MaterialCardView>(R.id.cardManageLoans)
-        val cardTransactions = findViewById<MaterialCardView>(R.id.cardTransactions)
-        val cardReports = findViewById<MaterialCardView>(R.id.cardReports)
-        val cardNotifications = findViewById<MaterialCardView>(R.id.cardNotifications)
-        val cardCash = findViewById<MaterialCardView>(R.id.cardCash)
-
-        cardMembers.setOnClickListener {
+        findViewById<MaterialCardView>(R.id.cardManageMembers).setOnClickListener {
             startActivity(Intent(this, MemberListActivity::class.java))
         }
-
-        cardLoans.setOnClickListener {
+        findViewById<MaterialCardView>(R.id.cardManageLoans).setOnClickListener {
             startActivity(Intent(this, LoanListActivity::class.java))
         }
-
-        cardTransactions.setOnClickListener {
+        findViewById<MaterialCardView>(R.id.cardTransactions).setOnClickListener {
             startActivity(Intent(this, TransactionListActivity::class.java))
         }
-
-        cardReports.setOnClickListener {
+        findViewById<MaterialCardView>(R.id.cardReports).setOnClickListener {
             startActivity(Intent(this, AdminReportActivity::class.java))
         }
-
-        cardNotifications.setOnClickListener {
+        findViewById<MaterialCardView>(R.id.cardNotifications).setOnClickListener {
             startActivity(Intent(this, AdminNotificationActivity::class.java))
         }
-
-        cardCash.setOnClickListener {
+        findViewById<MaterialCardView>(R.id.cardCash).setOnClickListener {
             startActivity(Intent(this, CashManagementActivity::class.java))
         }
     }

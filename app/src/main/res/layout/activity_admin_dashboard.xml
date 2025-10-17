@@ -2,40 +2,18 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#F9F9F9"
+    android:background="@color/bon"
     tools:context=".activities.AdminActivity">
 
-    <!-- Header Hijau -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@color/green"
-        android:padding="20dp">
+    <!-- ✅ Toolbar include -->
+    <include
+        layout="@layout/appbar_toolbar"
+        android:id="@+id/topAppBar" />
 
-        <TextView
-            android:id="@+id/tvAdminTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Dashboard Admin"
-            android:textStyle="bold"
-            android:textSize="20sp"
-            android:textColor="@android:color/white"
-            android:layout_marginBottom="4dp" />
-
-        <TextView
-            android:id="@+id/tvAdminWelcome"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Halo, Admin Koperasi 👋"
-            android:textColor="@android:color/white"
-            android:textSize="15sp" />
-    </LinearLayout>
-
-    <!-- Konten Grid Menu -->
+    <!-- Konten utama dashboard -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -46,6 +24,8 @@
             android:layout_height="wrap_content"
             android:columnCount="2"
             android:alignmentMode="alignMargins"
+            android:rowOrderPreserved="false"
+            android:columnOrderPreserved="false"
             android:useDefaultMargins="true">
 
             <!-- Menu: Data Anggota -->
@@ -54,32 +34,30 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
-                app:strokeColor="@color/teal_700"
-                app:strokeWidth="1dp">
+                app:cardElevation="4dp"
+                android:backgroundTint="@color/white"
+                android:layout_margin="8dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:padding="20dp"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:orientation="vertical">
 
                     <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:src="@drawable/ic_profile"
-                        app:tint="@color/teal_700" />
+                        app:tint="@color/green" />
 
                     <TextView
-                        android:text="Data Anggota"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/black"
+                        android:text="Data Anggota"
+                        android:textColor="@color/sec"
                         android:textStyle="bold"
-                        android:textSize="14sp"
                         android:layout_marginTop="8dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -90,32 +68,30 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
-                app:strokeColor="@color/teal_700"
-                app:strokeWidth="1dp">
+                app:cardElevation="4dp"
+                android:backgroundTint="@color/white"
+                android:layout_margin="8dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:padding="20dp"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:orientation="vertical">
 
                     <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:src="@drawable/ic_loan"
-                        app:tint="@color/teal_700" />
+                        app:tint="@color/green" />
 
                     <TextView
-                        android:text="Data Pinjaman"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/black"
+                        android:text="Data Pinjaman"
+                        android:textColor="@color/sec"
                         android:textStyle="bold"
-                        android:textSize="14sp"
                         android:layout_marginTop="8dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -126,32 +102,30 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
-                app:strokeColor="@color/teal_700"
-                app:strokeWidth="1dp">
+                app:cardElevation="4dp"
+                android:backgroundTint="@color/white"
+                android:layout_margin="8dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:padding="20dp"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:orientation="vertical">
 
                     <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:src="@drawable/ic_transaction"
-                        app:tint="@color/teal_700" />
+                        app:tint="@color/green" />
 
                     <TextView
-                        android:text="Transaksi"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/black"
+                        android:text="Transaksi"
+                        android:textColor="@color/sec"
                         android:textStyle="bold"
-                        android:textSize="14sp"
                         android:layout_marginTop="8dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -162,32 +136,30 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
-                app:strokeColor="@color/teal_700"
-                app:strokeWidth="1dp">
+                app:cardElevation="4dp"
+                android:backgroundTint="@color/white"
+                android:layout_margin="8dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:padding="20dp"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:orientation="vertical">
 
                     <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:src="@drawable/ic_report"
-                        app:tint="@color/teal_700" />
+                        app:tint="@color/green" />
 
                     <TextView
-                        android:text="Laporan"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/black"
+                        android:text="Laporan"
+                        android:textColor="@color/sec"
                         android:textStyle="bold"
-                        android:textSize="14sp"
                         android:layout_marginTop="8dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -198,32 +170,30 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
-                app:strokeColor="@color/teal_700"
-                app:strokeWidth="1dp">
+                app:cardElevation="4dp"
+                android:backgroundTint="@color/white"
+                android:layout_margin="8dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:padding="20dp"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:orientation="vertical">
 
                     <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:src="@drawable/ic_notifications"
-                        app:tint="@color/teal_700" />
+                        app:tint="@color/green" />
 
                     <TextView
-                        android:text="Notifikasi"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/black"
+                        android:text="Notifikasi"
+                        android:textColor="@color/sec"
                         android:textStyle="bold"
-                        android:textSize="14sp"
                         android:layout_marginTop="8dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -234,32 +204,30 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
-                app:strokeColor="@color/teal_700"
-                app:strokeWidth="1dp">
+                app:cardElevation="4dp"
+                android:backgroundTint="@color/white"
+                android:layout_margin="8dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:padding="20dp"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:orientation="vertical">
 
                     <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:src="@drawable/ic_wallet"
-                        app:tint="@color/teal_700" />
+                        app:tint="@color/green" />
 
                     <TextView
-                        android:text="Kas Koperasi"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/black"
+                        android:text="Kas Koperasi"
+                        android:textColor="@color/sec"
                         android:textStyle="bold"
-                        android:textSize="14sp"
                         android:layout_marginTop="8dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

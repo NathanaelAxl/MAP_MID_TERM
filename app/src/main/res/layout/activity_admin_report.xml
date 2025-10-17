@@ -1,160 +1,172 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:background="@color/background_light">
+    android:background="@color/bon"
+    tools:context=".activities.AdminReportActivity">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <include
+        layout="@layout/appbar_toolbar"
+        android:id="@+id/topAppBar" />
+
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:dividerPadding="8dp"
-        android:showDividers="middle">
+        android:layout_height="match_parent"
+        android:padding="16dp">
 
-        <TextView
-            android:text="📊 Laporan Keuangan Koperasi"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="12dp"
-            android:textColor="@color/black"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <!-- Kartu Ringkasan -->
-        <com.google.android.material.card.MaterialCardView
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="12dp">
+            android:gravity="center_horizontal">
 
-            <LinearLayout
-                android:orientation="vertical"
-                android:padding="16dp"
+            <!-- Card: Total Simpanan -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="3dp"
+                android:layout_marginBottom="10dp"
+                android:backgroundTint="@color/white">
 
-                <TextView
-                    android:text="Total Simpanan"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp"
+                    android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/tvTotalSimpananReport"
-                    android:text="Rp 0"
-                    android:textSize="16sp"
-                    android:textColor="@color/teal_700"
-                    android:layout_marginTop="4dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                    <TextView
+                        android:id="@+id/tvTotalSimpananReport"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rp0"
+                        android:textColor="@color/green"
+                        android:textStyle="bold"
+                        android:textSize="18sp" />
 
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="12dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Total Simpanan"
+                        android:textSize="14sp"
+                        android:textColor="@color/sec" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-            <LinearLayout
-                android:orientation="vertical"
-                android:padding="16dp"
+            <!-- Card: Total Pinjaman -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="3dp"
+                android:layout_marginBottom="10dp"
+                android:backgroundTint="@color/white">
 
-                <TextView
-                    android:text="Total Pinjaman"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp"
+                    android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/tvTotalPinjamanReport"
-                    android:text="Rp 0"
-                    android:textSize="16sp"
-                    android:textColor="@color/red"
-                    android:layout_marginTop="4dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                    <TextView
+                        android:id="@+id/tvTotalPinjamanReport"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rp0"
+                        android:textColor="@android:color/holo_red_dark"
+                        android:textStyle="bold"
+                        android:textSize="18sp" />
 
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="12dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Total Pinjaman"
+                        android:textSize="14sp"
+                        android:textColor="@color/sec" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-            <LinearLayout
-                android:orientation="vertical"
-                android:padding="16dp"
+            <!-- Card: Saldo Kas -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="3dp"
+                android:layout_marginBottom="10dp"
+                android:backgroundTint="@color/white">
 
-                <TextView
-                    android:text="Saldo Kas"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp"
+                    android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/tvSaldoKasReport"
-                    android:text="Rp 0"
-                    android:textSize="16sp"
-                    android:textColor="@color/green"
-                    android:layout_marginTop="4dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                    <TextView
+                        android:id="@+id/tvSaldoKasReport"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rp0"
+                        android:textColor="@color/green"
+                        android:textStyle="bold"
+                        android:textSize="18sp" />
 
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="12dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Saldo Kas"
+                        android:textSize="14sp"
+                        android:textColor="@color/sec" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-            <LinearLayout
-                android:orientation="vertical"
-                android:padding="16dp"
+            <!-- Card: Laba Bersih -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="3dp"
+                android:layout_marginBottom="20dp"
+                android:backgroundTint="@color/white">
 
-                <TextView
-                    android:text="Laba Bersih"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp"
+                    android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/tvLabaBersihReport"
-                    android:text="Rp 0"
-                    android:textSize="16sp"
-                    android:textColor="@color/purple_700"
-                    android:layout_marginTop="4dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                    <TextView
+                        android:id="@+id/tvLabaBersihReport"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rp0"
+                        android:textColor="@color/sec"
+                        android:textStyle="bold"
+                        android:textSize="18sp" />
 
-        <Button
-            android:id="@+id/btnExportReport"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="📄 Ekspor Laporan"
-            android:layout_marginTop="20dp"
-            android:backgroundTint="@color/teal_700"
-            android:textColor="@android:color/white" />
-    </LinearLayout>
-</ScrollView>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Laba Bersih"
+                        android:textSize="14sp"
+                        android:textColor="@color/sec" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Tombol Ekspor -->
+            <Button
+                android:id="@+id/btnExportReport"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📄 Ekspor Laporan"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/green"
+                android:padding="12dp"
+                android:textStyle="bold"
+                android:layout_marginTop="10dp"
+                app:cornerRadius="50dp" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

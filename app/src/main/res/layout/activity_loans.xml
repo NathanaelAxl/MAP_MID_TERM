@@ -1,25 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="8dp">
+    android:orientation="vertical"
+    android:background="@color/bon"
+    tools:context=".activities.LoanListActivity">
+
+    <include
+        layout="@layout/appbar_toolbar"
+        android:id="@+id/topAppBar" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerLoans"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/fabAddLoan" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="12dp"
+        android:clipToPadding="false" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddLoan"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
+        android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
-        android:contentDescription="Tambah"
+        android:contentDescription="Tambah Pinjaman"
         app:srcCompat="@drawable/ic_add"
         app:tint="@android:color/white"
-        app:backgroundTint="@color/teal_700" />
-</RelativeLayout>
+        app:backgroundTint="@color/green" />
+
+</LinearLayout>

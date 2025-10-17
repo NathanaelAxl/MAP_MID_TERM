@@ -12,6 +12,7 @@ import com.example.map_mid_term.R
 import com.example.map_mid_term.adapters.LoanAdapter
 import com.example.map_mid_term.model.DummyData
 import com.example.map_mid_term.model.Loan
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class LoanListActivity : AppCompatActivity() {
@@ -23,9 +24,9 @@ class LoanListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_loans)
 
-        // === Toolbar ===
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Data Pinjaman"
+        val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
+        toolbar.title = "Data Pinjaman"
+        toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
         val rvLoans = findViewById<RecyclerView>(R.id.recyclerLoans)
         val fabAddLoan = findViewById<FloatingActionButton>(R.id.fabAddLoan)
@@ -92,10 +93,5 @@ class LoanListActivity : AppCompatActivity() {
             }
             .setNegativeButton("Batal", null)
             .show()
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        onBackPressedDispatcher.onBackPressed()
-        return true
     }
 }

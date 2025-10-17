@@ -1,7 +1,11 @@
 package com.example.map_mid_term.activities
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -9,11 +13,8 @@ import com.example.map_mid_term.R
 import com.example.map_mid_term.adapters.MemberAdapter
 import com.example.map_mid_term.model.DummyData
 import com.example.map_mid_term.model.Member
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import android.widget.Toast
-import android.app.AlertDialog
-import android.view.LayoutInflater
-import android.widget.EditText
 
 class MemberListActivity : AppCompatActivity() {
 
@@ -24,11 +25,10 @@ class MemberListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_members)
 
-        // ==== 🧭 Tombol panah back ====
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Data Anggota"
+        val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
+        toolbar.title = "Data Anggota"
+        toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
-        // ==== RecyclerView dan FAB ====
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerMembers)
         val fabAdd = findViewById<FloatingActionButton>(R.id.fabAdd)
 
@@ -46,18 +46,8 @@ class MemberListActivity : AppCompatActivity() {
         }
     }
 
-    // ==== 🧭 Navigasi balik ke LoginActivity ====
-    override fun onSupportNavigateUp(): Boolean {
-        val intent = Intent(this, LoginActivity::class.java)
-        startActivity(intent)
-        finish()
-        return true
-    }
-
-    // ==== Dialog tambah/edit anggota ====
     private fun showMemberDialog(title: String, data: Member?) {
         val view = LayoutInflater.from(this).inflate(R.layout.dialog_member, null)
-
         val etId = view.findViewById<EditText>(R.id.etId)
         val etName = view.findViewById<EditText>(R.id.etName)
         val etEmail = view.findViewById<EditText>(R.id.etEmail)
@@ -115,7 +105,6 @@ class MemberListActivity : AppCompatActivity() {
             .show()
     }
 
-    // ==== Konfirmasi hapus ====
     private fun confirmDelete(member: Member) {
         AlertDialog.Builder(this)
             .setTitle("Hapus Anggota")
@@ -128,6 +117,4 @@ class MemberListActivity : AppCompatActivity() {
             .setNegativeButton("Batal", null)
             .show()
     }
-
-
 }
