@@ -17,7 +17,10 @@
         app:title="Dashboard Admin"
         app:titleTextColor="@android:color/white"
         app:navigationIcon="@drawable/ic_arrow_back"
-        android:elevation="4dp" />
+        android:elevation="4dp"
+        android:clickable="false"
+        android:focusable="false" />
+
 
     <!-- Konten Scroll -->
     <ScrollView

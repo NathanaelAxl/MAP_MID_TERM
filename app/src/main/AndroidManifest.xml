@@ -48,6 +48,15 @@
             android:exported="false"
             android:label="Data Transaksi"
             android:theme="@style/Theme.MAP_MID_TERM" />
+        <activity android:name=".activities.AdminReportActivity"
+            android:exported="false"
+            android:label="Laporan Koperasi" />
+        <activity android:name=".activities.AdminNotificationActivity" />
+        <activity android:name=".activities.AdminLoanDetailActivity" />
+        <activity android:name=".activities.CashManagementActivity" />
+        <activity android:name=".activities.AdminNotificationActivity" />
+        <activity android:name=".activities.AdminLoanDetailActivity" />
+        <activity android:name=".activities.AdminLoanDetailActivity" />
 
     </application>
 </manifest>

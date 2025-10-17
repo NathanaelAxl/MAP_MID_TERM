@@ -58,6 +58,12 @@ object DummyData {
         AdminTransaction("T003", "M003", "Simpanan", 250000.0, "Simpanan tambahan", "2025-10-10")
     )
 
+    val pendingLoans = mutableListOf(
+        Loan("L001", "M001", 1000000.0, 5.0, "Sedang Diproses", 3),
+        Loan("L002", "M002", 500000.0, 4.0, "Sedang Diproses", 2),
+        Loan("L003", "M003", 2000000.0, 6.0, "Sedang Diproses", 5)
+    )
+
 
 }
 
