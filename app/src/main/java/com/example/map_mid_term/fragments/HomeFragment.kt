@@ -32,7 +32,7 @@ class HomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         val parentActivity = activity as? MainActivity
-        val memberId = parentActivity?.memberId
+        val memberId = MainActivity.memberId
 
         // Panggil fungsi-fungsi setup
         setupGreeting(memberId)

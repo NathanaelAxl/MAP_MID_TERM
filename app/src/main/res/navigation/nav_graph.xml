@@ -123,5 +123,12 @@
             app:argType="string" />
     </fragment>
 
+    <fragment
+        android:id="@+id/activeLoanFragment"
+        android:name="com.example.map_mid_term.fragments.ActiveLoanFragment"
+        android:label="Pinjaman Aktif"
+        tools:layout="@layout/fragment_active_loan" />
+
+
 </navigation>
 
