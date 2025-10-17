@@ -136,7 +136,7 @@ class LoanApplicationFragment : Fragment() {
 
     private fun submitApplication() {
         val parentActivity = activity as? MainActivity
-        val memberId = parentActivity?.memberId
+        val memberId = MainActivity.memberId
         if (memberId == null) {
             Toast.makeText(context, "Gagal mendapatkan ID Anggota. Silakan coba lagi.", Toast.LENGTH_LONG).show()
             return

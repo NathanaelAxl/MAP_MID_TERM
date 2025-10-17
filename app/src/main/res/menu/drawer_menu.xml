@@ -6,8 +6,8 @@
         android:icon="@android:drawable/ic_menu_view" />
 
     <item
-        android:id="@+id/loansFragment"
-        android:title="Pinjaman"
+        android:id="@+id/activeLoanFragment"
+        android:title="Pinjaman Aktif"
         android:icon="@android:drawable/ic_menu_info_details" />
     <item
         android:id="@+id/profileFragment"

@@ -17,7 +17,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 class LoanListActivity : AppCompatActivity() {
 
     private lateinit var adapter: LoanAdapter
-    private val loans = DummyData.loans.toMutableList()
+
+    // 🔹 Menggunakan daftar pinjaman aktif (bukan pengajuan)
+    private val loans = DummyData.activeLoans
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,12 +27,15 @@ class LoanListActivity : AppCompatActivity() {
 
         // === Toolbar ===
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Data Pinjaman"
+        supportActionBar?.title = "Pinjaman Aktif"
 
+        // === View Binding Manual ===
         val rvLoans = findViewById<RecyclerView>(R.id.recyclerLoans)
         val fabAddLoan = findViewById<FloatingActionButton>(R.id.fabAddLoan)
 
-        adapter = LoanAdapter(loans,
+        // === Adapter ===
+        adapter = LoanAdapter(
+            loans,
             onEdit = { loan -> showLoanDialog("Edit Pinjaman", loan) },
             onDelete = { loan ->
                 loans.remove(loan)
@@ -42,6 +47,7 @@ class LoanListActivity : AppCompatActivity() {
         rvLoans.layoutManager = LinearLayoutManager(this)
         rvLoans.adapter = adapter
 
+        // === Tambah Pinjaman ===
         fabAddLoan.setOnClickListener {
             showLoanDialog("Tambah Pinjaman", null)
         }
@@ -54,6 +60,7 @@ class LoanListActivity : AppCompatActivity() {
         val etAmount = view.findViewById<EditText>(R.id.etLoanAmount)
         val etInterest = view.findViewById<EditText>(R.id.etInterestRate)
 
+        // Kalau mode edit → isi field dengan data lama
         data?.let {
             etId.setText(it.id)
             etMemberId.setText(it.memberId)
@@ -76,9 +83,19 @@ class LoanListActivity : AppCompatActivity() {
                 }
 
                 if (data == null) {
-                    val newLoan = Loan(id, memberId, amount, interest)
+                    // Tambah pinjaman baru ke daftar aktif
+                    val newLoan = Loan(
+                        id = id,
+                        memberId = memberId,
+                        amount = amount,
+                        interestRate = interest,
+                        status = "Aktif",
+                        durationMonths = 12
+                    )
                     loans.add(newLoan)
+                    Toast.makeText(this, "Pinjaman baru ditambahkan", Toast.LENGTH_SHORT).show()
                 } else {
+                    // Update pinjaman lama
                     val idx = loans.indexOfFirst { it.id == data.id }
                     if (idx != -1) loans[idx] = data.copy(
                         id = id,
@@ -86,6 +103,7 @@ class LoanListActivity : AppCompatActivity() {
                         amount = amount,
                         interestRate = interest
                     )
+                    Toast.makeText(this, "Pinjaman diperbarui", Toast.LENGTH_SHORT).show()
                 }
 
                 adapter.notifyDataSetChanged()

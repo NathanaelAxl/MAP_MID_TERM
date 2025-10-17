@@ -30,7 +30,8 @@ class ProfileFragment : Fragment() {
 
         // Mengambil data pengguna dari MainActivity
         val parentActivity = activity as? MainActivity
-        val memberId = parentActivity?.memberId
+        val memberId = MainActivity.memberId
+
 
         if (memberId != null) {
             val member = DummyData.members.find { it.id == memberId }

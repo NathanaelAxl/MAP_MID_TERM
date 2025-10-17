@@ -5,6 +5,6 @@ data class Loan(
     val memberId: String,
     val amount: Double,
     val interestRate: Double,
-    var status: String = "Sedang Diproses",
-    var tenor: Int = 0
+    val status: String = "Aktif",     // default: Aktif
+    val durationMonths: Int = 12      // default: 12 bulan
 )
