@@ -1,4 +1,4 @@
-package com.example.map_mid_term.activities
+package com.example.map_mid_term.admin.activities
 
 import android.app.AlertDialog
 import android.os.Bundle
@@ -9,58 +9,52 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.map_mid_term.R
-import com.example.map_mid_term.adapters.LoanAdapter
-import com.example.map_mid_term.model.DummyData
-import com.example.map_mid_term.model.Loan
+import com.example.map_mid_term.admin.adapters.AdminLoanAdapter
+import com.example.map_mid_term.admin.model.AdminDummyData
+import com.example.map_mid_term.admin.model.AdminLoan
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class LoanListActivity : AppCompatActivity() {
+class AdminLoanListActivity : AppCompatActivity() {
 
-    // ✅ List data pinjaman
-    private val loans = DummyData.loans.toMutableList()
-    private lateinit var adapter: LoanAdapter
+    private lateinit var adapter: AdminLoanAdapter
+    private val loans = AdminDummyData.loans
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_loans)
 
-        // ✅ Toolbar dengan tombol back
         val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
+        toolbar.title = "Data Pinjaman (Admin)"
         toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
-        // ✅ Setup RecyclerView dan adapter
-        val rvLoans = findViewById<RecyclerView>(R.id.recyclerLoans)
-        val fabAddLoan = findViewById<FloatingActionButton>(R.id.fabAddLoan)
+        val recyclerView = findViewById<RecyclerView>(R.id.recyclerLoans)
+        val fabAdd = findViewById<FloatingActionButton>(R.id.fabAddLoan)
 
-        adapter = LoanAdapter(
-            loans,
+        adapter = AdminLoanAdapter(loans,
             onEdit = { loan -> showLoanDialog("Edit Pinjaman", loan) },
             onDelete = { loan ->
                 loans.remove(loan)
                 adapter.notifyDataSetChanged()
-                Toast.makeText(this, "Pinjaman dihapus", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Data dihapus", Toast.LENGTH_SHORT).show()
             }
         )
 
-        rvLoans.layoutManager = LinearLayoutManager(this)
-        rvLoans.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = adapter
 
-        // ✅ Tombol tambah data pinjaman
-        fabAddLoan.setOnClickListener {
+        fabAdd.setOnClickListener {
             showLoanDialog("Tambah Pinjaman", null)
         }
     }
 
-    // ✅ Dialog Tambah / Edit
-    private fun showLoanDialog(title: String, data: Loan?) {
+    private fun showLoanDialog(title: String, data: AdminLoan?) {
         val view = LayoutInflater.from(this).inflate(R.layout.dialog_loan, null)
         val etId = view.findViewById<EditText>(R.id.etLoanId)
         val etMemberId = view.findViewById<EditText>(R.id.etMemberId)
         val etAmount = view.findViewById<EditText>(R.id.etLoanAmount)
         val etInterest = view.findViewById<EditText>(R.id.etInterestRate)
 
-        // Kalau mode edit → isi datanya
         data?.let {
             etId.setText(it.id)
             etMemberId.setText(it.memberId)
@@ -77,27 +71,19 @@ class LoanListActivity : AppCompatActivity() {
                 val amount = etAmount.text.toString().toDoubleOrNull() ?: 0.0
                 val interest = etInterest.text.toString().toDoubleOrNull() ?: 0.0
 
-                if (id.isEmpty() || memberId.isEmpty()) {
-                    Toast.makeText(this, "ID dan Member wajib diisi", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
-                }
-
                 if (data == null) {
-                    // Tambah data baru
-                    val newLoan = Loan(id, memberId, amount, interest)
-                    loans.add(newLoan)
+                    loans.add(AdminLoan(id, memberId, amount, interest, "Menunggu Persetujuan"))
                     Toast.makeText(this, "Pinjaman baru ditambahkan", Toast.LENGTH_SHORT).show()
                 } else {
-                    // Update data lama
-                    val idx = loans.indexOfFirst { it.id == data.id }
-                    if (idx != -1) {
-                        loans[idx] = data.copy(
+                    val index = loans.indexOfFirst { it.id == data.id }
+                    if (index != -1) {
+                        loans[index] = data.copy(
                             id = id,
                             memberId = memberId,
                             amount = amount,
                             interestRate = interest
                         )
-                        Toast.makeText(this, "Data pinjaman diperbarui", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Pinjaman diperbarui", Toast.LENGTH_SHORT).show()
                     }
                 }
 

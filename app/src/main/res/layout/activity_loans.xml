@@ -1,34 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/bon"
-    tools:context=".activities.LoanListActivity">
+    android:background="@color/bon">
 
-    <include
-        layout="@layout/appbar_toolbar"
-        android:id="@+id/topAppBar" />
+    <!-- ✅ Toolbar di atas -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/green"
+        android:theme="@style/ThemeOverlay.MaterialComponents.ActionBar"
+        app:title="Data Pinjaman"
+        app:titleTextColor="@android:color/white"
+        app:navigationIcon="@drawable/ic_back" />
 
+    <!-- ✅ Daftar pinjaman -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerLoans"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="12dp"
-        android:clipToPadding="false" />
+        android:padding="12dp" />
 
+    <!-- ✅ Tombol tambah pinjaman -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddLoan"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
-        android:layout_margin="16dp"
-        android:contentDescription="Tambah Pinjaman"
+        android:layout_margin="20dp"
         app:srcCompat="@drawable/ic_add"
-        app:tint="@android:color/white"
-        app:backgroundTint="@color/green" />
+        app:backgroundTint="@color/green"
+        android:contentDescription="Tambah pinjaman" />
 
 </LinearLayout>

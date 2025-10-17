@@ -42,14 +42,21 @@ object DummyData {
         )
     )
 
-    // --- DATA PINJAMAN YANG AKTIF (sudah disetujui & sedang berjalan) ---
+    // --- DATA PINJAMAN YANG AKTIF ---
     val activeLoans = mutableListOf(
-        Loan(id = "L001", memberId = "M001", amount = 5_000_000.0, interestRate = 5.0, status = "Aktif", durationMonths = 12),
-        Loan(id = "L002", memberId = "M002", amount = 3_000_000.0, interestRate = 4.5, status = "Aktif", durationMonths = 10),
-        Loan(id = "L003", memberId = "M003", amount = 7_000_000.0, interestRate = 6.0, status = "Aktif", durationMonths = 8)
+        Loan("L001", "M001", 5_000_000.0, 5.0, "Aktif", 12),
+        Loan("L002", "M002", 3_000_000.0, 4.5, "Aktif", 10),
+        Loan("L003", "M003", 7_000_000.0, 6.0, "Aktif", 8)
     )
 
-    // --- DATA PENGAJUAN PINJAMAN (belum disetujui, bisa ditambah user) ---
+    // --- DATA PINJAMAN (Untuk User) ---
+    val loans = mutableListOf(
+        Loan("L001", "M001", 5_000_000.0, 5.0),
+        Loan("L002", "M002", 3_000_000.0, 4.5),
+        Loan("L003", "M003", 7_000_000.0, 6.0)
+    )
+
+    // --- DATA PENGAJUAN PINJAMAN (belum disetujui) ---
     val loanApplications = mutableListOf<LoanApplication>()
 
     // --- DATA TRANSAKSI ADMIN ---

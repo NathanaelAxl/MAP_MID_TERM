@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="5dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/tvLoanId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:text="ID Pinjaman: L001" />
+
+        <TextView
+            android:id="@+id/tvMemberId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Anggota: M001" />
+
+        <TextView
+            android:id="@+id/tvLoanAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rp 5000000" />
+
+        <TextView
+            android:id="@+id/tvInterestRate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bunga: 5%" />
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Status: Disetujui"
+            android:textColor="@color/ye"
+            android:layout_marginBottom="6dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <ImageButton
+                android:id="@+id/btnEditLoan"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_edit"
+                app:tint="@color/green" />
+
+            <ImageButton
+                android:id="@+id/btnDeleteLoan"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_delete"
+                app:tint="@color/red" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
