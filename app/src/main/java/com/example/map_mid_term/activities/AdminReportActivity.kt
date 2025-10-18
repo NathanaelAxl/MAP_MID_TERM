@@ -20,7 +20,7 @@ class AdminReportActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         // Format rupiah
-        val localeID = Locale("in", "ID")
+        val localeID = Locale.forLanguageTag("in-ID")
         val formatter = NumberFormat.getCurrencyInstance(localeID)
         formatter.maximumFractionDigits = 0
 
