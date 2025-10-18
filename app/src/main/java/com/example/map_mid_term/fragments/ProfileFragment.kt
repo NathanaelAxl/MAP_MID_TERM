@@ -1,10 +1,12 @@
 package com.example.map_mid_term.fragments
 
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.map_mid_term.R
@@ -28,44 +30,53 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Mengambil data pengguna dari MainActivity
         val parentActivity = activity as? MainActivity
-        val memberId = MainActivity.memberId
+        // Mengambil memberId dengan cara yang lebih aman (safe cast)
+        val memberId = parentActivity?.memberId
+        val member = DummyData.members.find { it.id == memberId }
 
+        member?.let {
+            // Mengisi data profil
+            binding.tvProfileName.text = it.name
+            binding.tvProfileEmail.text = it.email
+            binding.tvProfilePhone.text = it.phone
 
-        if (memberId != null) {
-            val member = DummyData.members.find { it.id == memberId }
-            member?.let {
-                binding.tvProfileName.text = it.name
-                binding.tvProfileEmail.text = it.email
-                binding.tvProfilePhone.text = it.phone
+            // Fitur baru: Menampilkan status keanggotaan
+            if (it.hasPaidMandatorySavings) {
+                binding.tvMembershipStatus.text = "Anggota Aktif"
+                val background = binding.tvMembershipStatus.background as GradientDrawable
+                background.setColor(ContextCompat.getColor(requireContext(), R.color.green_status))
+            } else {
+                binding.tvMembershipStatus.text = "Belum Aktif"
+                val background = binding.tvMembershipStatus.background as GradientDrawable
+                background.setColor(ContextCompat.getColor(requireContext(), R.color.grey_status)) // Pastikan warna ini ada di colors.xml
             }
         }
 
-        // Menambahkan OnClickListener untuk semua tombol
         setupClickListeners()
     }
 
     private fun setupClickListeners() {
-        binding.ivEditProfile.setOnClickListener {
+        // ID yang sudah diupdate (btnEditProfile, dll.)
+        binding.btnEditProfile.setOnClickListener {
             findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
         }
 
-        binding.menuUbahPassword.setOnClickListener {
-            Toast.makeText(context, "Membuka halaman ubah password...", Toast.LENGTH_SHORT).show()
+        binding.menuChangePassword.setOnClickListener {
+            Toast.makeText(context, "Membuka halaman Ubah Kata Sandi...", Toast.LENGTH_SHORT).show()
         }
 
-        binding.menuAturPin.setOnClickListener {
-            Toast.makeText(context, "Membuka halaman atur PIN...", Toast.LENGTH_SHORT).show()
+        binding.menuSetPin.setOnClickListener {
+            Toast.makeText(context, "Membuka halaman Atur PIN...", Toast.LENGTH_SHORT).show()
         }
 
-        // Anda perlu menambahkan ID 'menuBiometrik' di XML jika belum ada
-        // binding.menuBiometrik.setOnClickListener {
-        //     Toast.makeText(context, "Mengaktifkan login biometrik...", Toast.LENGTH_SHORT).show()
-        // }
+        // Fitur biometrik sudah aktif
+        binding.menuBiometric.setOnClickListener {
+            Toast.makeText(context, "Fitur login sidik jari diaktifkan!", Toast.LENGTH_SHORT).show()
+        }
 
-        binding.menuPusatBantuan.setOnClickListener {
-            Toast.makeText(context, "Membuka pusat bantuan...", Toast.LENGTH_SHORT).show()
+        binding.menuHelpCenter.setOnClickListener {
+            Toast.makeText(context, "Membuka Pusat Bantuan...", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -74,4 +85,3 @@ class ProfileFragment : Fragment() {
         _binding = null
     }
 }
-

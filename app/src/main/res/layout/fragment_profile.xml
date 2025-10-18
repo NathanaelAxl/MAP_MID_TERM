@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -12,189 +12,175 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Header Gambar -->
-        <ImageView
+        <!-- Header Profil -->
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_launcher_background"
-            app:tint="#4CAF50" />
+            android:layout_height="wrap_content"
+            android:background="?attr/colorPrimary"
+            android:paddingBottom="60dp">
 
-        <!-- Bagian 1: Kartu Profil Pengguna -->
+            <ImageView
+                android:id="@+id/iv_profile_picture"
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/ic_profile"
+                android:backgroundTint="@color/white"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tv_profile_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/iv_profile_picture"
+                tools:text="Nathanael Axel" />
+
+            <TextView
+                android:id="@+id/tv_membership_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_status_badge_active"
+                android:paddingStart="12dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="4dp"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_profile_name"
+                tools:text="Anggota Aktif" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Konten Profil dalam CardView -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="-50dp"
+            android:layout_marginTop="-40dp"
             android:layout_marginEnd="16dp"
             app:cardCornerRadius="12dp"
             app:cardElevation="4dp">
 
-            <RelativeLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="vertical"
                 android:padding="16dp">
 
-                <ImageView
-                    android:id="@+id/iv_profile_icon"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:src="@drawable/ic_profile"
-                    app:tint="?attr/colorPrimary" />
+                <!-- Informasi Kontak -->
+                <TextView
+                    android:id="@+id/tv_profile_email"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableStart="@drawable/ic_email"
+                    android:drawablePadding="16dp"
+                    android:gravity="center_vertical"
+                    tools:text="naxljaconian@gmail.com" />
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/tv_profile_phone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:drawableStart="@drawable/ic_phone"
+                    android:drawablePadding="16dp"
+                    android:gravity="center_vertical"
+                    tools:text="+6281295731556" />
+
+                <Button
+                    android:id="@+id/btn_edit_profile"
+                    style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="16dp"
-                    android:layout_toEndOf="@id/iv_profile_icon"
-                    android:orientation="vertical">
+                    android:layout_gravity="end"
+                    android:text="Edit Profil"
+                    app:icon="@drawable/ic_edit" />
+            </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/tv_profile_name"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Nathanael Axl"
-                        android:textColor="@color/black"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tv_profile_email"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="naxljaconian@gmail.com" />
-
-                    <TextView
-                        android:id="@+id/tv_profile_phone"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="+6281295731556" />
-
-                </LinearLayout>
-
-                <ImageView
-                    android:id="@+id/iv_edit_profile"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentTop="true"
-                    android:src="@drawable/ic_edit" />
-
-            </RelativeLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Container untuk Menu Pengaturan -->
+        <!-- Menu Pengaturan -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Bagian 2: Pengaturan Akun -->
+            <!-- Pengaturan Akun -->
             <TextView
                 style="@style/TextAppearance.Material3.TitleMedium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Pengaturan Akun" />
 
-            <!-- Menu Ubah Kata Sandi -->
-            <RelativeLayout
-                android:id="@+id/menu_ubah_password"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/menu_change_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/selectableItemBackground"
+                android:layout_marginTop="8dp"
                 android:clickable="true"
-                android:paddingVertical="12dp">
-                <ImageView
-                    android:id="@+id/icon_password"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_security"/>
+                android:focusable="true">
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="16dp"
-                    android:layout_toEndOf="@id/icon_password"
+                    style="@style/MenuItemTextView"
                     android:text="Ubah Kata Sandi"
-                    android:textColor="@color/black" />
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_arrow_forward" />
-            </RelativeLayout>
+                    app:drawableStartCompat="@drawable/ic_security" />
+            </com.google.android.material.card.MaterialCardView>
 
-            <!-- Menu Atur PIN -->
-            <RelativeLayout
-                android:id="@+id/menu_atur_pin"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/menu_set_pin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/selectableItemBackground"
+                android:layout_marginTop="8dp"
                 android:clickable="true"
-                android:paddingVertical="12dp">
-                <ImageView
-                    android:id="@+id/icon_pin"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_security"/>
+                android:focusable="true">
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="16dp"
-                    android:layout_toEndOf="@id/icon_pin"
+                    style="@style/MenuItemTextView"
                     android:text="Atur PIN Transaksi"
-                    android:textColor="@color/black" />
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_arrow_forward" />
-            </RelativeLayout>
+                    app:drawableStartCompat="@drawable/ic_pin" />
+            </com.google.android.material.card.MaterialCardView>
 
-            <!-- Bagian 3: Pengaturan Aplikasi -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/menu_biometric"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp">
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switch_biometric"
+                    style="@style/MenuItemSwitch"
+                    android:text="Login dengan Sidik Jari"
+                    app:drawableStartCompat="@drawable/ic_fingerprint" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Pengaturan Aplikasi -->
             <TextView
                 style="@style/TextAppearance.Material3.TitleMedium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="Pengaturan Aplikasi" />
-
-            <!-- Menu Notifikasi -->
-            <RelativeLayout
-                android:id="@+id/menu_notifikasi"
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingVertical="12dp">
-                <ImageView
-                    android:id="@+id/icon_notif"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_notifications"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="16dp"
-                    android:layout_toEndOf="@id/icon_notif"
-                    android:text="Notifikasi Jatuh Tempo"
-                    android:textColor="@color/black" />
+                android:layout_marginTop="8dp">
                 <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switch_notif_jatuh_tempo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"/>
-            </RelativeLayout>
+                    android:id="@+id/switch_notifications"
+                    style="@style/MenuItemSwitch"
+                    android:text="Notifikasi Jatuh Tempo"
+                    app:drawableStartCompat="@drawable/ic_notifications" />
+            </com.google.android.material.card.MaterialCardView>
 
-            <!-- Bagian 4: Bantuan & Informasi -->
+            <!-- Bantuan & Informasi -->
             <TextView
                 style="@style/TextAppearance.Material3.TitleMedium"
                 android:layout_width="wrap_content"
@@ -202,28 +188,19 @@
                 android:layout_marginTop="24dp"
                 android:text="Bantuan &amp; Informasi" />
 
-            <RelativeLayout
-                android:id="@+id/menu_pusat_bantuan"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/menu_help_center"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/selectableItemBackground"
+                android:layout_marginTop="8dp"
                 android:clickable="true"
-                android:paddingVertical="12dp">
+                android:focusable="true">
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
+                    style="@style/MenuItemTextView"
                     android:text="Pusat Bantuan (FAQ)"
-                    android:textColor="@color/black" />
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_arrow_forward" />
-            </RelativeLayout>
+                    app:drawableStartCompat="@drawable/ic_help" />
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </LinearLayout>
-</androidx.core.widget.NestedScrollView>
-
+</ScrollView>

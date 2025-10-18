@@ -96,5 +96,12 @@
             android:label="Detail Notifikasi"
             android:theme="@style/Theme.MAP_MID_TERM.Admin" />
 
+        <activity
+            android:name=".activities.RegisterActivity"
+            android:exported="false"
+            android:label="Registrasi Awal"
+            android:theme="@style/Theme.MAP_MID_TERM.Admin" />
+
+
     </application>
 </manifest>

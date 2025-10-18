@@ -1,26 +1,26 @@
 package com.example.map_mid_term.activities
 
-import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.example.map_mid_term.R
+import com.example.map_mid_term.databinding.ActivityLoginBinding
 import com.example.map_mid_term.model.DummyData
 
 class LoginActivity : AppCompatActivity() {
+
+    // Menggunakan ViewBinding
+    private lateinit var binding: ActivityLoginBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
+        // Setup ViewBinding
+        binding = ActivityLoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val etEmail = findViewById<EditText>(R.id.etEmail)
-        val etPassword = findViewById<EditText>(R.id.etPassword)
-        val btnLogin = findViewById<Button>(R.id.btnLogin)
-
-        btnLogin.setOnClickListener {
-            val email = etEmail.text.toString().trim()
-            val password = etPassword.text.toString().trim()
+        binding.btnLogin.setOnClickListener {
+            val email = binding.etEmail.text.toString().trim()
+            val password = binding.etPassword.text.toString().trim()
 
             val member = DummyData.members.find {
                 it.email == email && it.password == password
@@ -46,6 +46,12 @@ class LoginActivity : AppCompatActivity() {
                     .setPositiveButton("OK", null)
                     .show()
             }
+        }
+
+        // FUNGSI KLIK UNTUK PINDAH KE HALAMAN REGISTRASI
+        binding.tvRegister.setOnClickListener {
+            val intent = Intent(this, RegisterActivity::class.java)
+            startActivity(intent)
         }
     }
 }
