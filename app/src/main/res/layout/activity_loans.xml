@@ -15,7 +15,12 @@
         android:theme="@style/ThemeOverlay.MaterialComponents.ActionBar"
         app:title="Data Pinjaman"
         app:titleTextColor="@android:color/white"
-        app:navigationIcon="@drawable/ic_back" />
+        app:navigationIcon="@drawable/ic_back"
+        android:elevation="8dp"
+        android:clickable="true"
+        android:focusable="true"/>
+
+
 
     <!-- ✅ Daftar pinjaman -->
     <androidx.recyclerview.widget.RecyclerView

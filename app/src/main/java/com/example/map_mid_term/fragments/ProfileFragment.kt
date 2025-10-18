@@ -30,9 +30,8 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val parentActivity = activity as? MainActivity
-        // Mengambil memberId dengan cara yang lebih aman (safe cast)
-        val memberId = parentActivity?.memberId
+        // ✅ Ambil memberId langsung dari MainActivity (companion object)
+        val memberId = MainActivity.memberId
         val member = DummyData.members.find { it.id == memberId }
 
         member?.let {
@@ -49,7 +48,7 @@ class ProfileFragment : Fragment() {
             } else {
                 binding.tvMembershipStatus.text = "Belum Aktif"
                 val background = binding.tvMembershipStatus.background as GradientDrawable
-                background.setColor(ContextCompat.getColor(requireContext(), R.color.grey_status)) // Pastikan warna ini ada di colors.xml
+                background.setColor(ContextCompat.getColor(requireContext(), R.color.grey_status))
             }
         }
 
@@ -57,7 +56,6 @@ class ProfileFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
-        // ID yang sudah diupdate (btnEditProfile, dll.)
         binding.btnEditProfile.setOnClickListener {
             findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
         }
@@ -70,7 +68,6 @@ class ProfileFragment : Fragment() {
             Toast.makeText(context, "Membuka halaman Atur PIN...", Toast.LENGTH_SHORT).show()
         }
 
-        // Fitur biometrik sudah aktif
         binding.menuBiometric.setOnClickListener {
             Toast.makeText(context, "Fitur login sidik jari diaktifkan!", Toast.LENGTH_SHORT).show()
         }

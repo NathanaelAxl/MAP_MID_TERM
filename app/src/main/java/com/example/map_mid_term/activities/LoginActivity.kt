@@ -7,14 +7,12 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.map_mid_term.databinding.ActivityLoginBinding
 import com.example.map_mid_term.model.DummyData
 
-class LoginActivity : AppCompatActivity() {
+class   LoginActivity : AppCompatActivity() {
 
-    // Menggunakan ViewBinding
     private lateinit var binding: ActivityLoginBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Setup ViewBinding
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -27,17 +25,19 @@ class LoginActivity : AppCompatActivity() {
             }
 
             if (member != null) {
-                if (member.role == "pengurus") {
-                    // Login sebagai admin
-                    val intent = Intent(this, AdminActivity::class.java)
-                    intent.putExtra("memberId", member.id)
-                    startActivity(intent)
+                // 🔹 Simpan memberId ke MainActivity (opsional tambahan)
+                MainActivity.memberId = member.id
+
+                // 🔹 Cek role
+                val intent = if (member.role == "pengurus") {
+                    Intent(this, AdminActivity::class.java)
                 } else {
-                    // Login sebagai member biasa
-                    val intent = Intent(this, MainActivity::class.java)
-                    intent.putExtra("memberId", member.id)
-                    startActivity(intent)
+                    Intent(this, MainActivity::class.java)
                 }
+
+                // 🔹 Kirim memberId lewat intent juga
+                intent.putExtra("memberId", member.id)
+                startActivity(intent)
                 finish()
             } else {
                 AlertDialog.Builder(this)
@@ -48,7 +48,6 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        // FUNGSI KLIK UNTUK PINDAH KE HALAMAN REGISTRASI
         binding.tvRegister.setOnClickListener {
             val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)

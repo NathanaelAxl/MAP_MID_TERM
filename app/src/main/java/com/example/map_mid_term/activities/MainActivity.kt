@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
 
     companion object {
-        // 🔹 Dapat diakses dari fragment lain
+        // ✅ Properti global untuk diakses dari fragment manapun
         var memberId: String? = null
     }
 
@@ -31,10 +31,10 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Ambil memberId dari LoginActivity
+        // ✅ Ambil memberId dari LoginActivity
         memberId = intent.getStringExtra("memberId")
 
-        // Tampilkan pesan selamat datang
+        // ✅ Tampilkan pesan selamat datang kalau berhasil login
         val member = DummyData.members.find { it.id == memberId }
         member?.let {
             Toast.makeText(this, "Selamat datang, ${it.name}!", Toast.LENGTH_SHORT).show()
@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
 
-        // Tentukan fragment utama (top-level destinations)
+        // Tentukan top-level fragment
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.homeFragment,
@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
             drawerLayout
         )
 
-        // Hubungkan Toolbar dan BottomNav dengan NavController
+        // Hubungkan toolbar dan bottom nav
         setupActionBarWithNavController(navController, appBarConfiguration)
         binding.bottomNavigation.setupWithNavController(navController)
 
@@ -80,9 +80,12 @@ class MainActivity : AppCompatActivity() {
         navView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.homeFragment -> navController.navigate(R.id.homeFragment)
-                R.id.activeLoanFragment -> navController.navigate(R.id.activeLoanFragment) // 🔥 Pinjaman aktif
+                R.id.activeLoanFragment -> navController.navigate(R.id.activeLoanFragment)
                 R.id.profileFragment -> navController.navigate(R.id.profileFragment)
                 R.id.menu_logout -> {
+                    // 🔹 Hapus data session (optional)
+                    memberId = null
+                    // 🔹 Balik ke LoginActivity
                     startActivity(Intent(this, LoginActivity::class.java))
                     finish()
                 }

@@ -17,15 +17,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 class LoanListActivity : AppCompatActivity() {
 
     private lateinit var adapter: LoanAdapter
-    // DIUBAH: Menggunakan 'activeLoans' yang sudah ada di DummyData
-    // 'activeLoans' sudah berupa MutableList, jadi .toMutableList() tidak perlu
     private val loans = DummyData.activeLoans
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_loans)
 
-        // === Toolbar ===
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = "Data Pinjaman"
 
@@ -55,9 +52,10 @@ class LoanListActivity : AppCompatActivity() {
         val etMemberId = view.findViewById<EditText>(R.id.etMemberId)
         val etAmount = view.findViewById<EditText>(R.id.etLoanAmount)
         val etInterest = view.findViewById<EditText>(R.id.etInterestRate)
-        // BARU: Tambahkan 2 EditText untuk data yang kurang
         val etStatus = view.findViewById<EditText>(R.id.etLoanStatus)
-        val etTenor = view.findViewById<EditText>(R.id.etLoanTenor)
+        // DIUBAH: Ganti nama variabel dari 'etTenor' ke 'etDuration'
+        // Pastikan ID di dialog_loan.xml Anda "etLoanTenor" (atau sesuaikan)
+        val etDuration = view.findViewById<EditText>(R.id.etLoanTenor)
 
 
         data?.let {
@@ -65,9 +63,9 @@ class LoanListActivity : AppCompatActivity() {
             etMemberId.setText(it.memberId)
             etAmount.setText(it.amount.toString())
             etInterest.setText(it.interestRate.toString())
-            // BARU: Set data untuk status dan tenor
             etStatus.setText(it.status)
-            etTenor.setText(it.tenor.toString())
+            // DIUBAH: Menggunakan properti .durationMonths dari model Loan
+            etDuration.setText(it.durationMonths.toString())
         }
 
         AlertDialog.Builder(this)
@@ -78,31 +76,29 @@ class LoanListActivity : AppCompatActivity() {
                 val memberId = etMemberId.text.toString().trim()
                 val amount = etAmount.text.toString().toDoubleOrNull() ?: 0.0
                 val interest = etInterest.text.toString().toDoubleOrNull() ?: 0.0
-                // BARU: Ambil data dari EditText baru
                 val status = etStatus.text.toString().trim()
-                val tenor = etTenor.text.toString().toIntOrNull() ?: 0
+                // DIUBAH: Mengambil data dari etDuration
+                val duration = etDuration.text.toString().toIntOrNull() ?: 0
 
-                // DIUBAH: Tambahkan validasi untuk status
                 if (id.isEmpty() || memberId.isEmpty() || status.isEmpty()) {
                     Toast.makeText(this, "ID, Member ID, dan Status wajib diisi", Toast.LENGTH_SHORT).show()
                     return@setPositiveButton
                 }
 
                 if (data == null) {
-                    // DIUBAH: Gunakan 6 parameter untuk constructor Loan
-                    val newLoan = Loan(id, memberId, amount, interest, status, tenor)
+                    // DIUBAH: Menggunakan 'duration' saat membuat Loan baru
+                    val newLoan = Loan(id, memberId, amount, interest, status, duration)
                     loans.add(newLoan)
                 } else {
-                    // DIUBAH: 'it' akan ter-resolve karena 'loans' sudah benar tipenya
                     val idx = loans.indexOfFirst { it.id == data.id }
                     if (idx != -1) loans[idx] = data.copy(
                         id = id,
                         memberId = memberId,
                         amount = amount,
                         interestRate = interest,
-                        // BARU: Tambahkan 2 field baru saat menyalin
                         status = status,
-                        tenor = tenor
+                        // DIUBAH: Update properti 'durationMonths'
+                        durationMonths = duration
                     )
                 }
 
