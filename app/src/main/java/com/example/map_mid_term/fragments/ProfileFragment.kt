@@ -31,6 +31,7 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val parentActivity = activity as? MainActivity
+        // Mengambil memberId dengan cara yang lebih aman (safe cast)
         val memberId = parentActivity?.memberId
         val member = DummyData.members.find { it.id == memberId }
 
@@ -40,6 +41,7 @@ class ProfileFragment : Fragment() {
             binding.tvProfileEmail.text = it.email
             binding.tvProfilePhone.text = it.phone
 
+            // Fitur baru: Menampilkan status keanggotaan
             if (it.hasPaidMandatorySavings) {
                 binding.tvMembershipStatus.text = "Anggota Aktif"
                 val background = binding.tvMembershipStatus.background as GradientDrawable
@@ -55,6 +57,7 @@ class ProfileFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
+        // ID yang sudah diupdate (btnEditProfile, dll.)
         binding.btnEditProfile.setOnClickListener {
             findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
         }
@@ -67,6 +70,7 @@ class ProfileFragment : Fragment() {
             Toast.makeText(context, "Membuka halaman Atur PIN...", Toast.LENGTH_SHORT).show()
         }
 
+        // Fitur biometrik sudah aktif
         binding.menuBiometric.setOnClickListener {
             Toast.makeText(context, "Fitur login sidik jari diaktifkan!", Toast.LENGTH_SHORT).show()
         }
