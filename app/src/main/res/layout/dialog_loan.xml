@@ -32,4 +32,17 @@
         android:inputType="numberDecimal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/etLoanStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Status Pinjaman (mis: Aktif)" />
+
+    <EditText
+        android:id="@+id/etLoanTenor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Tenor (bulan)"
+        android:inputType="number" />
 </LinearLayout>
