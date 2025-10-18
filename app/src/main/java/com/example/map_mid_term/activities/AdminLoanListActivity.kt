@@ -25,8 +25,18 @@ class AdminLoanListActivity : AppCompatActivity() {
         setContentView(R.layout.activity_loans)
 
         val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
-        toolbar.title = "Data Pinjaman (Admin)"
-        toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
+
+        // --- PERBAIKAN DI SINI ---
+        // 1. Daftarkan toolbar sebagai Action Bar
+        setSupportActionBar(toolbar)
+
+        // 2. Gunakan supportActionBar untuk mengatur judul dan tombol kembali
+        supportActionBar?.title = "Data Pinjaman (Admin)"
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        // -------------------------
+
+        // 3. Hapus baris ini (sudah ditangani oleh onSupportNavigateUp)
+        // toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerLoans)
         val fabAdd = findViewById<FloatingActionButton>(R.id.fabAddLoan)
@@ -46,6 +56,13 @@ class AdminLoanListActivity : AppCompatActivity() {
         fabAdd.setOnClickListener {
             showLoanDialog("Tambah Pinjaman", null)
         }
+    }
+
+    // 4. TAMBAHKAN FUNGSI INI (di luar onCreate)
+    // Fungsi ini akan dipanggil ketika tombol panah kembali di toolbar ditekan
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressedDispatcher.onBackPressed()
+        return true
     }
 
     private fun showLoanDialog(title: String, data: AdminLoan?) {
