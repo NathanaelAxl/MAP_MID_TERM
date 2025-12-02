@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Izin Kamera & Lokasi -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature
         android:name="android.hardware.camera"
@@ -21,7 +21,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MAP_MID_TERM">
 
-        <!-- ========= USER SIDE ========= -->
+        <!-- ========= HALAMAN AWAL (LOGIN) ========= -->
+        <!-- Pastikan intent-filter ini HANYA ada di sini -->
         <activity
             android:name=".activities.LoginActivity"
             android:exported="true">
@@ -32,6 +33,13 @@
         </activity>
 
         <activity
+            android:name=".activities.RegisterActivity"
+            android:exported="false"
+            android:label="Registrasi Anggota" />
+        <!-- Saya hapus theme Admin di sini biar tampilannya konsisten sama Login -->
+
+        <!-- ========= USER SIDE ========= -->
+        <activity
             android:name=".activities.MainActivity"
             android:exported="false"
             android:label="Beranda" />
@@ -39,8 +47,7 @@
         <activity
             android:name=".activities.CameraActivity"
             android:exported="false"
-            android:label="@string/title_activity_camera"
-            android:theme="@style/Theme.MAP_MID_TERM" />
+            android:label="@string/title_activity_camera" />
 
         <!-- ========= ADMIN SIDE ========= -->
         <activity
@@ -95,13 +102,6 @@
             android:exported="false"
             android:label="Detail Notifikasi"
             android:theme="@style/Theme.MAP_MID_TERM.Admin" />
-
-        <activity
-            android:name=".activities.RegisterActivity"
-            android:exported="false"
-            android:label="Registrasi Awal"
-            android:theme="@style/Theme.MAP_MID_TERM.Admin" />
-
 
     </application>
 </manifest>
