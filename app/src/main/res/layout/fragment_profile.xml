@@ -10,7 +10,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingBottom="40dp">
 
         <!-- Header Profil -->
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -41,7 +42,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/iv_profile_picture"
-                tools:text="Nathanael Axel" />
+                tools:text="Nama Anggota" />
 
             <TextView
                 android:id="@+id/tv_membership_status"
@@ -86,7 +87,7 @@
                     android:drawableStart="@drawable/ic_email"
                     android:drawablePadding="16dp"
                     android:gravity="center_vertical"
-                    tools:text="naxljaconian@gmail.com" />
+                    tools:text="email@contoh.com" />
 
                 <TextView
                     android:id="@+id/tv_profile_phone"
@@ -96,7 +97,7 @@
                     android:drawableStart="@drawable/ic_phone"
                     android:drawablePadding="16dp"
                     android:gravity="center_vertical"
-                    tools:text="+6281295731556" />
+                    tools:text="+62..." />
 
                 <Button
                     android:id="@+id/btn_edit_profile"
@@ -137,56 +138,13 @@
                     app:drawableStartCompat="@drawable/ic_security" />
             </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/menu_set_pin"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:clickable="true"
-                android:focusable="true">
-                <TextView
-                    style="@style/MenuItemTextView"
-                    android:text="Atur PIN Transaksi"
-                    app:drawableStartCompat="@drawable/ic_pin" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/menu_biometric"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp">
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switch_biometric"
-                    style="@style/MenuItemSwitch"
-                    android:text="Login dengan Sidik Jari"
-                    app:drawableStartCompat="@drawable/ic_fingerprint" />
-            </com.google.android.material.card.MaterialCardView>
-
             <!-- Pengaturan Aplikasi -->
             <TextView
                 style="@style/TextAppearance.Material3.TitleMedium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="Pengaturan Aplikasi" />
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp">
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switch_notifications"
-                    style="@style/MenuItemSwitch"
-                    android:text="Notifikasi Jatuh Tempo"
-                    app:drawableStartCompat="@drawable/ic_notifications" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Bantuan & Informasi -->
-            <TextView
-                style="@style/TextAppearance.Material3.TitleMedium"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="Bantuan &amp; Informasi" />
+                android:text="Lainnya" />
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/menu_help_center"
@@ -199,6 +157,30 @@
                     style="@style/MenuItemTextView"
                     android:text="Pusat Bantuan (FAQ)"
                     app:drawableStartCompat="@drawable/ic_help" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- TOMBOL LOGOUT (BARU) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/menu_logout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                app:cardBackgroundColor="#FFEBEE"
+                app:strokeColor="#FFCDD2"
+                app:strokeWidth="1dp"
+                android:clickable="true"
+                android:focusable="true">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Keluar Aplikasi"
+                    android:textColor="#D32F2F"
+                    android:textStyle="bold"
+                    android:padding="16dp"
+                    android:gravity="center"
+                    app:drawableStartCompat="@drawable/ic_back"
+                    android:drawableTint="#D32F2F"/>
+                <!-- Note: Ganti ic_back dengan icon logout jika ada, kalau tidak pakai back saja -->
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>

@@ -12,6 +12,8 @@ import com.example.map_mid_term.R
 import com.example.map_mid_term.activities.MainActivity
 import com.example.map_mid_term.databinding.FragmentHomeBinding
 import com.example.map_mid_term.model.DummyData
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class HomeFragment : Fragment() {
 
@@ -28,93 +30,116 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
-    // Gunakan onResume() agar UI selalu update saat kembali ke halaman ini
     override fun onResume() {
         super.onResume()
-        val parentActivity = activity as? MainActivity
+
+        // Ambil data Member ID dari Activity (jika masih pakai dummy)
         val memberId = MainActivity.memberId
 
-        // Panggil fungsi-fungsi setup
-        setupGreeting(memberId)
+        // Setup UI
+        setupGreetingFromFirebase()
         setupBalanceToggle()
         setupQuickActions(memberId)
     }
 
-    // FUNGSI INI SEKARANG BERDIRI SENDIRI DENGAN BENAR
-    private fun setupGreeting(memberId: String?) {
-        if (memberId != null) {
-            val member = DummyData.members.find { it.id == memberId }
-            member?.let {
-                val firstName = it.name.split(" ")[0]
-                binding.tvGreeting.text = getString(R.string.welcome_greeting, firstName)
-            }
+    // 1. FUNGSI MENAMPILKAN NAMA DARI DATABASE
+    private fun setupGreetingFromFirebase() {
+        val user = FirebaseAuth.getInstance().currentUser
+        val db = FirebaseFirestore.getInstance()
+
+        if (user != null) {
+            db.collection("members").document(user.uid).get()
+                .addOnSuccessListener { document ->
+                    if (document.exists() && _binding != null) { // Cek binding null biar gak crash
+                        val fullName = document.getString("name") ?: "Anggota"
+                        val firstName = fullName.split(" ")[0]
+
+                        // Set text manual tanpa resource string biar aman dari error format
+                        binding.tvGreeting.text = "Selamat Datang, $firstName!"
+                    }
+                }
+                .addOnFailureListener {
+                    if (_binding != null) {
+                        binding.tvGreeting.text = "Selamat Datang, Anggota!"
+                    }
+                }
         } else {
-            binding.tvGreeting.text = getString(R.string.welcome_default)
+            binding.tvGreeting.text = "Selamat Datang!"
         }
     }
 
-    // FUNGSI INI SEKARANG BERDIRI SENDIRI DENGAN BENAR
+    // 2. FUNGSI TOGGLE SALDO (Mata Tertutup/Terbuka)
     private fun setupBalanceToggle() {
         binding.ivToggleBalance.setOnClickListener {
             if (isBalanceVisible) {
-                binding.tvTotalBalance.text = getString(R.string.balance_hidden)
+                // Jika ingin sembunyikan saldo
+                binding.tvTotalBalance.text = "Rp *********"
                 binding.ivToggleBalance.setImageResource(R.drawable.ic_eye_close)
             } else {
-                binding.tvTotalBalance.text = "Rp 1.550.000,00" // Nanti bisa diganti data dinamis
+                // Jika ingin tampilkan saldo
+                binding.tvTotalBalance.text = "Rp 1.550.000,00"
                 binding.ivToggleBalance.setImageResource(R.drawable.ic_eye_open)
             }
             isBalanceVisible = !isBalanceVisible
         }
     }
 
-    // FUNGSI INI SEKARANG BERDIRI SENDIRI DENGAN BENAR
+    // 3. FUNGSI TOMBOL-TOMBOL (Dengan Error Handling Aman)
     private fun setupQuickActions(memberId: String?) {
-        // Cek pengajuan pinjaman terakhir dari anggota yang sedang login
         val application = DummyData.loanApplications.lastOrNull { it.memberId == memberId }
 
         if (application != null) {
-            // JIKA ADA PENGAJUAN, tampilkan status
+            // Tampilan jika user punya pinjaman aktif
             binding.tvPinjamanTitle.text = "Status Pinjaman"
             binding.tvPinjamanStatus.text = application.status
 
             binding.cardPinjaman.setOnClickListener {
-                // Buat action untuk navigasi sambil mengirim ID aplikasi
-                val action = HomeFragmentDirections.actionHomeFragmentToLoanStatusDetailFragment(application.id)
-                findNavController().navigate(action)
+                // VERSI AMAN: Tampilkan Toast saja untuk detail status (Anti Error)
+                Toast.makeText(requireContext(), "Status: ${application.status}", Toast.LENGTH_SHORT).show()
+
+                // Jika navigasi error, biarkan baris di bawah ini dikomentari dulu
+                // findNavController().navigate(R.id.action_homeFragment_to_loanStatusDetailFragment)
             }
 
-            // Atur warna ikon berdasarkan status
+            // Ganti warna ikon sesuai status
             val statusColor = when (application.status) {
-                "Diterima" -> ContextCompat.getColor(requireContext(), R.color.green_status)
-                "Ditolak" -> ContextCompat.getColor(requireContext(), R.color.red_status)
-                else -> ContextCompat.getColor(requireContext(), R.color.orange_status)
+                "Diterima" -> ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
+                "Ditolak" -> ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark)
+                else -> ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
             }
             binding.ivPinjamanIcon.setColorFilter(statusColor)
 
         } else {
-            // JIKA TIDAK ADA PENGAJUAN, tampilkan tombol "Ajukan"
+            // Tampilan jika tidak ada pinjaman
             binding.tvPinjamanTitle.text = "Pinjaman"
             binding.tvPinjamanStatus.text = "Ajukan pinjaman baru"
-            binding.ivPinjamanIcon.clearColorFilter() // Hapus filter warna
+            binding.ivPinjamanIcon.clearColorFilter()
+
             binding.cardPinjaman.setOnClickListener {
-                findNavController().navigate(R.id.action_homeFragment_to_loanApplicationFragment)
+                safeNavigate(R.id.action_homeFragment_to_loanApplicationFragment)
             }
         }
 
-        // Listener untuk kartu lain (tetap sama)
         binding.cardSimpanan.setOnClickListener {
-            findNavController().navigate(R.id.action_homeFragment_to_savingsFragment)
+            safeNavigate(R.id.action_homeFragment_to_savingsFragment)
         }
 
         binding.cardLaporan.setOnClickListener {
-            findNavController().navigate(R.id.action_homeFragment_to_monthlyReportFragment)
+            safeNavigate(R.id.action_homeFragment_to_monthlyReportFragment)
         }
     }
 
+    // Fungsi pembantu biar navigasi gak force close kalau ID salah
+    private fun safeNavigate(actionId: Int) {
+        try {
+            findNavController().navigate(actionId)
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "Halaman belum tersedia", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 }
-

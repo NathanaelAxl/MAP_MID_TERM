@@ -25,11 +25,15 @@ class LoginActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
 
-        // Opsi: Auto login jika user sebelumnya sudah pernah login
-        if (auth.currentUser != null) {
+        // --- REVISI UNTUK DEMO ---
+        // Saya matikan fitur Auto Login ini sementara dengan memberikan komentar (/* ... */)
+        // Tujuannya: Agar saat aplikasi dibuka atau setelah logout, user TETAP di halaman login.
+
+        /* if (auth.currentUser != null) {
             checkUserRoleAndRedirect(auth.currentUser!!.uid)
             return
         }
+        */
 
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
