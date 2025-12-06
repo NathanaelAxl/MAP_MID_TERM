@@ -1,68 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="24dp"
     tools:context=".fragments.AddSavingsFragment">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Tambah Dana Simpanan"
-        android:textColor="@color/black"
-        android:textSize="24sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Pilih Jenis Simpanan"
-        android:textColor="@color/black" />
-
-    <RadioGroup
-        android:id="@+id/rg_savings_type"
+    <!-- Konten utama Anda sekarang di dalam LinearLayout -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="24dp">
 
-        <RadioButton
-            android:id="@+id/rb_wajib"
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Simpanan Wajib" />
+            android:text="Tambah Dana Simpanan"
+            android:textColor="@color/black"
+            android:textSize="24sp"
+            android:textStyle="bold" />
 
-        <RadioButton
-            android:id="@+id/rb_sukarela"
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Simpanan Sukarela" />
-    </RadioGroup>
+            android:layout_marginTop="24dp"
+            android:text="Pilih Jenis Simpanan"
+            android:textColor="@color/black" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/til_deposit_amount"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:hint="Jumlah Setoran (Rp)">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/et_deposit_amount"
+        <RadioGroup
+            android:id="@+id/rg_savings_type"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="number" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginTop="8dp"
+            android:orientation="vertical">
 
-    <Button
-        android:id="@+id/btn_continue_to_payment"
-        android:layout_width="match_parent"
+            <RadioButton
+                android:id="@+id/rb_wajib"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Simpanan Wajib" />
+
+            <RadioButton
+                android:id="@+id/rb_sukarela"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Simpanan Sukarela" />
+        </RadioGroup>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_deposit_amount"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Jumlah Setoran (Rp)">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_deposit_amount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Upload Bukti Pembayaran"
+            android:textColor="@color/black" />
+
+        <ImageView
+            android:id="@+id/iv_proof_preview"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_image_placeholder" />
+
+        <Button
+            android:id="@+id/btn_upload_proof"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Pilih Gambar" />
+
+        <Button
+            android:id="@+id/btn_save_transaction"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="Simpan Transaksi" />
+
+    </LinearLayout>
+
+    <!-- <<< PROGRESS BAR DITAMBAHKAN DI SINI >>> -->
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="Lanjutkan Pembayaran" />
+        android:layout_gravity="center"
+        android:visibility="gone"
+        tools:visibility="visible"/>
 
-</LinearLayout>
+</FrameLayout>

@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.map_mid_term.R
 import com.example.map_mid_term.adapters.TransactionAdapter
 import com.example.map_mid_term.databinding.FragmentMonthlyReportBinding
-import com.example.map_mid_term.model.Transaction
+import com.example.map_mid_term.data.model.Transaction
 import java.util.Calendar
 
 class MonthlyReportFragment : Fragment() {
