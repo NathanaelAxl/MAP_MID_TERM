@@ -129,6 +129,10 @@
         android:label="Pinjaman Aktif"
         tools:layout="@layout/fragment_active_loan" />
 
-
+    <fragment
+        android:id="@+id/machineLearningFragment"
+        android:name="com.example.map_mid_term.fragments.MachineLearningFragment"
+        android:label="Cek Kelayakan AI"
+        tools:layout="@layout/fragment_machine_learning" />
 </navigation>
 

@@ -16,7 +16,7 @@ import com.example.map_mid_term.databinding.ActivityMainBinding
 import com.example.map_mid_term.model.DummyData
 import com.google.android.material.navigation.NavigationView
 
-class MainActivity : AppCompatActivity() {
+class       MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var appBarConfiguration: AppBarConfiguration
@@ -82,6 +82,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.homeFragment -> navController.navigate(R.id.homeFragment)
                 R.id.activeLoanFragment -> navController.navigate(R.id.activeLoanFragment)
                 R.id.profileFragment -> navController.navigate(R.id.profileFragment)
+                R.id.machineLearningFragment -> navController.navigate(R.id.machineLearningFragment)
                 R.id.menu_logout -> {
                     // 🔹 Hapus data session (optional)
                     memberId = null
