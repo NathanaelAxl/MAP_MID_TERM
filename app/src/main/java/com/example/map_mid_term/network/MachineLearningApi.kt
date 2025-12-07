@@ -41,7 +41,7 @@ interface ApiService {
 
 // 4. Retrofit Client (BAGIAN INI YANG KRUSIAL)
 object RetrofitClient {
-    private const val BASE_URL = "http://10.53.11.136:5000/"
+    private const val BASE_URL = "https://acedia.pythonanywhere.com/"
 
     // ✅ Settingan Timeout: Kita paksa aplikasi menunggu sampai 60 detik
     private val client = OkHttpClient.Builder()
