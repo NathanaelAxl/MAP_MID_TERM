@@ -45,6 +45,16 @@ android {
 }
 
 dependencies {
+
+    // RETROFIT
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
+
+
+    implementation("com.squareup.moshi:moshi:1.15.0")
+    kapt("com.squareup.moshi:moshi-kotlin-codegen:1.15.0")
+
     // --- ANDROID CORE ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
