@@ -19,9 +19,12 @@ class TransactionFragment : Fragment() {
     private var _binding: FragmentTransactionBinding? = null
     private val binding get() = _binding!!
 
-    // Gunakan ViewModel yang sama, yang sudah kita siapkan
     private val viewModel: TransactionViewModel by viewModels()
     private lateinit var transactionAdapter: TransactionAdapter
+
+    // Data pinjaman aktif (disimpan sementara untuk dikirim ke halaman bayar)
+    private var activeLoanId: String = ""
+    private var activeLoanAmount: Double = 0.0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,10 +37,6 @@ class TransactionFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Asumsi: Kita akan selalu menampilkan tagihan jika ada,
-        // logika lebih kompleks bisa ditambahkan nanti dari ViewModel
-        binding.cardUpcomingPayment.visibility = View.VISIBLE
-
         setupRecyclerView()
         setupListeners()
         observeViewModel()
@@ -45,61 +44,86 @@ class TransactionFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Minta ViewModel untuk mengambil 5 transaksi terbaru dari Firestore
-        // Kita letakkan di onResume agar data selalu refresh saat kembali ke halaman ini
+        // Ambil data terbaru setiap kali halaman dibuka
         viewModel.fetchTransactions()
-    }
-
-    private fun setupRecyclerView() {
-        // Inisialisasi adapter dengan list kosong
-        transactionAdapter = TransactionAdapter(arrayListOf())
-        binding.rvLatestTransactions.apply { // Menggunakan ID yang benar
-            layoutManager = LinearLayoutManager(context)
-            adapter = transactionAdapter
-            // Optional: untuk scrolling lebih lancar di dalam NestedScrollView
-            isNestedScrollingEnabled = false
-        }
+        viewModel.checkActiveLoan() // Cek apakah ada hutang?
     }
 
     private fun observeViewModel() {
-        // Mengamati daftar transaksi
+        // 1. List Transaksi
         viewModel.transactions.observe(viewLifecycleOwner) { transactions ->
             if (transactions.isNullOrEmpty()) {
-                binding.tvNoTransactions.visibility = View.VISIBLE // Menggunakan ID yang benar
+                binding.tvNoTransactions.visibility = View.VISIBLE
                 binding.rvLatestTransactions.visibility = View.GONE
             } else {
                 binding.tvNoTransactions.visibility = View.GONE
                 binding.rvLatestTransactions.visibility = View.VISIBLE
-                transactionAdapter.updateData(transactions) // Update data di adapter
+                transactionAdapter.updateData(transactions)
             }
         }
 
-        // Mengamati status loading untuk menampilkan ProgressBar
+        // 2. Data Pinjaman Aktif (Tagihan)
+        viewModel.activeLoan.observe(viewLifecycleOwner) { loanData ->
+            if (loanData != null) {
+                // ADA PINJAMAN AKTIF -> Tampilkan Kartu
+                binding.layoutUpcomingPayment.visibility = View.VISIBLE
+
+                val monthly = loanData["monthlyInstallment"] as? Double ?: 0.0
+                // Simpan untuk navigasi bayar
+                activeLoanAmount = monthly
+                // Jika ID dokumen disimpan di map, ambil. Jika tidak, pakai dummy dulu atau ambil dr snapshot
+                activeLoanId = "LOAN-ACT"
+
+                binding.tvPaymentAmount.text = "Rp ${"%,.0f".format(monthly)}"
+                binding.tvPaymentTitle.text = "Angsuran Bulan Ini"
+                binding.tvPaymentDueDate.text = "Jatuh Tempo: 25 Bulan Ini"
+            } else {
+                // TIDAK ADA PINJAMAN -> Sembunyikan Kartu
+                binding.layoutUpcomingPayment.visibility = View.GONE
+            }
+        }
+
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            // Menggunakan ID yang benar, dan import View yang benar
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
+    }
 
-        // Mengamati pesan error
-        viewModel.errorMessage.observe(viewLifecycleOwner) { error ->
-            if (!error.isNullOrEmpty()) {
-                Toast.makeText(context, error, Toast.LENGTH_LONG).show()
-            }
+    private fun setupRecyclerView() {
+        transactionAdapter = TransactionAdapter(arrayListOf())
+        binding.rvLatestTransactions.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = transactionAdapter
+            isNestedScrollingEnabled = false
         }
     }
 
     private fun setupListeners() {
+        // Klik Bayar Sekarang (Dari kartu tagihan)
         binding.btnPayNow.setOnClickListener {
-            findNavController().navigate(R.id.action_transactionFragment_to_paymentDetailFragment)
+            navigateToPayment(activeLoanAmount)
         }
 
+        // Klik Menu "Bayar Angsuran"
         binding.cardBayarAngsuran.setOnClickListener {
-            findNavController().navigate(R.id.action_transactionFragment_to_paymentDetailFragment)
+            if (binding.layoutUpcomingPayment.visibility == View.VISIBLE) {
+                navigateToPayment(activeLoanAmount)
+            } else {
+                Toast.makeText(context, "Tidak ada tagihan aktif", Toast.LENGTH_SHORT).show()
+            }
         }
 
         binding.cardTambahSimpanan.setOnClickListener {
             findNavController().navigate(R.id.action_transactionFragment_to_addSavingsFragment)
         }
+    }
+
+    private fun navigateToPayment(amount: Double) {
+        val bundle = Bundle().apply {
+            putString("title", "Bayar Angsuran")
+            putDouble("amount", amount)
+            putString("loanId", activeLoanId)
+        }
+        findNavController().navigate(R.id.action_transactionFragment_to_paymentDetailFragment, bundle)
     }
 
     override fun onDestroyView() {

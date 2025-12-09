@@ -47,11 +47,13 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp">
 
+                    <!-- FIX: Ubah text jadi Rp 0 -->
                     <TextView
                         android:id="@+id/tv_total_savings_balance"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Rp 1.550.000,00"
+                        android:text="Rp 0"
+                        tools:text="Rp 1.550.000,00"
                         android:textColor="@color/black"
                         android:textSize="32sp"
                         android:textStyle="bold" />
@@ -86,11 +88,14 @@
                     android:text="Simpanan Pokok"
                     android:textColor="@color/black"
                     android:textStyle="bold"/>
+
+                <!-- FIX: Ubah text jadi Rp 0 -->
                 <TextView
                     android:id="@+id/tv_pokok_balance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Rp 250.000"
+                    android:text="Rp 0"
+                    tools:text="Rp 250.000"
                     android:textSize="18sp"/>
                 <TextView
                     android:layout_width="wrap_content"
@@ -116,11 +121,14 @@
                     android:text="Simpanan Wajib"
                     android:textColor="@color/black"
                     android:textStyle="bold"/>
+
+                <!-- FIX: Ubah text jadi Rp 0 -->
                 <TextView
                     android:id="@+id/tv_wajib_balance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Rp 1.200.000"
+                    android:text="Rp 0"
+                    tools:text="Rp 1.200.000"
                     android:textSize="18sp"/>
                 <TextView
                     android:layout_width="wrap_content"
@@ -146,11 +154,14 @@
                     android:text="Simpanan Sukarela"
                     android:textColor="@color/black"
                     android:textStyle="bold"/>
+
+                <!-- FIX: Ubah text jadi Rp 0 -->
                 <TextView
                     android:id="@+id/tv_sukarela_balance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Rp 100.000"
+                    android:text="Rp 0"
+                    tools:text="Rp 100.000"
                     android:textSize="18sp"/>
                 <TextView
                     android:layout_width="wrap_content"

@@ -17,36 +17,73 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Bagian "Tagihan Berikutnya" tidak berubah -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tagihan Berikutnya"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_upcoming_payment"
+            <!-- BAGIAN 1: TAGIHAN (Default GONE/Hilang) -->
+            <!-- Hanya muncul jika admin sudah approve pinjaman -->
+            <LinearLayout
+                android:id="@+id/layout_upcoming_payment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardCornerRadius="12dp">
-                <!-- Isi CardView Tagihan tidak berubah -->
-                <LinearLayout
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tagihan Berikutnya"
+                    android:textColor="@color/black"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_upcoming_payment"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-                    <!-- ... (semua TextView dan Button di dalam card ini tetap sama) ... -->
-                    <TextView android:id="@+id/tv_payment_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Angsuran Pinjaman ke-4" android:textColor="@color/black" android:textStyle="bold" />
-                    <TextView android:id="@+id/tv_payment_amount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Rp 458.333" android:textColor="?attr/colorPrimary" android:textSize="24sp" android:textStyle="bold" />
-                    <TextView android:id="@+id/tv_payment_due_date" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Jatuh tempo: 10 November 2025" />
-                    <Button android:id="@+id/btn_pay_now" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Bayar Sekarang" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                    android:layout_marginTop="8dp"
+                    app:cardCornerRadius="12dp">
 
-            <!-- Bagian "Menu Transaksi" tidak berubah -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/tv_payment_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Angsuran Pinjaman"
+                            android:textColor="@color/black"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_payment_amount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Rp 0"
+                            android:textColor="?attr/colorPrimary"
+                            android:textSize="24sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_payment_due_date"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Jatuh tempo: -" />
+
+                        <Button
+                            android:id="@+id/btn_pay_now"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="Bayar Sekarang" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- BAGIAN 2: MENU TRANSAKSI -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -55,29 +92,77 @@
                 android:textColor="@color/black"
                 android:textSize="18sp"
                 android:textStyle="bold" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:orientation="horizontal">
-                <!-- CardView "Bayar Angsuran" dan "Tambah Simpanan" tidak berubah -->
-                <com.google.android.material.card.MaterialCardView android:id="@+id/card_bayar_angsuran" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_margin="8dp" app:cardCornerRadius="12dp" android:clickable="true" android:focusable="true">
-                    <LinearLayout android:orientation="vertical" android:gravity="center" android:padding="16dp" android:layout_width="match_parent" android:layout_height="wrap_content">
-                        <ImageView android:src="@drawable/ic_payment" android:layout_width="32dp" android:layout_height="32dp"/>
-                        <TextView android:text="Bayar Angsuran" android:layout_marginTop="8dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textAlignment="center"/>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_bayar_angsuran"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <!-- Ganti src dengan icon yang kamu punya, misal ic_payment atau ic_menu_send -->
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@android:drawable/ic_menu_send"
+                            app:tint="@color/black"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Bayar Angsuran"
+                            android:textAlignment="center" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-                <com.google.android.material.card.MaterialCardView android:id="@+id/card_tambah_simpanan" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_margin="8dp" app:cardCornerRadius="12dp" android:clickable="true" android:focusable="true">
-                    <LinearLayout android:orientation="vertical" android:gravity="center" android:padding="16dp" android:layout_width="match_parent" android:layout_height="wrap_content">
-                        <ImageView android:src="@drawable/ic_savings" android:layout_width="32dp" android:layout_height="32dp"/>
-                        <TextView android:text="Tambah Simpanan" android:layout_marginTop="8dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textAlignment="center"/>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_tambah_simpanan"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <!-- Ganti src dengan icon yang kamu punya -->
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@android:drawable/ic_input_add"
+                            app:tint="@color/black"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Tambah Simpanan"
+                            android:textAlignment="center" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- ======================================================= -->
-            <!--   BAGIAN BARU: RIWAYAT TRANSAKSI TERAKHIR DITAMBAHKAN   -->
-            <!-- ======================================================= -->
+            <!-- BAGIAN 3: RIWAYAT -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -95,7 +180,7 @@
                 android:layout_marginTop="16dp"
                 android:text="Belum ada transaksi."
                 android:visibility="gone"
-                tools:visibility="visible"/>
+                tools:visibility="visible" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_latest_transactions"

@@ -9,6 +9,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.map_mid_term.R
 import com.example.map_mid_term.databinding.FragmentPaymentDetailBinding
 
+// PERBAIKAN: Ganti nama class dari TransactionFragment menjadi PaymentDetailFragment
 class PaymentDetailFragment : Fragment() {
 
     private var _binding: FragmentPaymentDetailBinding? = null
@@ -25,12 +26,24 @@ class PaymentDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Ambil data dari Bundle (dikirim dari TransactionFragment)
+        val title = arguments?.getString("title") ?: "Pembayaran Tagihan"
+        val amount = arguments?.getDouble("amount") ?: 0.0
+        val loanId = arguments?.getString("loanId") ?: ""
+
+        // Bungkus ulang untuk dikirim ke tahap selanjutnya
+        val nextBundle = Bundle().apply {
+            putString("title", title)
+            putDouble("amount", amount)
+            putString("loanId", loanId)
+        }
+
         binding.cardVirtualAccount.setOnClickListener {
-            findNavController().navigate(R.id.action_paymentDetailFragment_to_virtualAccountFragment)
+            findNavController().navigate(R.id.action_paymentDetailFragment_to_virtualAccountFragment, nextBundle)
         }
 
         binding.cardManualTransfer.setOnClickListener {
-            findNavController().navigate(R.id.action_paymentDetailFragment_to_uploadProofFragment)
+            findNavController().navigate(R.id.action_paymentDetailFragment_to_uploadProofFragment, nextBundle)
         }
     }
 

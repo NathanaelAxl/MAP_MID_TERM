@@ -1,19 +1,19 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("androidx.navigation.safeargs.kotlin")
-    id("com.google.gms.google-services")
-    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.androidx.navigation.safeargs)
+    id("kotlin-kapt") // Plugin manual untuk prosesor Glide
 }
 
 android {
     namespace = "com.example.map_mid_term"
-    compileSdk = 36
+    compileSdk = 34 // Wajib 34 agar stabil dengan library di atas
 
     defaultConfig {
         applicationId = "com.example.map_mid_term"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -29,55 +29,50 @@ android {
         }
     }
 
-    // Menggabungkan kedua buildFeatures menjadi satu
+    // MATIKAN COMPOSE TOTAL (Penyebab error utama sebelumnya)
     buildFeatures {
         viewBinding = true
-        compose = true
+        compose = false
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "1.8"
     }
 }
 
 dependencies {
-    // Menggunakan referensi dari libs (version catalog) untuk konsistensi
+    // --- ANDROID CORE ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+
+    // --- NAVIGATION ---
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
 
+    // --- FIREBASE ---
     implementation(platform(libs.firebase.bom))
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-storage")
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage) // Tetap ada biar kode gak error, walau kita pake Base64
 
-    // Coroutines & Coil (Pemuat Gambar)
+    // --- GAMBAR ---
+    implementation(libs.glide)
+    kapt(libs.glide.compiler) // Pake KAPT agar Glide generate code
+    implementation(libs.coil)
+
+    // --- UTILS ---
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
-    implementation("io.coil-kt:coil:2.6.0")
 
-    // Dependensi Testing & Debug (dari libs)
+    // --- TESTING ---
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
-    // Compose (jika masih digunakan)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.material3)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    debugImplementation(libs.androidx.compose.ui.tooling)
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

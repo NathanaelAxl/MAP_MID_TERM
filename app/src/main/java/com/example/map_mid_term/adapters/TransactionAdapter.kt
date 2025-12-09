@@ -1,12 +1,13 @@
 package com.example.map_mid_term.adapters
 
+import android.graphics.BitmapFactory
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import coil.transform.CenterCrop
 import com.example.map_mid_term.R
 import com.example.map_mid_term.data.model.Transaction
 import com.example.map_mid_term.databinding.ItemTransactionBinding
@@ -37,30 +38,47 @@ class TransactionAdapter(private var transactionList: ArrayList<Transaction>) :
         val context = holder.itemView.context
 
         holder.binding.apply {
-            // MENGGUNAKAN ID DARI item_transaction.xml
             tvTransactionDescription.text = transaction.title
-            tvTransactionDate.text = transaction.timestamp?.let { dateFormat.format(it) } ?: "N/A"
 
-            // Mengatur warna, ikon, dan format jumlah uang berdasarkan tipe transaksi
+            // Handle tanggal null dengan aman
+            tvTransactionDate.text = try {
+                transaction.timestamp?.let { dateFormat.format(it) } ?: "N/A"
+            } catch (e: Exception) { "-" }
+
             if (transaction.type == "credit") {
                 tvTransactionAmount.text = "+ Rp${"%,.0f".format(transaction.amount)}"
-                tvTransactionAmount.setTextColor(ContextCompat.getColor(context, R.color.green))
+                // Menggunakan warna standar Android biar aman
+                tvTransactionAmount.setTextColor(ContextCompat.getColor(context, android.R.color.holo_green_dark))
                 ivTransactionIcon.setImageResource(R.drawable.ic_arrow_downward)
-            } else { // "debit"
+            } else {
                 tvTransactionAmount.text = "- Rp${"%,.0f".format(transaction.amount)}"
-                tvTransactionAmount.setTextColor(ContextCompat.getColor(context, R.color.red))
+                tvTransactionAmount.setTextColor(ContextCompat.getColor(context, android.R.color.holo_red_dark))
                 ivTransactionIcon.setImageResource(R.drawable.ic_arrow_upward)
             }
 
-            // Memuat gambar bukti transaksi menggunakan Coil
+            // --- LOAD GAMBAR ---
             if (!transaction.proofImageUrl.isNullOrEmpty()) {
                 ivProofImage.visibility = View.VISIBLE
-                ivProofImage.load(transaction.proofImageUrl) {
-                    crossfade(true)
-                    placeholder(R.drawable.ic_image_placeholder)
-                    error(R.drawable.ic_image_placeholder)
-                    // Sekarang `transformations` tidak akan bingung lagi
-                    transformations(CenterCrop())
+                val imageString = transaction.proofImageUrl!!
+
+                // Cek apakah Base64 atau URL
+                if (imageString.length > 200 && !imageString.startsWith("http")) {
+                    try {
+                        val decodedString = Base64.decode(imageString, Base64.DEFAULT)
+                        val decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
+
+                        ivProofImage.load(decodedBitmap) {
+                            crossfade(true)
+                            // TIDAK ADA transformation() DISINI. SUDAH DIATUR DI XML.
+                        }
+                    } catch (e: Exception) {
+                        ivProofImage.visibility = View.GONE
+                    }
+                } else {
+                    ivProofImage.load(imageString) {
+                        crossfade(true)
+                        // placeholder(R.drawable.ic_image_placeholder) // Uncomment jika punya icon ini
+                    }
                 }
             } else {
                 ivProofImage.visibility = View.GONE
