@@ -13,11 +13,14 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- PERBAIKAN: Hapus 'Budi' dari android:text -->
+        <!-- Gunakan tools:text untuk preview di Android Studio saja -->
         <TextView
             android:id="@+id/tv_greeting"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Selamat Datang!"
+            android:text="Selamat Datang..."
+            tools:text="Selamat Datang, Budi!"
             android:textColor="@color/black"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -46,6 +49,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp">
 
+                    <!-- Pastikan ini Rp 0 -->
                     <TextView
                         android:id="@+id/tv_total_balance"
                         android:layout_width="wrap_content"
@@ -118,8 +122,7 @@
                         android:id="@+id/iv_pinjaman_icon"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:src="@android:drawable/ic_menu_my_calendar"
-                        app:tint="@color/black"/>
+                        android:src="@drawable/ic_loan"/>
 
                     <TextView
                         android:id="@+id/tv_pinjaman_title"
@@ -159,8 +162,7 @@
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:src="@android:drawable/ic_input_add"
-                        app:tint="@color/black"/>
+                        android:src="@drawable/ic_savings"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -188,8 +190,7 @@
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:src="@android:drawable/ic_menu_sort_by_size"
-                        app:tint="@color/black"/>
+                        android:src="@drawable/ic_report"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

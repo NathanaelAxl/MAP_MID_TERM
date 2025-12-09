@@ -1,120 +1,61 @@
 package com.example.map_mid_term.activities
 
-import android.app.AlertDialog
-import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.widget.EditText
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.map_mid_term.R
 import com.example.map_mid_term.adapters.MemberAdapter
-import com.example.map_mid_term.model.DummyData
+import com.example.map_mid_term.databinding.ActivityMembersBinding // Sesuaikan nama layout
 import com.example.map_mid_term.model.Member
-import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MemberListActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityMembersBinding
+    private val db = FirebaseFirestore.getInstance()
     private lateinit var adapter: MemberAdapter
-    private val members = DummyData.members.toMutableList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_members)
+        binding = ActivityMembersBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
-        toolbar.title = "Data Anggota"
-        toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
+        setupRecyclerView()
+        fetchMembers()
 
-        val recyclerView = findViewById<RecyclerView>(R.id.recyclerMembers)
-        val fabAdd = findViewById<FloatingActionButton>(R.id.fabAdd)
-
-        adapter = MemberAdapter(
-            onDeleteClick = { member -> confirmDelete(member) },
-            onEditClick = { member -> showMemberDialog("Edit Anggota", member) }
-        )
-
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = adapter
-        adapter.submitList(members.toList())
-
-        fabAdd.setOnClickListener {
-            showMemberDialog("Tambah Anggota", null)
-        }
+        // Tombol Back (asumsi ada di toolbar)
+        // binding.toolbar.setNavigationOnClickListener { finish() }
     }
 
-    private fun showMemberDialog(title: String, data: Member?) {
-        val view = LayoutInflater.from(this).inflate(R.layout.dialog_member, null)
-        val etId = view.findViewById<EditText>(R.id.etId)
-        val etName = view.findViewById<EditText>(R.id.etName)
-        val etEmail = view.findViewById<EditText>(R.id.etEmail)
-        val etPhone = view.findViewById<EditText>(R.id.etPhone)
-        val etAddress = view.findViewById<EditText>(R.id.etAddress)
-        val etPassword = view.findViewById<EditText>(R.id.etPassword)
-
-        data?.let {
-            etId.setText(it.id)
-            etName.setText(it.name)
-            etEmail.setText(it.email)
-            etPhone.setText(it.phone)
-            etAddress.setText(it.address)
-            etPassword.setText(it.password)
-        }
-
-        AlertDialog.Builder(this)
-            .setTitle(title)
-            .setView(view)
-            .setPositiveButton(if (data == null) "Simpan" else "Update") { _, _ ->
-                val id = etId.text.toString().trim()
-                val name = etName.text.toString().trim()
-                val email = etEmail.text.toString().trim()
-                val phone = etPhone.text.toString().trim()
-                val address = etAddress.text.toString().trim()
-                val password = etPassword.text.toString().trim()
-
-                if (id.isEmpty() || name.isEmpty() || email.isEmpty()) {
-                    Toast.makeText(this, "ID, Nama, dan Email wajib diisi", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
-                }
-
-                if (data == null) {
-                    val newMember = Member(id, name, address, phone, email, password, "member")
-                    members.add(newMember)
-                    Toast.makeText(this, "Anggota baru ditambahkan", Toast.LENGTH_SHORT).show()
-                } else {
-                    val idx = members.indexOfFirst { it.id == data.id }
-                    if (idx != -1) {
-                        members[idx] = data.copy(
-                            id = id,
-                            name = name,
-                            email = email,
-                            phone = phone,
-                            address = address,
-                            password = password
-                        )
-                        Toast.makeText(this, "Data anggota diperbarui", Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                adapter.submitList(members.toList())
-            }
-            .setNegativeButton("Batal", null)
-            .show()
+    private fun setupRecyclerView() {
+        adapter = MemberAdapter(arrayListOf())
+        binding.rvMembers.layoutManager = LinearLayoutManager(this)
+        binding.rvMembers.adapter = adapter
     }
 
-    private fun confirmDelete(member: Member) {
-        AlertDialog.Builder(this)
-            .setTitle("Hapus Anggota")
-            .setMessage("Yakin ingin menghapus ${member.name}?")
-            .setPositiveButton("Hapus") { _, _ ->
-                members.remove(member)
-                adapter.submitList(members.toList())
-                Toast.makeText(this, "Data ${member.name} dihapus", Toast.LENGTH_SHORT).show()
+    private fun fetchMembers() {
+        binding.progressBar.visibility = View.VISIBLE
+
+        db.collection("members")
+            .get() // Ambil semua anggota
+            .addOnSuccessListener { documents ->
+                binding.progressBar.visibility = View.GONE
+                val list = ArrayList<Member>()
+                for (doc in documents) {
+                    val member = doc.toObject(Member::class.java)
+                    member.userId = doc.id
+                    list.add(member)
+                }
+                adapter.updateData(list)
+
+                if (list.isEmpty()) {
+                    Toast.makeText(this, "Belum ada anggota", Toast.LENGTH_SHORT).show()
+                }
             }
-            .setNegativeButton("Batal", null)
-            .show()
+            .addOnFailureListener {
+                binding.progressBar.visibility = View.GONE
+                Toast.makeText(this, "Gagal: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 }
