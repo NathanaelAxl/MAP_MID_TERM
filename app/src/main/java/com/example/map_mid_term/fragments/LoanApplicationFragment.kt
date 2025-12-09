@@ -6,26 +6,22 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
+import android.widget.RadioButton
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.map_mid_term.R
-import com.example.map_mid_term.activities.MainActivity
 import com.example.map_mid_term.databinding.FragmentLoanApplicationBinding
-import com.example.map_mid_term.model.DummyData
-import com.example.map_mid_term.model.LoanApplication
-import java.text.NumberFormat
-import java.util.Locale
-import java.util.UUID
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class LoanApplicationFragment : Fragment() {
 
     private var _binding: FragmentLoanApplicationBinding? = null
     private val binding get() = _binding!!
-    private val DUMMY_INTEREST_RATE = 0.015
+
+    // Bunga fix 1.5% per bulan
+    private val interestRate = 0.015
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,125 +33,125 @@ class LoanApplicationFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupSpinner()
-        setupListeners()
+
+        setupCalculationListener()
+
         binding.btnSubmitLoan.setOnClickListener {
-            if (validateForm()) {
-                showConfirmationDialog()
+            if (validateInput()) {
+                submitLoanApplication()
             }
         }
     }
 
-    private fun setupSpinner() {
-        val tenorOptions = arrayOf("Pilih Tenor", "3 Bulan", "6 Bulan", "9 Bulan", "12 Bulan")
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, tenorOptions)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerTenor.adapter = adapter
-    }
-
-    private fun setupListeners() {
+    private fun setupCalculationListener() {
+        // Hitung ulang setiap kali teks berubah
         binding.etLoanAmount.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) { calculateInstallment() }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                calculateInstallment()
-            }
-            override fun afterTextChanged(s: Editable?) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
-        binding.spinnerTenor.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                calculateInstallment()
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
+
+        // Hitung ulang setiap kali tenor berubah
+        binding.rgTenor.setOnCheckedChangeListener { _, _ ->
+            calculateInstallment()
         }
     }
 
-    // FUNGSI INI DIPERBAIKI UNTUK MENCEGAH CRASH
     private fun calculateInstallment() {
-        val amountString = binding.etLoanAmount.text.toString()
-
-        // Jika input kosong ATAU user belum memilih tenor, reset saja dan berhenti.
-        // Ini mencegah error NumberFormatException saat halaman pertama kali load.
-        if (amountString.isEmpty() || binding.spinnerTenor.selectedItemPosition == 0) {
-            resetCalculationTexts()
-            return // Keluar dari fungsi lebih awal
-        }
-
-        // Kode di bawah ini HANYA akan berjalan jika input dan tenor sudah valid.
-        val loanAmount = amountString.toDouble()
-        val tenorInMonths = binding.spinnerTenor.selectedItem.toString().split(" ")[0].toInt()
-
-        val pokokCicilan = loanAmount / tenorInMonths
-        val bungaCicilan = loanAmount * DUMMY_INTEREST_RATE
-        val totalAngsuran = pokokCicilan + bungaCicilan
-
-        val localeID = Locale("in", "ID")
-        val currencyFormat = NumberFormat.getCurrencyInstance(localeID)
-        currencyFormat.maximumFractionDigits = 0
-
-        binding.tvPokokCicilan.text = currencyFormat.format(pokokCicilan)
-        binding.tvBungaCicilan.text = currencyFormat.format(bungaCicilan)
-        binding.tvTotalAngsuran.text = currencyFormat.format(totalAngsuran)
-    }
-
-    private fun resetCalculationTexts() {
-        binding.tvPokokCicilan.text = "Rp 0"
-        binding.tvBungaCicilan.text = "Rp 0"
-        binding.tvTotalAngsuran.text = "Rp 0"
-    }
-
-    private fun validateForm(): Boolean {
-        var isValid = true
-        if (binding.etLoanAmount.text.toString().isEmpty()) {
-            binding.tilLoanAmount.error = "Jumlah pinjaman tidak boleh kosong"
-            isValid = false
-        } else {
-            binding.tilLoanAmount.error = null
-        }
-        if (binding.spinnerTenor.selectedItemPosition == 0) {
-            Toast.makeText(context, "Silakan pilih tenor pinjaman", Toast.LENGTH_SHORT).show()
-            isValid = false
-        }
-        return isValid
-    }
-
-    private fun showConfirmationDialog() {
-        val amount = binding.etLoanAmount.text.toString().toDouble()
-        val tenor = binding.spinnerTenor.selectedItem.toString()
-        val total = binding.tvTotalAngsuran.text.toString()
-
-        AlertDialog.Builder(requireContext())
-            .setTitle("Konfirmasi Pengajuan Pinjaman")
-            .setMessage("Anda akan mengajukan pinjaman sebesar ${NumberFormat.getCurrencyInstance(Locale("in", "ID")).format(amount)} dengan tenor $tenor. \n\nTotal angsuran per bulan adalah $total. \n\nApakah Anda yakin ingin melanjutkan?")
-            .setPositiveButton("Ya, Lanjutkan") { dialog, _ ->
-                submitApplication()
-                dialog.dismiss()
-            }
-            .setNegativeButton("Batal", null)
-            .show()
-    }
-
-    private fun submitApplication() {
-        val parentActivity = activity as? MainActivity
-        val memberId = MainActivity.memberId
-        if (memberId == null) {
-            Toast.makeText(context, "Gagal mendapatkan ID Anggota. Silakan coba lagi.", Toast.LENGTH_LONG).show()
+        val amountStr = binding.etLoanAmount.text.toString()
+        if (amountStr.isEmpty()) {
+            resetSimulation()
             return
         }
 
-        val loanAmount = binding.etLoanAmount.text.toString().toDouble()
-        val tenorInMonths = binding.spinnerTenor.selectedItem.toString().split(" ")[0].toInt()
+        val amount = amountStr.toDoubleOrNull() ?: 0.0
+        val tenor = getSelectedTenor()
 
-        val newApplication = LoanApplication(
-            id = UUID.randomUUID().toString(),
-            memberId = memberId,
-            amount = loanAmount,
-            tenor = tenorInMonths,
-            status = "Sedang Diproses"
+        if (tenor == 0) return
+
+        val pokok = amount / tenor
+        val bunga = amount * interestRate
+        val total = pokok + bunga
+
+        binding.tvPokok.text = "Rp ${"%,.0f".format(pokok)}"
+        binding.tvBunga.text = "Rp ${"%,.0f".format(bunga)}"
+        binding.tvTotalInstallment.text = "Rp ${"%,.0f".format(total)}"
+    }
+
+    private fun resetSimulation() {
+        binding.tvPokok.text = "Rp 0"
+        binding.tvBunga.text = "Rp 0"
+        binding.tvTotalInstallment.text = "Rp 0"
+    }
+
+    private fun getSelectedTenor(): Int {
+        return when (binding.rgTenor.checkedRadioButtonId) {
+            R.id.rb_3_months -> 3
+            R.id.rb_6_months -> 6
+            R.id.rb_12_months -> 12
+            else -> 0
+        }
+    }
+
+    private fun submitLoanApplication() {
+        setLoading(true)
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if (userId == null) {
+            Toast.makeText(context, "Sesi habis", Toast.LENGTH_SHORT).show()
+            setLoading(false)
+            return
+        }
+
+        val amount = binding.etLoanAmount.text.toString().toDouble()
+        val tenor = getSelectedTenor()
+        val reason = binding.etReason.text.toString()
+
+        // Hitung total yang harus dibayar per bulan (untuk disimpan di DB)
+        val monthlyInstallment = (amount / tenor) + (amount * interestRate)
+
+        val loanData = hashMapOf(
+            "userId" to userId,
+            "amount" to amount,
+            "tenor" to tenor,
+            "reason" to reason,
+            "monthlyInstallment" to monthlyInstallment,
+            "status" to "pending", // Status awal PENDING
+            "applicationDate" to System.currentTimeMillis()
         )
 
-        DummyData.loanApplications.add(newApplication)
-        Toast.makeText(context, "Pengajuan pinjaman berhasil dikirim!", Toast.LENGTH_LONG).show()
-        findNavController().navigateUp()
+        // Simpan ke koleksi 'loan_applications'
+        FirebaseFirestore.getInstance().collection("loan_applications")
+            .add(loanData)
+            .addOnSuccessListener {
+                setLoading(false)
+                Toast.makeText(context, "Pengajuan Berhasil Dikirim!", Toast.LENGTH_LONG).show()
+                findNavController().popBackStack()
+            }
+            .addOnFailureListener {
+                setLoading(false)
+                Toast.makeText(context, "Gagal mengirim: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun validateInput(): Boolean {
+        if (binding.etLoanAmount.text.isNullOrEmpty()) {
+            binding.tilLoanAmount.error = "Isi jumlah pinjaman"
+            return false
+        }
+        if (getSelectedTenor() == 0) {
+            Toast.makeText(context, "Pilih tenor pinjaman", Toast.LENGTH_SHORT).show()
+            return false
+        }
+        if (binding.etReason.text.isNullOrEmpty()) {
+            binding.tilReason.error = "Isi keperluan pinjaman"
+            return false
+        }
+        return true
+    }
+
+    private fun setLoading(isLoading: Boolean) {
+        binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        binding.btnSubmitLoan.isEnabled = !isLoading
     }
 
     override fun onDestroyView() {

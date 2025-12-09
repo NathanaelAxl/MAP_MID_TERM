@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F5F5F5"
     tools:context=".fragments.LoanApplicationFragment">
 
     <LinearLayout
@@ -17,16 +18,16 @@
             android:layout_height="wrap_content"
             android:text="Formulir Pengajuan Pinjaman"
             android:textColor="@color/black"
-            android:textSize="24sp"
+            android:textSize="20sp"
             android:textStyle="bold" />
 
+        <!-- Input Jumlah Pinjaman -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_loan_amount"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:hint="Jumlah Pinjaman (Rp)">
+            android:hint="Jumlah Pinjaman (Maks Rp 10.000.000)">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_loan_amount"
@@ -39,19 +40,61 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Pilih Jangka Waktu (Tenor)" />
+            android:text="Pilih Jangka Waktu (Tenor)"
+            android:textColor="@android:color/darker_gray" />
 
-        <Spinner
-            android:id="@+id/spinner_tenor"
+        <!-- Pilihan Tenor -->
+        <RadioGroup
+            android:id="@+id/rg_tenor"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="8dp" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
 
+            <RadioButton
+                android:id="@+id/rb_3_months"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="3 Bulan" />
+
+            <RadioButton
+                android:id="@+id/rb_6_months"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="6 Bulan" />
+
+            <RadioButton
+                android:id="@+id/rb_12_months"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="12 Bulan" />
+        </RadioGroup>
+
+        <!-- Input Keperluan -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_reason"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Keperluan Pinjaman">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_reason"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapSentences" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Simulasi Cicilan -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_simulation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            app:cardBackgroundColor="#E0F2F1"
+            app:cardBackgroundColor="#E8F5E9"
             app:cardCornerRadius="8dp"
             app:cardElevation="0dp">
 
@@ -65,75 +108,93 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Estimasi Angsuran per Bulan"
-                    android:textColor="@color/black"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textColor="@color/black"/>
 
-                <RelativeLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp">
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
                     <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Pokok Cicilan"/>
+                    <TextView
+                        android:id="@+id/tv_pokok"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Pokok Cicilan" />
-                    <TextView
-                        android:id="@+id/tv_pokok_cicilan"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:text="Rp 0" />
-                </RelativeLayout>
+                        android:text="Rp 0"
+                        android:textStyle="bold"/>
+                </LinearLayout>
 
-                <RelativeLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp">
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
                     <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Bunga (1.5%/bulan)"/>
+                    <TextView
+                        android:id="@+id/tv_bunga"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Bunga (1.5%/bulan)" />
-                    <TextView
-                        android:id="@+id/tv_bunga_cicilan"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:text="Rp 0" />
-                </RelativeLayout>
+                        android:text="Rp 0"
+                        android:textStyle="bold"/>
+                </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginTop="8dp"
-                    android:background="?android:attr/listDivider"/>
+                    android:layout_marginBottom="8dp"
+                    android:background="#CCCCCC"/>
 
-                <RelativeLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp">
+                    android:orientation="horizontal">
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:text="Total Angsuran"
                         android:textColor="@color/black"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"/>
                     <TextView
-                        android:id="@+id/tv_total_angsuran"
+                        android:id="@+id/tv_total_installment"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
+                        android:text="Rp 0"
                         android:textColor="@color/black"
-                        android:textStyle="bold"
-                        android:text="Rp 0" />
-                </RelativeLayout>
+                        android:textSize="16sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Tombol Ajukan -->
         <Button
             android:id="@+id/btn_submit_loan"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
             android:layout_marginTop="32dp"
-            android:text="Ajukan Pinjaman" />
+            android:backgroundTint="#4CAF50"
+            android:text="Ajukan Pinjaman"
+            android:textStyle="bold" />
+
+        <!-- Loading -->
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"/>
 
     </LinearLayout>
 </ScrollView>

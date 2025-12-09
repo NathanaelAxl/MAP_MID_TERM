@@ -22,6 +22,11 @@
         <action
             android:id="@+id/action_homeFragment_to_monthlyReportFragment"
             app:destination="@id/monthlyReportFragment" />
+
+        <!-- INI YANG KITA TAMBAHKAN AGAR TIDAK ERROR -->
+        <action
+            android:id="@+id/action_homeFragment_to_transactionFragment"
+            app:destination="@id/transactionFragment" />
     </fragment>
 
     <fragment
@@ -58,6 +63,9 @@
         android:name="com.example.map_mid_term.fragments.SavingsFragment"
         android:label="Simpanan"
         tools:layout="@layout/fragment_savings" />
+        <action
+            android:id="@+id/action_savingsFragment_to_transactionFragment"
+            app:destination="@id/transactionFragment" />
 
     <fragment
         android:id="@+id/loanApplicationFragment"
@@ -82,7 +90,6 @@
         android:name="com.example.map_mid_term.fragments.PaymentDetailFragment"
         android:label="Detail Pembayaran"
         tools:layout="@layout/fragment_payment_detail">
-        <!-- DUA ACTION YANG HILANG SEKARANG DITAMBAHKAN DI SINI -->
         <action
             android:id="@+id/action_paymentDetailFragment_to_virtualAccountFragment"
             app:destination="@id/virtualAccountFragment" />
@@ -129,10 +136,4 @@
         android:label="Pinjaman Aktif"
         tools:layout="@layout/fragment_active_loan" />
 
-    <fragment
-        android:id="@+id/machineLearningFragment"
-        android:name="com.example.map_mid_term.fragments.MachineLearningFragment"
-        android:label="Cek Kelayakan AI"
-        tools:layout="@layout/fragment_machine_learning" />
 </navigation>
-

@@ -16,10 +16,12 @@
         android:layout_marginEnd="16dp"/>
 
     <LinearLayout
+        android:id="@+id/transaction_details"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_toEndOf="@id/iv_transaction_icon"
+        android:layout_toStartOf="@+id/iv_proof_image"
         android:layout_centerVertical="true">
 
         <TextView
@@ -38,6 +40,16 @@
             android:text="15 Oktober 2025"
             android:textSize="14sp"/>
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/iv_proof_image"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_image_placeholder"
+        android:layout_toStartOf="@+id/tv_transaction_amount"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="16dp"/>
 
     <TextView
         android:id="@+id/tv_transaction_amount"
