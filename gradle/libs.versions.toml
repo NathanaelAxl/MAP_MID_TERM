@@ -1,7 +1,8 @@
+
 [versions]
 # --- VERSI YANG DIJAMIN STABIL & KOMPATIBEL ---
-agp = "8.13.1"
-kotlin = "1.9.24"
+agp = "8.3.0"
+kotlin = "1.9.24" # Versi Kapt akan mengikuti versi Kotlin ini
 coreKtx = "1.12.0"
 appcompat = "1.6.1"
 material = "1.11.0"
@@ -49,5 +50,8 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+# --- TAMBAHKAN BARIS DI BAWAH INI ---
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+# -----------------------------------
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 androidx-navigation-safeargs = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigation" }

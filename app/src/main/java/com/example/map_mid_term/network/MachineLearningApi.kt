@@ -6,9 +6,11 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.POST
-import java.util.concurrent.TimeUnit // Perlu import ini untuk mengatur waktu
+import java.util.concurrent.TimeUnit
 
-// 1. Request (Tetap sama)
+// ========================
+// 1. DATA MODELS
+// ========================
 data class HealthRequest(
     val age: Float,
     val BMI: Float,
@@ -17,15 +19,13 @@ data class HealthRequest(
     val physical_activity: String
 )
 
-// 2. Response & Result
 data class HealthResponse(
     val status: String,
     val data: HealthResult?
 )
 
 data class HealthResult(
-    // ✅ UBAH JADI DOUBLE: Agar aman kalau Python kirim "1.0" atau "0.0"
-    // Kalau pakai Int, nanti bisa error "NumberFormatException"
+    // Menggunakan Double agar aman menerima angka desimal (1.0) dari Python
     val diabetes: Double,
     val heart_attack: Double,
     val stroke: Double,
@@ -33,27 +33,33 @@ data class HealthResult(
     val cancer: Double
 )
 
-// 3. Interface API (Tetap sama)
+// ========================
+// 2. API INTERFACE
+// ========================
 interface ApiService {
+    // Import @POST dan @Body sudah ada di atas, jadi tidak akan error NonExistentClass lagi
     @POST("predict")
     fun predictHealth(@Body request: HealthRequest): Call<HealthResponse>
 }
 
-// 4. Retrofit Client (BAGIAN INI YANG KRUSIAL)
+// ========================
+// 3. RETROFIT CLIENT OBJECT
+// ========================
 object RetrofitClient {
+    // Menggunakan Server PythonAnywhere
     private const val BASE_URL = "https://acedia.pythonanywhere.com/"
 
-    // ✅ Settingan Timeout: Kita paksa aplikasi menunggu sampai 60 detik
+    // Setting Timeout 60 Detik agar tidak mudah RTO (Request Time Out)
     private val client = OkHttpClient.Builder()
-        .connectTimeout(60, TimeUnit.SECONDS) // Waktu maksimal buat nyambung
-        .readTimeout(60, TimeUnit.SECONDS)    // Waktu maksimal nunggu jawaban server
-        .writeTimeout(60, TimeUnit.SECONDS)   // Waktu maksimal kirim data
+        .connectTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
         .build()
 
     val instance: ApiService by lazy {
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(client) // ✅ Masukkan settingan client di sini
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         retrofit.create(ApiService::class.java)
