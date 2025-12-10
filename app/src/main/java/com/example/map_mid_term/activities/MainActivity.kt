@@ -22,7 +22,6 @@ class       MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
 
     companion object {
-        // ✅ Properti global untuk diakses dari fragment manapun
         var memberId: String? = null
     }
 
