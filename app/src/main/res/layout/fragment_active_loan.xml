@@ -1,199 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
-    android:fillViewport="true"
-    tools:context=".fragments.ActiveLoanFragment">
+    android:background="#F8F8F8"
+    android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:orientation="vertical">
 
         <!-- Judul halaman -->
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Status Pinjaman"
-            android:textColor="@color/black"
+            android:text="Status Pinjaman Aktif"
             android:textStyle="bold"
-            android:textSize="24sp"
-            android:layout_marginBottom="24dp" />
+            android:textSize="18sp"
+            android:gravity="center"
+            android:layout_marginBottom="12dp" />
 
-        <!-- LOADING BAR -->
-        <ProgressBar
-            android:id="@+id/progressBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:visibility="visible" />
-
-        <!-- TAMPILAN JIKA TIDAK ADA PINJAMAN -->
+        <!-- Card informasi pinjaman -->
         <LinearLayout
-            android:id="@+id/layout_no_loan"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="center"
-            android:layout_marginTop="100dp"
-            android:visibility="gone">
-
-            <ImageView
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:src="@android:drawable/ic_menu_agenda"
-                app:tint="#BDBDBD"/>
+            android:padding="16dp"
+            android:background="@android:drawable/dialog_holo_light_frame"
+            android:layout_marginBottom="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Tidak ada pinjaman aktif saat ini."
-                android:textColor="#757575"
-                android:textSize="16sp"/>
+                android:text="Status"
+                android:textStyle="bold"
+                android:textSize="14sp" />
 
-            <Button
-                android:id="@+id/btn_apply_loan"
+            <TextView
+                android:id="@+id/tvLoanStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Ajukan Pinjaman"
-                style="@style/Widget.MaterialComponents.Button.TextButton"/>
-        </LinearLayout>
+                android:text="Aktif"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textColor="#2E7D32"
+                android:layout_marginBottom="8dp" />
 
-        <!-- TAMPILAN JIKA ADA PINJAMAN (Card Detail) -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/layout_loan_details"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
-            android:visibility="gone">
-
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
+                android:text="ID Pinjaman"
+                android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Status"
-                    android:textColor="#757575"
-                    android:textSize="12sp" />
+            <TextView
+                android:id="@+id/tvLoanId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LN-09876-ZYX"
+                android:layout_marginBottom="8dp" />
 
-                <TextView
-                    android:id="@+id/tvLoanStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Disetujui"
-                    android:textStyle="bold"
-                    android:textSize="18sp"
-                    android:textColor="#4CAF50"
-                    android:layout_marginBottom="16dp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Jumlah Pinjaman"
+                android:textStyle="bold" />
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#EEEEEE"
-                    android:layout_marginBottom="16dp"/>
+            <TextView
+                android:id="@+id/tvLoanAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rp 10.000.000"
+                android:layout_marginBottom="8dp" />
 
-                <!-- Detail Item: ID -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="ID Pinjaman"/>
-                    <TextView
-                        android:id="@+id/tvLoanId"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="..."
-                        android:textStyle="bold"
-                        android:textColor="@color/black"/>
-                </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tenor"
+                android:textStyle="bold" />
 
-                <!-- Detail Item: Jumlah -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Total Pinjaman"/>
-                    <TextView
-                        android:id="@+id/tvLoanAmount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="..."
-                        android:textStyle="bold"
-                        android:textColor="@color/black"/>
-                </LinearLayout>
+            <TextView
+                android:id="@+id/tvLoanTenor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12 Bulan"
+                android:layout_marginBottom="8dp" />
 
-                <!-- Detail Item: Tenor -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Tenor (Jangka Waktu)"/>
-                    <TextView
-                        android:id="@+id/tvLoanTenor"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="..."
-                        android:textStyle="bold"
-                        android:textColor="@color/black"/>
-                </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sisa Waktu"
+                android:textStyle="bold" />
 
-                <!-- Detail Item: Cicilan per Bulan -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Cicilan per Bulan"/>
-                    <TextView
-                        android:id="@+id/tvMonthlyInstallment"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="..."
-                        android:textStyle="bold"
-                        android:textColor="@color/black"/>
-                </LinearLayout>
-
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+            <TextView
+                android:id="@+id/tvLoanRemaining"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="5 Bulan" />
+        </LinearLayout>
 
         <!-- Tombol kembali -->
         <Button
             android:id="@+id/btnBackToHome"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:text="Kembali"
-            android:backgroundTint="#2196F3"
-            android:layout_marginTop="32dp" />
+            android:layout_height="wrap_content"
+            android:text="Kembali ke Beranda"
+            android:backgroundTint="#4CAF50"
+            android:textColor="@android:color/white"
+            android:padding="12dp"
+            android:layout_marginTop="8dp" />
 
     </LinearLayout>
 </ScrollView>

@@ -1,46 +1,42 @@
 package com.example.map_mid_term.adapters
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.map_mid_term.data.model.LoanApplication
-import com.example.map_mid_term.databinding.ItemAdminNotificationBinding
+import com.example.map_mid_term.R
+import com.example.map_mid_term.model.AdminNotification
 
 class AdminNotificationAdapter(
-    private var loanList: ArrayList<LoanApplication>,
-    private val onApprove: (LoanApplication) -> Unit,
-    private val onReject: (LoanApplication) -> Unit
-) : RecyclerView.Adapter<AdminNotificationAdapter.AdminViewHolder>() {
+    private val items: List<AdminNotification>,
+    private val onItemClick: (AdminNotification) -> Unit
+) : RecyclerView.Adapter<AdminNotificationAdapter.ViewHolder>() {
 
-    inner class AdminViewHolder(val binding: ItemAdminNotificationBinding) :
-        RecyclerView.ViewHolder(binding.root)
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AdminViewHolder {
-        val binding = ItemAdminNotificationBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
-        return AdminViewHolder(binding)
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val tvLoanId: TextView = view.findViewById(R.id.tvLoanId)
+        val tvMemberId: TextView = view.findViewById(R.id.tvMemberId)
+        val tvAmount: TextView = view.findViewById(R.id.tvAmount)
+        val tvStatus: TextView = view.findViewById(R.id.tvStatus)
     }
 
-    override fun getItemCount(): Int = loanList.size
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_admin_notification, parent, false)
+        return ViewHolder(view)
+    }
 
-    override fun onBindViewHolder(holder: AdminViewHolder, position: Int) {
-        val loan = loanList[position]
-        holder.binding.apply {
-            tvLoanAmount.text = "Rp ${"%,.0f".format(loan.amount)}"
-            tvLoanTenor.text = "Tenor: ${loan.tenor} Bulan"
-            tvLoanReason.text = loan.reason
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val item = items[position]
+        holder.tvLoanId.text = "ID Pinjaman: ${item.loanId}"
+        holder.tvMemberId.text = "Anggota: ${item.memberId}"
+        holder.tvAmount.text = "Jumlah: Rp ${item.amount}"
+        holder.tvStatus.text = "Status: ${item.status}"
 
-            btnApprove.setOnClickListener { onApprove(loan) }
-            btnReject.setOnClickListener { onReject(loan) }
+        holder.itemView.setOnClickListener {
+            onItemClick(item)
         }
     }
 
-    fun updateData(newList: List<LoanApplication>) {
-        loanList.clear()
-        loanList.addAll(newList)
-        notifyDataSetChanged()
-    }
+    override fun getItemCount() = items.size
 }
