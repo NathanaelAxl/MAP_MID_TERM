@@ -2,233 +2,252 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bon"
+    android:orientation="vertical"
+    android:background="#F5F5F5"
     tools:context=".activities.AdminActivity">
 
-    <!-- ✅ Toolbar include -->
-    <include
-        layout="@layout/appbar_toolbar"
-        android:id="@+id/topAppBar" />
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:orientation="horizontal"
+        android:padding="20dp"
+        android:gravity="center_vertical">
 
-    <!-- Konten utama dashboard -->
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_profile"
+            app:tint="@color/white"/>
+        <!-- Ganti ic_profile dengan icon yang ada, atau @android:drawable/ic_menu_my_calendar -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Dashboard Admin"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
+        <!-- Tombol Logout Admin -->
+        <ImageView
+            android:id="@+id/btn_logout_admin"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_back"
+            app:tint="@color/white"
+            android:rotation="180"/>
+        <!-- Icon Logout/Back -->
+    </LinearLayout>
+
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp">
+        android:layout_height="match_parent">
 
         <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:columnCount="2"
+            android:padding="16dp"
             android:alignmentMode="alignMargins"
-            android:rowOrderPreserved="false"
-            android:columnOrderPreserved="false"
-            android:useDefaultMargins="true">
+            android:columnOrderPreserved="false">
 
-            <!-- Menu: Data Anggota -->
+            <!-- MENU 1: DATA ANGGOTA -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardManageMembers"
+                android:id="@+id/menu_data_anggota"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp"
-                android:backgroundTint="@color/white"
-                android:layout_margin="8dp">
-
+                android:clickable="true"
+                android:focusable="true">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="20dp"
                     android:gravity="center"
-                    android:orientation="vertical">
-
+                    android:orientation="vertical"
+                    android:padding="24dp">
                     <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:src="@drawable/ic_profile"
-                        app:tint="@color/green" />
-
+                        app:tint="#4CAF50"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
                         android:text="Data Anggota"
-                        android:textColor="@color/sec"
                         android:textStyle="bold"
-                        android:layout_marginTop="8dp" />
+                        android:textColor="@color/black"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Menu: Data Pinjaman -->
+            <!-- MENU 2: DATA PINJAMAN -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardManageLoans"
+                android:id="@+id/menu_data_pinjaman"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp"
-                android:backgroundTint="@color/white"
-                android:layout_margin="8dp">
-
+                android:clickable="true"
+                android:focusable="true">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="20dp"
                     android:gravity="center"
-                    android:orientation="vertical">
-
+                    android:orientation="vertical"
+                    android:padding="24dp">
                     <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:src="@drawable/ic_loan"
-                        app:tint="@color/green" />
-
+                        app:tint="#4CAF50"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
                         android:text="Data Pinjaman"
-                        android:textColor="@color/sec"
                         android:textStyle="bold"
-                        android:layout_marginTop="8dp" />
+                        android:textColor="@color/black"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Menu: Transaksi -->
+            <!-- MENU 3: TRANSAKSI -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardTransactions"
+                android:id="@+id/menu_transaksi"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp"
-                android:backgroundTint="@color/white"
-                android:layout_margin="8dp">
-
+                android:clickable="true"
+                android:focusable="true">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="20dp"
                     android:gravity="center"
-                    android:orientation="vertical">
-
+                    android:orientation="vertical"
+                    android:padding="24dp">
                     <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/ic_transaction"
-                        app:tint="@color/green" />
-
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_manual_transfer"
+                        app:tint="#4CAF50"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
                         android:text="Transaksi"
-                        android:textColor="@color/sec"
                         android:textStyle="bold"
-                        android:layout_marginTop="8dp" />
+                        android:textColor="@color/black"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Menu: Laporan -->
+            <!-- MENU 4: LAPORAN (Opsional) -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardReports"
+                android:id="@+id/menu_laporan"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp"
-                android:backgroundTint="@color/white"
-                android:layout_margin="8dp">
-
+                android:clickable="true"
+                android:focusable="true">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="20dp"
                     android:gravity="center"
-                    android:orientation="vertical">
-
+                    android:orientation="vertical"
+                    android:padding="24dp">
                     <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:src="@drawable/ic_report"
-                        app:tint="@color/green" />
-
+                        app:tint="#4CAF50"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
                         android:text="Laporan"
-                        android:textColor="@color/sec"
                         android:textStyle="bold"
-                        android:layout_marginTop="8dp" />
+                        android:textColor="@color/black"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Menu: Notifikasi -->
+            <!-- MENU 5: NOTIFIKASI (Sudah Selesai) -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardNotifications"
+                android:id="@+id/menu_notifikasi"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp"
-                android:backgroundTint="@color/white"
-                android:layout_margin="8dp">
-
+                android:clickable="true"
+                android:focusable="true">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="20dp"
                     android:gravity="center"
-                    android:orientation="vertical">
-
+                    android:orientation="vertical"
+                    android:padding="24dp">
                     <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:src="@drawable/ic_notifications"
-                        app:tint="@color/green" />
-
+                        app:tint="#4CAF50"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
                         android:text="Notifikasi"
-                        android:textColor="@color/sec"
                         android:textStyle="bold"
-                        android:layout_marginTop="8dp" />
+                        android:textColor="@color/black"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Menu: Kas Koperasi -->
+            <!-- MENU 6: KAS KOPERASI (Opsional) -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardCash"
+                android:id="@+id/menu_kas"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="4dp"
-                android:backgroundTint="@color/white"
-                android:layout_margin="8dp">
-
+                app:cardElevation="4dp">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="20dp"
                     android:gravity="center"
-                    android:orientation="vertical">
-
+                    android:orientation="vertical"
+                    android:padding="24dp">
                     <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/ic_wallet"
-                        app:tint="@color/green" />
-
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_savings"
+                        app:tint="#4CAF50"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
                         android:text="Kas Koperasi"
-                        android:textColor="@color/sec"
                         android:textStyle="bold"
-                        android:layout_marginTop="8dp" />
+                        android:textColor="@color/black"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

@@ -29,7 +29,6 @@ class UploadProofFragment : Fragment() {
     private var _binding: FragmentUploadProofBinding? = null
     private val binding get() = _binding!!
 
-    // Variabel untuk menyimpan string gambar
     private var imageBase64: String? = null
 
     // Launcher Galeri
@@ -38,12 +37,9 @@ class UploadProofFragment : Fragment() {
             // Tampilkan Preview
             binding.ivProofPreview.setPadding(0, 0, 0, 0)
             binding.ivProofPreview.scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
+            Glide.with(this).load(it).into(binding.ivProofPreview)
 
-            Glide.with(this)
-                .load(it)
-                .into(binding.ivProofPreview)
-
-            // Proses Kompresi
+            // Proses Gambar (Background Thread)
             compressAndEncodeImage(it)
         }
     }
@@ -59,81 +55,74 @@ class UploadProofFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1. Terima Data dari PaymentDetailFragment
-        val title = arguments?.getString("title") ?: "Pembayaran Tagihan"
+        // Terima Data
+        val title = arguments?.getString("title") ?: "Pembayaran Manual"
         val amount = arguments?.getDouble("amount") ?: 0.0
         val loanId = arguments?.getString("loanId") ?: ""
 
-        // 2. Setup Tombol
+        // Tombol Galeri
         binding.btnOpenGallery.setOnClickListener {
             pickImageLauncher.launch("image/*")
         }
 
         binding.btnOpenCamera.setOnClickListener {
-            Toast.makeText(context, "Gunakan Galeri untuk demo ini", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Gunakan Galeri untuk demo", Toast.LENGTH_SHORT).show()
         }
 
-        // 3. Logic Simpan
+        // Tombol Kirim
         binding.btnSubmitProof.setOnClickListener {
-            if (imageBase64 == null) {
-                Toast.makeText(context, "Harap unggah bukti pembayaran!", Toast.LENGTH_SHORT).show()
+            if (imageBase64 != null) {
+                saveManualPayment(title, amount, loanId)
             } else {
-                saveTransactionToFirestore(title, amount, loanId)
+                Toast.makeText(context, "Harap unggah bukti pembayaran", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun saveTransactionToFirestore(title: String, amount: Double, loanId: String) {
-        setLoading(true)
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
+    private fun saveManualPayment(title: String, amount: Double, loanId: String) {
+        binding.btnSubmitProof.isEnabled = false
+        binding.btnSubmitProof.text = "Mengirim..."
 
-        if (userId == null) {
-            Toast.makeText(context, "Sesi habis, login ulang", Toast.LENGTH_SHORT).show()
-            setLoading(false)
-            return
-        }
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
         val transactionData = hashMapOf(
             "title" to title,
             "amount" to amount,
-            "type" to "loan_payment", // Tipe khusus bayar hutang (Uang Keluar)
+            "type" to "loan_payment",
             "method" to "manual_transfer",
-            "status" to "pending", // Status pending menunggu admin
+            "status" to "pending", // Pending karena manual
             "loanId" to loanId,
             "timestamp" to System.currentTimeMillis(),
-            "proofImageUrl" to imageBase64, // Simpan Gambar
+            "proofImageUrl" to imageBase64, // Gambar Base64
             "userId" to userId
         )
 
         FirebaseFirestore.getInstance().collection("transactions")
             .add(transactionData)
             .addOnSuccessListener {
-                setLoading(false)
-                Toast.makeText(context, "Bukti Terkirim! Menunggu Verifikasi.", Toast.LENGTH_LONG).show()
-                // Kembali ke Home
+                Toast.makeText(context, "Bukti Terkirim!", Toast.LENGTH_LONG).show()
                 findNavController().popBackStack(R.id.homeFragment, false)
             }
             .addOnFailureListener {
-                setLoading(false)
+                binding.btnSubmitProof.isEnabled = true
+                binding.btnSubmitProof.text = "Kirim Bukti Pembayaran"
                 Toast.makeText(context, "Gagal: ${it.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
-    private fun setLoading(isLoading: Boolean) {
-        binding.btnSubmitProof.isEnabled = !isLoading
-        binding.btnSubmitProof.text = if (isLoading) "Mengirim..." else "Kirim Bukti Pembayaran"
-    }
-
-    // --- LOGIKA KOMPRESI GAMBAR (Copy dari AddSavings) ---
+    // --- TEKNIK BASE64 (Sama seperti AddSavings) ---
     private fun compressAndEncodeImage(uri: Uri) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                withContext(Dispatchers.Main) { setLoading(true) }
+                withContext(Dispatchers.Main) {
+                    binding.btnSubmitProof.isEnabled = false
+                    binding.btnSubmitProof.text = "Memproses Gambar..."
+                }
 
                 val inputStream = requireContext().contentResolver.openInputStream(uri)
                 val bitmap = BitmapFactory.decodeStream(inputStream)
 
-                // Resize max 800px
+                // Resize max 800px biar ringan
                 val compressedBitmap = compressBitmap(bitmap, 800)
 
                 val outputStream = ByteArrayOutputStream()
@@ -142,12 +131,12 @@ class UploadProofFragment : Fragment() {
 
                 withContext(Dispatchers.Main) {
                     imageBase64 = encodedString
-                    setLoading(false)
+                    binding.btnSubmitProof.isEnabled = true
+                    binding.btnSubmitProof.text = "Kirim Bukti Pembayaran"
                     Toast.makeText(context, "Gambar siap!", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    setLoading(false)
                     Toast.makeText(context, "Gagal proses gambar", Toast.LENGTH_SHORT).show()
                 }
             }
