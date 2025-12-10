@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.example.map_mid_term.data.model.Transaction
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 
 class TransactionViewModel : ViewModel() {
@@ -19,7 +20,6 @@ class TransactionViewModel : ViewModel() {
     private val _totalBalance = MutableLiveData<Double>()
     val totalBalance: LiveData<Double> = _totalBalance
 
-    // Data Pinjaman Aktif (Jika ada)
     private val _activeLoan = MutableLiveData<Map<String, Any>?>()
     val activeLoan: LiveData<Map<String, Any>?> = _activeLoan
 
@@ -29,76 +29,88 @@ class TransactionViewModel : ViewModel() {
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
 
-    private val _saveSuccess = MutableLiveData<Boolean>()
-    val saveSuccess: LiveData<Boolean> = _saveSuccess
+    // --- VARIABEL PENYIMPAN CCTV (LISTENER) ---
+    private var transactionListener: ListenerRegistration? = null
+    private var loanListener: ListenerRegistration? = null
 
-    // 1. Ambil Riwayat & Hitung Saldo
+    // 1. Ambil Riwayat & Hitung Saldo (SECARA REAL-TIME)
     fun fetchTransactions() {
         val userId = auth.currentUser?.uid ?: return
+
+        if (transactionListener != null) return
+
         _isLoading.value = true
 
-        db.collection("transactions")
+        transactionListener = db.collection("transactions")
             .whereEqualTo("userId", userId)
             .orderBy("timestamp", Query.Direction.DESCENDING)
-            .get()
-            .addOnSuccessListener { documents ->
-                val list = ArrayList<Transaction>()
-                var balance = 0.0
-
-                for (doc in documents) {
-                    val trx = doc.toObject(Transaction::class.java)
-                    trx.id = doc.id
-                    list.add(trx)
-
-                    // HITUNG SALDO REAL
-                    // Hanya hitung jika status verified/success atau pending (tergantung kebijakan)
-                    // Disini kita anggap semua yang masuk DB mempengaruhi saldo visual
-                    if (trx.type == "credit") {
-                        balance += trx.amount
-                    } else if (trx.type == "debit" || trx.type == "loan_payment") {
-                        balance -= trx.amount
-                    }
+            .addSnapshotListener { documents, error ->
+                if (error != null) {
+                    _isLoading.value = false
+                    return@addSnapshotListener
                 }
 
-                _transactions.value = list
-                _totalBalance.value = balance
-                _isLoading.value = false
-            }
-            .addOnFailureListener {
-                _isLoading.value = false
-                // _errorMessage.value = "Gagal: ${it.message}" // Optional: matikan jika mengganggu
+                if (documents != null) {
+                    val list = ArrayList<Transaction>()
+                    var balance = 0.0
+
+                    for (doc in documents) {
+                        val trx = doc.toObject(Transaction::class.java)
+                        trx.id = doc.id
+                        list.add(trx)
+
+                        // --- LOGIKA SALDO DIPERBAIKI ---
+                        // credit = Simpanan (Menambah Saldo)
+                        // debit = Penarikan (Mengurangi Saldo)
+                        // loan_payment = Bayar Hutang via Transfer (TIDAK Mengurangi Saldo Simpanan)
+
+                        if (trx.type == "credit") {
+                            balance += trx.amount
+                        } else if (trx.type == "debit") {
+                            // Hanya kurangi jika tipenya benar-benar penarikan saldo
+                            balance -= trx.amount
+                        }
+                        // Catatan: loan_payment diabaikan dari perhitungan saldo
+                        // karena pembayarannya dari luar (Transfer Bank), bukan potong saldo.
+                    }
+
+                    _transactions.value = list
+                    _totalBalance.value = balance
+                    _isLoading.value = false
+                }
             }
     }
 
-    // 2. Cek Pinjaman Aktif
+    // 2. Cek Pinjaman Aktif (SECARA REAL-TIME)
     fun checkActiveLoan() {
         val userId = auth.currentUser?.uid ?: return
 
-        // Cari di koleksi loan_applications yang statusnya 'approved'
-        db.collection("loan_applications")
+        if (loanListener != null) return
+
+        loanListener = db.collection("loan_applications")
             .whereEqualTo("userId", userId)
-            .whereEqualTo("status", "approved") // KUNCI: Hanya yang disetujui admin
+            .whereEqualTo("status", "approved")
             .limit(1)
-            .get()
-            .addOnSuccessListener { documents ->
-                if (!documents.isEmpty) {
+            .addSnapshotListener { documents, error ->
+                if (error != null) return@addSnapshotListener
+
+                if (documents != null && !documents.isEmpty) {
                     val doc = documents.documents[0]
-                    // Kirim data pinjaman ke UI
                     _activeLoan.value = doc.data
                 } else {
-                    // Tidak ada pinjaman aktif
                     _activeLoan.value = null
                 }
             }
     }
 
-    // 3. Simpan Simpanan (Dipakai di AddSavingsFragment)
-    fun saveNewSaving(title: String, amount: Double, typeDesc: String, base64Image: String) {
-        // ... (Kode ini tidak perlu diubah, pakai yang lama atau sesuaikan logicnya)
-        // Saya sederhanakan di sini agar fokus ke fitur baru
+    override fun onCleared() {
+        super.onCleared()
+        transactionListener?.remove()
+        loanListener?.remove()
     }
 
     fun setLoading(loading: Boolean) { _isLoading.value = loading }
-    fun doneNavigating() { _saveSuccess.value = false }
+    fun doneNavigating() { }
     fun doneDisplayingError() { _errorMessage.value = null }
+    fun saveNewSaving(title: String, amount: Double, typeDesc: String, base64Image: String) { }
 }

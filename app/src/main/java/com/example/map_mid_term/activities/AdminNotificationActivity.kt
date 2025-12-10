@@ -1,41 +1,91 @@
 package com.example.map_mid_term.activities
 
-import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.map_mid_term.R
 import com.example.map_mid_term.adapters.AdminNotificationAdapter
-import com.example.map_mid_term.model.AdminNotification
-import com.google.android.material.appbar.MaterialToolbar
+import com.example.map_mid_term.data.model.LoanApplication
+import com.example.map_mid_term.databinding.ActivityAdminNotificationBinding
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 
 class AdminNotificationActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityAdminNotificationBinding
+    private val db = FirebaseFirestore.getInstance()
+    private lateinit var adapter: AdminNotificationAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_admin_notification)
+        binding = ActivityAdminNotificationBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
-        toolbar.title = "Notifikasi Pengajuan"
-        toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
+        setupRecyclerView()
+        fetchPendingLoans() // Mulai memantau data
 
-        val recyclerView = findViewById<RecyclerView>(R.id.recyclerAdminNotifications)
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.toolbar.setNavigationOnClickListener { finish() }
+    }
 
-        val notifications = listOf(
-            AdminNotification("L001", "M001", 1000000.0, "Sedang Diproses"),
-            AdminNotification("L002", "M002", 2000000.0, "Menunggu Persetujuan"),
-            AdminNotification("L003", "M003", 500000.0, "Disetujui")
+    private fun setupRecyclerView() {
+        adapter = AdminNotificationAdapter(
+            arrayListOf(),
+            onApprove = { loan -> updateLoanStatus(loan, "approved") },
+            onReject = { loan -> updateLoanStatus(loan, "rejected") }
         )
+        binding.rvNotifications.layoutManager = LinearLayoutManager(this)
+        binding.rvNotifications.adapter = adapter
+    }
 
-        recyclerView.adapter = AdminNotificationAdapter(notifications) { notif ->
-            val intent = Intent(this, AdminNotificationDetailActivity::class.java)
-            intent.putExtra("loanId", notif.loanId)
-            intent.putExtra("memberId", notif.memberId)
-            intent.putExtra("amount", notif.amount)
-            intent.putExtra("status", notif.status)
-            startActivity(intent)
-        }
+    // FUNGSI REAL-TIME: Memantau pengajuan yang 'pending'
+    private fun fetchPendingLoans() {
+        binding.progressBar.visibility = View.VISIBLE
+
+        db.collection("loan_applications")
+            .whereEqualTo("status", "pending") // Hanya ambil yang belum diproses
+            .orderBy("applicationDate", Query.Direction.DESCENDING)
+            .addSnapshotListener { documents, error ->
+                binding.progressBar.visibility = View.GONE
+
+                if (error != null) {
+                    Toast.makeText(this, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                    return@addSnapshotListener
+                }
+
+                if (documents != null) {
+                    val list = ArrayList<LoanApplication>()
+                    for (doc in documents) {
+                        val loan = doc.toObject(LoanApplication::class.java)
+                        loan.id = doc.id // Penting: Simpan ID dokumen untuk update nanti
+                        list.add(loan)
+                    }
+
+                    adapter.updateData(list)
+
+                    if (list.isEmpty()) {
+                        binding.tvEmptyState.visibility = View.VISIBLE
+                    } else {
+                        binding.tvEmptyState.visibility = View.GONE
+                    }
+                }
+            }
+    }
+
+    // Fungsi Eksekusi: Update status di database
+    private fun updateLoanStatus(loan: LoanApplication, newStatus: String) {
+        // Tampilkan loading dialog atau progress (opsional, disini pake Toast aja biar cepet)
+        Toast.makeText(this, "Memproses...", Toast.LENGTH_SHORT).show()
+
+        db.collection("loan_applications").document(loan.id)
+            .update("status", newStatus)
+            .addOnSuccessListener {
+                val pesan = if (newStatus == "approved") "Pinjaman Disetujui!" else "Pinjaman Ditolak"
+                Toast.makeText(this, pesan, Toast.LENGTH_SHORT).show()
+                // Data di list akan otomatis hilang/update karena kita pakai addSnapshotListener
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Gagal update: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 }

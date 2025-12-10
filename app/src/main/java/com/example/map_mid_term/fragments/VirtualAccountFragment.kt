@@ -31,44 +31,45 @@ class VirtualAccountFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Terima Data
-        val title = arguments?.getString("title") ?: "Pembayaran"
+        // Terima Data Tagihan
+        val title = arguments?.getString("title") ?: "Pembayaran VA"
         val amount = arguments?.getDouble("amount") ?: 0.0
+        val loanId = arguments?.getString("loanId") ?: ""
 
         // Update UI
         binding.tvTotalPayment.text = "Rp ${"%,.0f".format(amount)}"
 
-        // Fitur Copy
+        // Fitur Salin Nomor VA
         binding.btnCopyVa.setOnClickListener {
             val clipboard = context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val vaNumber = binding.tvVaNumber.text.toString().replace(" ", "")
             val clip = ClipData.newPlainText("VA Number", vaNumber)
             clipboard.setPrimaryClip(clip)
-            Toast.makeText(context, "Nomor Virtual Account disalin!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Nomor VA disalin!", Toast.LENGTH_SHORT).show()
         }
 
-        // --- LOGIKA SIMPAN KE FIREBASE ---
+        // --- LOGIKA SIMPAN KE DATABASE ---
         binding.btnFinishPayment.setOnClickListener {
-            savePaymentToFirestore(title, amount)
+            savePayment(title, amount, loanId)
         }
     }
 
-    private fun savePaymentToFirestore(title: String, amount: Double) {
+    private fun savePayment(title: String, amount: Double, loanId: String) {
+        // Matikan tombol biar gak dipencet 2x
         binding.btnFinishPayment.isEnabled = false
         binding.btnFinishPayment.text = "Memproses..."
 
         val userId = FirebaseAuth.getInstance().currentUser?.uid
-        if (userId == null) {
-            Toast.makeText(context, "Sesi habis, login ulang", Toast.LENGTH_SHORT).show()
-            return
-        }
+        if (userId == null) return
 
+        // Data Transaksi
         val transactionData = hashMapOf(
             "title" to title,
             "amount" to amount,
             "type" to "loan_payment", // Tipe khusus bayar hutang
             "method" to "virtual_account",
-            "status" to "verified", // Langsung sukses karena VA
+            "loanId" to loanId,
+            "status" to "success", // VA langsung sukses
             "timestamp" to System.currentTimeMillis(),
             "userId" to userId
         )
@@ -77,12 +78,11 @@ class VirtualAccountFragment : Fragment() {
             .add(transactionData)
             .addOnSuccessListener {
                 Toast.makeText(context, "Pembayaran Berhasil!", Toast.LENGTH_LONG).show()
-                // Kembali ke Home
+                // Kembali ke Home agar saldo/tagihan terupdate
                 findNavController().popBackStack(R.id.homeFragment, false)
             }
             .addOnFailureListener {
                 binding.btnFinishPayment.isEnabled = true
-                binding.btnFinishPayment.text = "Saya Sudah Bayar"
                 Toast.makeText(context, "Gagal: ${it.message}", Toast.LENGTH_SHORT).show()
             }
     }
