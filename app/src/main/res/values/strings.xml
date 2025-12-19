@@ -44,5 +44,8 @@
     <string name="default_total_savings">Rp 120.000.000</string>
     <string name="default_total_loan">Rp 85.000.000</string>
 
+    <string name="navigation_drawer_open">Buka Menu</string>
+    <string name="navigation_drawer_close">Tutup Menu</string>
+
 
 </resources>

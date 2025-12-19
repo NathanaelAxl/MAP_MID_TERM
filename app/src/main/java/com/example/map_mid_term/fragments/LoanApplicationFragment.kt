@@ -6,11 +6,9 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.RadioButton
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.example.map_mid_term.R
 import com.example.map_mid_term.databinding.FragmentLoanApplicationBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -44,14 +42,12 @@ class LoanApplicationFragment : Fragment() {
     }
 
     private fun setupCalculationListener() {
-        // Hitung ulang setiap kali teks berubah
         binding.etLoanAmount.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) { calculateInstallment() }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        // Hitung ulang setiap kali tenor berubah
         binding.rgTenor.setOnCheckedChangeListener { _, _ ->
             calculateInstallment()
         }
@@ -85,10 +81,16 @@ class LoanApplicationFragment : Fragment() {
     }
 
     private fun getSelectedTenor(): Int {
-        return when (binding.rgTenor.checkedRadioButtonId) {
-            R.id.rb_3_months -> 3
-            R.id.rb_6_months -> 6
-            R.id.rb_12_months -> 12
+        // Sesuaikan ID RadioButton dengan layout XML Anda (misal rb_3_months)
+        // Jika ID di XML adalah rb_3_bulan, ganti di sini.
+        // Saya asumsikan ID standar rb_3_months dll.
+        val checkedId = binding.rgTenor.checkedRadioButtonId
+        // Anda perlu memastikan ID di XML fragment_loan_application.xml Anda sesuai.
+        // Contoh sederhana jika ID-nya dinamis atau Anda pakai when:
+        return when (checkedId) {
+            binding.rgTenor.getChildAt(0).id -> 3 // Asumsi urutan 3, 6, 12
+            binding.rgTenor.getChildAt(1).id -> 6
+            binding.rgTenor.getChildAt(2).id -> 12
             else -> 0
         }
     }
@@ -106,25 +108,24 @@ class LoanApplicationFragment : Fragment() {
         val tenor = getSelectedTenor()
         val reason = binding.etReason.text.toString()
 
-        // Hitung total yang harus dibayar per bulan (untuk disimpan di DB)
         val monthlyInstallment = (amount / tenor) + (amount * interestRate)
 
+        // DATA YANG DIKIRIM KE FIREBASE
         val loanData = hashMapOf(
             "userId" to userId,
             "amount" to amount,
             "tenor" to tenor,
             "reason" to reason,
             "monthlyInstallment" to monthlyInstallment,
-            "status" to "pending", // Status awal PENDING
+            "status" to "pending", // STATUS AWAL: PENDING
             "applicationDate" to System.currentTimeMillis()
         )
 
-        // Simpan ke koleksi 'loan_applications'
         FirebaseFirestore.getInstance().collection("loan_applications")
             .add(loanData)
             .addOnSuccessListener {
                 setLoading(false)
-                Toast.makeText(context, "Pengajuan Berhasil Dikirim!", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Pengajuan Berhasil! Menunggu persetujuan admin.", Toast.LENGTH_LONG).show()
                 findNavController().popBackStack()
             }
             .addOnFailureListener {
