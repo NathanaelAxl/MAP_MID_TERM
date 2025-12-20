@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.map_mid_term.R
@@ -26,29 +27,46 @@ class PaymentDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // 1. TERIMA DATA (Dari TransactionFragment)
-        // Default value dipakai jika data kosong (misal saat testing langsung)
         val title = arguments?.getString("title") ?: "Angsuran Pinjaman"
         val amount = arguments?.getDouble("amount") ?: 0.0
         val loanId = arguments?.getString("loanId") ?: ""
 
-        // Update UI biar sesuai tagihan asli
+        // --- VALIDASI PENTING ---
+        // Jika loanId kosong, berarti ada yang salah. Jangan biarkan lanjut bayar.
+        if (loanId.isEmpty()) {
+            Toast.makeText(context, "Data ID Pinjaman tidak ditemukan!", Toast.LENGTH_LONG).show()
+            findNavController().popBackStack() // Kembali ke menu sebelumnya
+            return
+        }
+
+        // Update UI
         binding.tvPaymentAmount.text = "Rp ${"%,.0f".format(amount)}"
 
-        // 2. BUNGKUS DATA (Untuk dikirim ke halaman selanjutnya)
+        // 2. BUNGKUS DATA (Untuk dikirim ke langkah terakhir)
         val nextBundle = Bundle().apply {
             putString("title", title)
             putDouble("amount", amount)
-            putString("loanId", loanId)
+            putString("loanId", loanId) // Ini "kunci" yang harus dibawa sampai akhir
         }
 
         // Navigasi ke VA
         binding.cardVirtualAccount.setOnClickListener {
-            findNavController().navigate(R.id.action_paymentDetailFragment_to_virtualAccountFragment, nextBundle)
+            // Pastikan ID action ini benar ada di nav_graph.xml
+            try {
+                findNavController().navigate(R.id.action_paymentDetailFragment_to_virtualAccountFragment, nextBundle)
+            } catch (e: Exception) {
+                Toast.makeText(context, "Fitur VA belum siap", Toast.LENGTH_SHORT).show()
+            }
         }
 
         // Navigasi ke Upload Bukti
         binding.cardManualTransfer.setOnClickListener {
-            findNavController().navigate(R.id.action_paymentDetailFragment_to_uploadProofFragment, nextBundle)
+            // Pastikan ID action ini benar ada di nav_graph.xml
+            try {
+                findNavController().navigate(R.id.action_paymentDetailFragment_to_uploadProofFragment, nextBundle)
+            } catch (e: Exception) {
+                Toast.makeText(context, "Fitur Upload belum siap", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

@@ -38,46 +38,57 @@ class TransactionAdapter(private var transactionList: ArrayList<Transaction>) :
         val context = holder.itemView.context
 
         holder.binding.apply {
-            tvTransactionDescription.text = transaction.title
+            // --- JUDUL OTOMATIS (PENGGANTI TITLE) ---
+            val judulTransaksi = if (transaction.type == "credit") {
+                "Simpanan Masuk"
+            } else {
+                "Pembayaran/Angsuran"
+            }
+            tvTransactionDescription.text = judulTransaksi
 
-            // Handle tanggal null dengan aman
+            // --- TANGGAL ---
             tvTransactionDate.text = try {
                 transaction.timestamp?.let { dateFormat.format(it) } ?: "N/A"
             } catch (e: Exception) { "-" }
 
+            // --- NOMINAL & WARNA ---
             if (transaction.type == "credit") {
+                // Uang Masuk (Hijau)
                 tvTransactionAmount.text = "+ Rp${"%,.0f".format(transaction.amount)}"
-                // Menggunakan warna standar Android biar aman
                 tvTransactionAmount.setTextColor(ContextCompat.getColor(context, android.R.color.holo_green_dark))
-                ivTransactionIcon.setImageResource(R.drawable.ic_arrow_downward)
+                // Pakai icon bawaan Android
+                ivTransactionIcon.setImageResource(android.R.drawable.stat_sys_download)
             } else {
+                // Uang Keluar (Merah)
                 tvTransactionAmount.text = "- Rp${"%,.0f".format(transaction.amount)}"
                 tvTransactionAmount.setTextColor(ContextCompat.getColor(context, android.R.color.holo_red_dark))
-                ivTransactionIcon.setImageResource(R.drawable.ic_arrow_upward)
+                // Pakai icon bawaan Android
+                ivTransactionIcon.setImageResource(android.R.drawable.stat_sys_upload)
             }
 
-            // --- LOAD GAMBAR ---
-            if (!transaction.proofImageUrl.isNullOrEmpty()) {
+            // --- LOAD GAMBAR BUKTI (Base64 / URL) ---
+            // Asumsi: Di model Transaction kamu ada field 'proofImageUrl'
+            // Jika error di baris ini, pastikan Transaction.kt punya var proofImageUrl: String? = null
+            if (transaction.proofImageUrl != null && transaction.proofImageUrl!!.isNotEmpty()) {
                 ivProofImage.visibility = View.VISIBLE
                 val imageString = transaction.proofImageUrl!!
 
-                // Cek apakah Base64 atau URL
                 if (imageString.length > 200 && !imageString.startsWith("http")) {
                     try {
+                        // Decode Base64
                         val decodedString = Base64.decode(imageString, Base64.DEFAULT)
                         val decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
 
                         ivProofImage.load(decodedBitmap) {
                             crossfade(true)
-                            // TIDAK ADA transformation() DISINI. SUDAH DIATUR DI XML.
                         }
                     } catch (e: Exception) {
                         ivProofImage.visibility = View.GONE
                     }
                 } else {
+                    // Load URL Biasa
                     ivProofImage.load(imageString) {
                         crossfade(true)
-                        // placeholder(R.drawable.ic_image_placeholder) // Uncomment jika punya icon ini
                     }
                 }
             } else {

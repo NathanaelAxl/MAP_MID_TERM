@@ -56,9 +56,13 @@ class AdminNotificationActivity : AppCompatActivity() {
                 if (documents != null) {
                     val list = ArrayList<LoanApplication>()
                     for (doc in documents) {
-                        val loan = doc.toObject(LoanApplication::class.java)
-                        loan.id = doc.id // Penting: Simpan ID dokumen untuk update nanti
-                        list.add(loan)
+                        try {
+                            val loan = doc.toObject(LoanApplication::class.java)
+                            loan.id = doc.id // Penting: Simpan ID dokumen
+                            list.add(loan)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
 
                     adapter.updateData(list)
@@ -72,17 +76,38 @@ class AdminNotificationActivity : AppCompatActivity() {
             }
     }
 
-    // Fungsi Eksekusi: Update status di database
+    // --- REVISI UTAMA ADA DI SINI ---
     private fun updateLoanStatus(loan: LoanApplication, newStatus: String) {
-        // Tampilkan loading dialog atau progress (opsional, disini pake Toast aja biar cepet)
         Toast.makeText(this, "Memproses...", Toast.LENGTH_SHORT).show()
 
+        // Siapkan map data yang akan diupdate
+        val updates = mutableMapOf<String, Any>(
+            "status" to newStatus
+        )
+
+        // JIKA DI-APPROVE: Hitung Bunga & Total Hutang
+        if (newStatus == "approved") {
+            val rate = 1.5 // Bunga 1.5%
+
+            // Rumus: Pokok * (1.5/100) * Tenor
+            val totalInterest = loan.amount * (rate / 100) * loan.tenor
+
+            // Total Bayar = Pokok + Total Bunga
+            val totalPayable = loan.amount + totalInterest
+
+            // Masukkan ke dalam map updates
+            updates["totalPayable"] = totalPayable
+            updates["interestRate"] = rate
+            updates["paidAmount"] = 0.0 // Reset pembayaran jadi 0
+        }
+
+        // Eksekusi Update ke Firestore
         db.collection("loan_applications").document(loan.id)
-            .update("status", newStatus)
+            .update(updates)
             .addOnSuccessListener {
                 val pesan = if (newStatus == "approved") "Pinjaman Disetujui!" else "Pinjaman Ditolak"
                 Toast.makeText(this, pesan, Toast.LENGTH_SHORT).show()
-                // Data di list akan otomatis hilang/update karena kita pakai addSnapshotListener
+                // Data di list otomatis hilang karena listener
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Gagal update: ${it.message}", Toast.LENGTH_SHORT).show()

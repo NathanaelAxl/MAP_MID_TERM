@@ -1,112 +1,118 @@
 package com.example.map_mid_term.activities
 
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.pdf.PdfDocument
 import android.os.Bundle
+import android.os.Environment
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar // Import Toolbar
-import com.example.map_mid_term.R // Import R
 import com.example.map_mid_term.databinding.ActivityAdminReportBinding
-import com.google.firebase.firestore.FirebaseFirestore
-import java.text.NumberFormat
+import java.io.File
+import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 class AdminReportActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAdminReportBinding
-    private val db = FirebaseFirestore.getInstance()
 
-    // Variabel penampung untuk perhitungan
-    private var totalSimpanan = 0.0
-    private var totalPinjamanDisalurkan = 0.0
-    private var totalAngsuranMasuk = 0.0
-    private var estimasiLaba = 0.0
+    // Variabel data (Anggap ini data yang sudah kamu hitung dari Firestore)
+    private var totalSimpanan: Double = 1000000.0
+    private var totalPinjaman: Double = 2500000.0
+    private var saldoKas: Double = -1045833.0
+    private var labaBersih: Double = 225000.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAdminReportBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // PERBAIKAN: Gunakan findViewById agar tipe Toolbar dikenali dengan jelas
-        val toolbar = findViewById<Toolbar>(R.id.topAppBar)
-        toolbar.setNavigationOnClickListener { finish() }
-
-        // Tombol Ekspor (Fitur Dummy)
-        binding.btnExportReport.setOnClickListener {
-            Toast.makeText(this, "Laporan berhasil diekspor ke PDF (Demo)", Toast.LENGTH_SHORT).show()
+        // ... Kode fetch data Firestore kamu di sini ...
+        // updateUI()
+        binding.btnBack.setOnClickListener {
+            finish() // Kembali ke menu sebelumnya
         }
 
-        // Mulai hitung data secara real-time
-        startRealtimeMonitoring()
+        // TOMBOL EKSPOR
+        binding.btnExport.setOnClickListener {
+            exportToPDF()
+        }
     }
 
-    private fun startRealtimeMonitoring() {
-        // 1. MONITOR TRANSAKSI (Simpanan & Pembayaran Angsuran)
-        db.collection("transactions")
-            .addSnapshotListener { snapshots, e ->
-                if (e != null) return@addSnapshotListener
+    private fun exportToPDF() {
+        val pdfDocument = PdfDocument()
+        val paint = Paint()
 
-                totalSimpanan = 0.0
-                totalAngsuranMasuk = 0.0
+        // 1. Buat Halaman A4
+        val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create()
+        val page = pdfDocument.startPage(pageInfo)
+        val canvas: Canvas = page.canvas
 
-                if (snapshots != null) {
-                    for (doc in snapshots) {
-                        val amount = doc.getDouble("amount") ?: 0.0
-                        val type = doc.getString("type") ?: ""
+        // 2. Desain Isi PDF
+        // Judul
+        paint.textSize = 24f
+        paint.color = Color.BLACK
+        paint.isFakeBoldText = true
+        canvas.drawText("Laporan Keuangan Koperasi", 50f, 80f, paint)
 
-                        // Hitung Simpanan
-                        if (type == "credit") {
-                            totalSimpanan += amount
-                        }
-                        // Hitung Angsuran Masuk (Pembayaran Hutang)
-                        else if (type == "loan_payment") {
-                            totalAngsuranMasuk += amount
-                        }
-                    }
-                }
-                updateUI()
-            }
+        // Tanggal Cetak
+        paint.textSize = 14f
+        paint.isFakeBoldText = false
+        val tanggal = SimpleDateFormat("dd MMMM yyyy HH:mm", Locale.getDefault()).format(Date())
+        canvas.drawText("Dicetak pada: $tanggal", 50f, 110f, paint)
 
-        // 2. MONITOR PINJAMAN (Uang Keluar)
-        db.collection("loan_applications")
-            .whereEqualTo("status", "approved")
-            .addSnapshotListener { snapshots, e ->
-                if (e != null) return@addSnapshotListener
+        // Garis Pemisah
+        paint.strokeWidth = 2f
+        canvas.drawLine(50f, 130f, 545f, 130f, paint)
 
-                totalPinjamanDisalurkan = 0.0
-                estimasiLaba = 0.0
+        // --- ISI DATA ---
+        paint.textSize = 16f
+        var yPos = 180f // Posisi vertikal awal
 
-                if (snapshots != null) {
-                    for (doc in snapshots) {
-                        val amount = doc.getDouble("amount") ?: 0.0
-                        val tenor = doc.getLong("tenor") ?: 0
+        // Fungsi helper untuk menggambar baris
+        fun drawRow(label: String, value: Double, isNegativeRed: Boolean = false) {
+            paint.color = Color.BLACK
+            canvas.drawText(label, 50f, yPos, paint)
 
-                        totalPinjamanDisalurkan += amount
+            val formattedValue = "Rp ${"%,.0f".format(value)}"
 
-                        // Estimasi Laba Kasar (Misal bunga 1.5% x Tenor)
-                        // Ini logika sederhana untuk demo
-                        val bungaPerBulan = amount * 0.015
-                        val totalBunga = bungaPerBulan * tenor
-                        estimasiLaba += totalBunga
-                    }
-                }
-                updateUI()
-            }
-    }
+            // Logika Warna Merah/Hijau
+            if (isNegativeRed && value < 0) paint.color = Color.RED else paint.color = Color.parseColor("#4CAF50") // Hijau
 
-    private fun updateUI() {
-        // Rumus Kas = (Uang Masuk dari Simpanan + Angsuran) - Uang Keluar Pinjaman
-        // Catatan: Ini simulasi kas sederhana.
-        val saldoKas = (totalSimpanan + totalAngsuranMasuk) - totalPinjamanDisalurkan
+            // Gambar Nilai (Rata Kanan Manual)
+            val textWidth = paint.measureText(formattedValue)
+            canvas.drawText(formattedValue, 540f - textWidth, yPos, paint)
 
-        // Format Rupiah
-        val localeID = Locale("in", "ID")
-        val numberFormat = NumberFormat.getCurrencyInstance(localeID)
-        numberFormat.maximumFractionDigits = 0
+            yPos += 40f // Pindah baris ke bawah
+        }
 
-        // Update Text Views sesuai ID di XML kamu
-        binding.tvTotalSimpananReport.text = numberFormat.format(totalSimpanan)
-        binding.tvTotalPinjamanReport.text = numberFormat.format(totalPinjamanDisalurkan)
-        binding.tvSaldoKasReport.text = numberFormat.format(saldoKas)
-        binding.tvLabaBersihReport.text = numberFormat.format(estimasiLaba)
+        drawRow("Total Simpanan Anggota", totalSimpanan)
+        drawRow("Total Pinjaman Keluar", totalPinjaman)
+        drawRow("Saldo Kas Koperasi", saldoKas, true) // True artinya kalau minus jadi merah
+        drawRow("Laba Bersih (Bunga)", labaBersih)
+
+        // Footer
+        paint.color = Color.GRAY
+        paint.textSize = 12f
+        canvas.drawText("Laporan ini digenerate otomatis oleh Aplikasi Tabungin.", 50f, 800f, paint)
+
+        pdfDocument.finishPage(page)
+
+        // 3. Simpan File ke Folder Downloads
+        val fileName = "Laporan_Koperasi_${System.currentTimeMillis()}.pdf"
+        val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), fileName)
+
+        try {
+            pdfDocument.writeTo(FileOutputStream(file))
+            Toast.makeText(this, "PDF Berhasil Disimpan di Downloads!", Toast.LENGTH_LONG).show()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Gagal Ekspor: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+
+        pdfDocument.close()
     }
 }

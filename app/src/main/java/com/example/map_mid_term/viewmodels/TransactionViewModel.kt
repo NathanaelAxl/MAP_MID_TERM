@@ -8,6 +8,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.FirebaseFirestoreException
 
 class TransactionViewModel : ViewModel() {
 
@@ -29,14 +30,12 @@ class TransactionViewModel : ViewModel() {
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
 
-    // --- VARIABEL PENYIMPAN CCTV (LISTENER) ---
     private var transactionListener: ListenerRegistration? = null
     private var loanListener: ListenerRegistration? = null
 
-    // 1. Ambil Riwayat & Hitung Saldo (SECARA REAL-TIME)
+    // 1. Ambil Riwayat & Hitung Saldo
     fun fetchTransactions() {
         val userId = auth.currentUser?.uid ?: return
-
         if (transactionListener != null) return
 
         _isLoading.value = true
@@ -59,19 +58,11 @@ class TransactionViewModel : ViewModel() {
                         trx.id = doc.id
                         list.add(trx)
 
-                        // --- LOGIKA SALDO DIPERBAIKI ---
-                        // credit = Simpanan (Menambah Saldo)
-                        // debit = Penarikan (Mengurangi Saldo)
-                        // loan_payment = Bayar Hutang via Transfer (TIDAK Mengurangi Saldo Simpanan)
-
                         if (trx.type == "credit") {
                             balance += trx.amount
                         } else if (trx.type == "debit") {
-                            // Hanya kurangi jika tipenya benar-benar penarikan saldo
                             balance -= trx.amount
                         }
-                        // Catatan: loan_payment diabaikan dari perhitungan saldo
-                        // karena pembayarannya dari luar (Transfer Bank), bukan potong saldo.
                     }
 
                     _transactions.value = list
@@ -81,10 +72,9 @@ class TransactionViewModel : ViewModel() {
             }
     }
 
-    // 2. Cek Pinjaman Aktif (SECARA REAL-TIME)
+    // 2. Cek Pinjaman Aktif (REVISI PENTING: Memasukkan ID Dokumen)
     fun checkActiveLoan() {
         val userId = auth.currentUser?.uid ?: return
-
         if (loanListener != null) return
 
         loanListener = db.collection("loan_applications")
@@ -96,11 +86,67 @@ class TransactionViewModel : ViewModel() {
 
                 if (documents != null && !documents.isEmpty) {
                     val doc = documents.documents[0]
-                    _activeLoan.value = doc.data
+
+                    // Kita ambil datanya menjadi MutableMap agar bisa disisipkan ID
+                    val loanData = doc.data?.toMutableMap()
+
+                    // PENTING: Masukkan ID dokumen Firestore ke dalam map
+                    // Supaya Fragment bisa mengambilnya nanti (loanData["id"])
+                    if (loanData != null) {
+                        loanData["id"] = doc.id
+                        _activeLoan.value = loanData
+                    }
                 } else {
                     _activeLoan.value = null
                 }
             }
+    }
+
+    // 3. FUNGSI BAYAR ANGSURAN (LOGIKA REAL PAYMENT)
+    fun payInstallment(
+        loanId: String,
+        paymentAmount: Double,
+        proofImageBase64: String?,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val loanRef = db.collection("loan_applications").document(loanId)
+        val transactionRef = db.collection("transactions").document()
+
+        db.runTransaction { transaction ->
+            // A. BACA DATA TERBARU (READ)
+            val snapshot = transaction.get(loanRef)
+
+            val totalPayable = snapshot.getDouble("totalPayable") ?: 0.0
+            val currentPaid = snapshot.getDouble("paidAmount") ?: 0.0
+            val userId = snapshot.getString("userId") ?: ""
+
+            // B. HITUNG MATEMATIKA
+            val newPaidAmount = currentPaid + paymentAmount
+
+            // Cek Lunas (Pakai toleransi 1.0 perak utk hindari koma floating point)
+            val newStatus = if (newPaidAmount >= (totalPayable - 1.0)) "paid" else "approved"
+
+            // C. TULIS PERUBAHAN (WRITE)
+            // Update hutang
+            transaction.update(loanRef, "paidAmount", newPaidAmount)
+            transaction.update(loanRef, "status", newStatus)
+
+            // Catat history
+            val newTrx = Transaction(
+                id = transactionRef.id,
+                title = "Bayar Angsuran",
+                amount = paymentAmount,
+                type = "loan_payment", // Tipe khusus cicilan
+                timestamp = System.currentTimeMillis(),
+                status = "success",
+                proofImageUrl = proofImageBase64,
+                userId = userId
+            )
+            transaction.set(transactionRef, newTrx)
+        }
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { e -> onError(e.message ?: "Gagal") }
     }
 
     override fun onCleared() {
@@ -109,8 +155,7 @@ class TransactionViewModel : ViewModel() {
         loanListener?.remove()
     }
 
-    fun setLoading(loading: Boolean) { _isLoading.value = loading }
-    fun doneNavigating() { }
-    fun doneDisplayingError() { _errorMessage.value = null }
-    fun saveNewSaving(title: String, amount: Double, typeDesc: String, base64Image: String) { }
+    fun setLoading(isLoading: Boolean) {
+        _isLoading.value = isLoading
+    }
 }

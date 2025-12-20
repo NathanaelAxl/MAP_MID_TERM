@@ -11,6 +11,9 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
     <application
         android:name=".MyApplication"
         android:allowBackup="false"
@@ -23,8 +26,15 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.MAP_MID_TERM">
 
-        <!-- ========= HALAMAN AWAL (LOGIN) ========= -->
-        <!-- Pastikan intent-filter ini HANYA ada di sini -->
+        <activity
+            android:name=".activities.SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"> <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+        </activity>
+
         <activity
             android:name=".activities.LoginActivity"
             android:exported="true">
@@ -104,6 +114,8 @@
             android:exported="false"
             android:label="Detail Notifikasi"
             android:theme="@style/Theme.MAP_MID_TERM.Admin" />
+
+        <activity android:name=".activities.AdminTransactionActivity" />
 
     </application>
 </manifest>

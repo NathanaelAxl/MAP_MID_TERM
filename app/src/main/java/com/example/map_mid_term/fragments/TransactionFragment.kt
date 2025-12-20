@@ -22,9 +22,9 @@ class TransactionFragment : Fragment() {
     private val viewModel: TransactionViewModel by viewModels()
     private lateinit var transactionAdapter: TransactionAdapter
 
-    // Data pinjaman aktif (disimpan sementara untuk dikirim ke halaman bayar)
+    // Variabel untuk menyimpan data pinjaman aktif
     private var activeLoanId: String = ""
-    private var activeLoanAmount: Double = 0.0
+    private var monthlyBill: Double = 0.0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,9 +44,8 @@ class TransactionFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Ambil data terbaru setiap kali halaman dibuka
         viewModel.fetchTransactions()
-        viewModel.checkActiveLoan() // Cek apakah ada hutang?
+        viewModel.checkActiveLoan()
     }
 
     private fun observeViewModel() {
@@ -65,18 +64,23 @@ class TransactionFragment : Fragment() {
         // 2. Data Pinjaman Aktif (Tagihan)
         viewModel.activeLoan.observe(viewLifecycleOwner) { loanData ->
             if (loanData != null) {
-                // ADA PINJAMAN AKTIF -> Tampilkan Kartu
+                // ADA PINJAMAN -> Tampilkan Kartu
                 binding.layoutUpcomingPayment.visibility = View.VISIBLE
 
-                val monthly = loanData["monthlyInstallment"] as? Double ?: 0.0
-                // Simpan untuk navigasi bayar
-                activeLoanAmount = monthly
-                // Jika ID dokumen disimpan di map, ambil. Jika tidak, pakai dummy dulu atau ambil dr snapshot
-                activeLoanId = "LOAN-ACT"
+                // --- AMBIL DATA REAL DARI VIEWMODEL ---
+                activeLoanId = loanData["id"] as? String ?: "" // Ambil ID Dokumen Asli
 
-                binding.tvPaymentAmount.text = "Rp ${"%,.0f".format(monthly)}"
-                binding.tvPaymentTitle.text = "Angsuran Bulan Ini"
-                binding.tvPaymentDueDate.text = "Jatuh Tempo: 25 Bulan Ini"
+                val totalPayable = (loanData["totalPayable"] as? Number)?.toDouble() ?: 0.0
+                val tenor = (loanData["tenor"] as? Number)?.toInt() ?: 1
+
+                // Hitung cicilan per bulan: Total Hutang / Tenor
+                // (Atau kamu bisa simpan field 'monthlyInstallment' di DB jika mau fix)
+                monthlyBill = if (tenor > 0) totalPayable / tenor else 0.0
+
+                binding.tvPaymentAmount.text = "Rp ${"%,.0f".format(monthlyBill)}"
+                binding.tvPaymentTitle.text = "Angsuran Bulan Ini ($tenor Bulan)"
+                binding.tvPaymentDueDate.text = "Jatuh Tempo: Segera"
+
             } else {
                 // TIDAK ADA PINJAMAN -> Sembunyikan Kartu
                 binding.layoutUpcomingPayment.visibility = View.GONE
@@ -100,13 +104,13 @@ class TransactionFragment : Fragment() {
     private fun setupListeners() {
         // Klik Bayar Sekarang (Dari kartu tagihan)
         binding.btnPayNow.setOnClickListener {
-            navigateToPayment(activeLoanAmount)
+            navigateToPayment()
         }
 
-        // Klik Menu "Bayar Angsuran"
+        // Klik Menu "Bayar Angsuran" (Menu kotak)
         binding.cardBayarAngsuran.setOnClickListener {
             if (binding.layoutUpcomingPayment.visibility == View.VISIBLE) {
-                navigateToPayment(activeLoanAmount)
+                navigateToPayment()
             } else {
                 Toast.makeText(context, "Tidak ada tagihan aktif", Toast.LENGTH_SHORT).show()
             }
@@ -117,11 +121,17 @@ class TransactionFragment : Fragment() {
         }
     }
 
-    private fun navigateToPayment(amount: Double) {
+    private fun navigateToPayment() {
+        if (activeLoanId.isEmpty()) {
+            Toast.makeText(context, "Data pinjaman belum siap", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Kirim ID dan Nominal ke PaymentDetailFragment
         val bundle = Bundle().apply {
             putString("title", "Bayar Angsuran")
-            putDouble("amount", amount)
-            putString("loanId", activeLoanId)
+            putDouble("amount", monthlyBill)
+            putString("loanId", activeLoanId) // Kirim ID Asli
         }
         findNavController().navigate(R.id.action_transactionFragment_to_paymentDetailFragment, bundle)
     }

@@ -11,35 +11,34 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.map_mid_term.R
 import com.example.map_mid_term.databinding.FragmentUploadProofBinding
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.example.map_mid_term.viewmodels.TransactionViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
-import java.io.InputStream
 
 class UploadProofFragment : Fragment() {
 
     private var _binding: FragmentUploadProofBinding? = null
     private val binding get() = _binding!!
 
+    // 1. Panggil ViewModel (Otak Pembayaran)
+    private val viewModel: TransactionViewModel by viewModels()
+
     private var imageBase64: String? = null
 
     // Launcher Galeri
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
-            // Tampilkan Preview
             binding.ivProofPreview.setPadding(0, 0, 0, 0)
             binding.ivProofPreview.scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
             Glide.with(this).load(it).into(binding.ivProofPreview)
-
-            // Proses Gambar (Background Thread)
             compressAndEncodeImage(it)
         }
     }
@@ -55,7 +54,6 @@ class UploadProofFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Terima Data
         val title = arguments?.getString("title") ?: "Pembayaran Manual"
         val amount = arguments?.getDouble("amount") ?: 0.0
         val loanId = arguments?.getString("loanId") ?: ""
@@ -71,46 +69,48 @@ class UploadProofFragment : Fragment() {
 
         // Tombol Kirim
         binding.btnSubmitProof.setOnClickListener {
+            if (loanId.isEmpty()) {
+                Toast.makeText(context, "ID Pinjaman tidak valid", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             if (imageBase64 != null) {
-                saveManualPayment(title, amount, loanId)
+                // PANGGIL FUNGSI EKSEKUSI PEMBAYARAN
+                executePayment(loanId, amount)
             } else {
                 Toast.makeText(context, "Harap unggah bukti pembayaran", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun saveManualPayment(title: String, amount: Double, loanId: String) {
+    private fun executePayment(loanId: String, amount: Double) {
         binding.btnSubmitProof.isEnabled = false
-        binding.btnSubmitProof.text = "Mengirim..."
+        binding.btnSubmitProof.text = "Memproses Pembayaran..."
 
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        // 2. Panggil ViewModel.payInstallment
+        // Ini akan melakukan 2 hal sekaligus (Atomic):
+        // a. Mengurangi hutang di 'loan_applications'
+        // b. Mencatat history di 'transactions'
+        viewModel.payInstallment(
+            loanId = loanId,
+            paymentAmount = amount,
+            proofImageBase64 = imageBase64, // Bukti foto dikirim ke sini
+            onSuccess = {
+                binding.btnSubmitProof.isEnabled = true
+                Toast.makeText(context, "Pembayaran Berhasil! Hutang Berkurang.", Toast.LENGTH_LONG).show()
 
-        val transactionData = hashMapOf(
-            "title" to title,
-            "amount" to amount,
-            "type" to "loan_payment",
-            "method" to "manual_transfer",
-            "status" to "pending", // Pending karena manual
-            "loanId" to loanId,
-            "timestamp" to System.currentTimeMillis(),
-            "proofImageUrl" to imageBase64, // Gambar Base64
-            "userId" to userId
-        )
-
-        FirebaseFirestore.getInstance().collection("transactions")
-            .add(transactionData)
-            .addOnSuccessListener {
-                Toast.makeText(context, "Bukti Terkirim!", Toast.LENGTH_LONG).show()
+                // Kembali ke halaman utama (Home)
                 findNavController().popBackStack(R.id.homeFragment, false)
-            }
-            .addOnFailureListener {
+            },
+            onError = { errorMsg ->
                 binding.btnSubmitProof.isEnabled = true
                 binding.btnSubmitProof.text = "Kirim Bukti Pembayaran"
-                Toast.makeText(context, "Gagal: ${it.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Gagal: $errorMsg", Toast.LENGTH_LONG).show()
             }
+        )
     }
 
-    // --- TEKNIK BASE64 (Sama seperti AddSavings) ---
+    // --- TEKNIK BASE64 ---
     private fun compressAndEncodeImage(uri: Uri) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -121,10 +121,7 @@ class UploadProofFragment : Fragment() {
 
                 val inputStream = requireContext().contentResolver.openInputStream(uri)
                 val bitmap = BitmapFactory.decodeStream(inputStream)
-
-                // Resize max 800px biar ringan
                 val compressedBitmap = compressBitmap(bitmap, 800)
-
                 val outputStream = ByteArrayOutputStream()
                 compressedBitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream)
                 val encodedString = Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT)

@@ -37,11 +37,13 @@ class ActiveLoanFragment : Fragment() {
         }
 
         binding.btnApplyLoan.setOnClickListener {
+            // Navigasi ke form pengajuan
             try {
                 findNavController().navigate(R.id.action_activeLoanFragment_to_loanApplicationFragment)
             } catch (e: Exception) {
-                // Fallback ID jika action belum dibuat
-                findNavController().navigate(R.id.loanApplicationFragment)
+                // Fallback jika ID action belum ada (bisa pakai ID fragment tujuan langsung)
+                // findNavController().navigate(R.id.loanApplicationFragment)
+                Toast.makeText(context, "Navigasi belum di-setup", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -59,10 +61,7 @@ class ActiveLoanFragment : Fragment() {
         binding.layoutLoanDetails.visibility = View.GONE
         binding.layoutNoLoan.visibility = View.GONE
 
-        // Sembunyikan layout pending jika ada (Anda perlu menambahkan layout ini di XML nanti)
-        // Atau kita gunakan layoutNoLoan untuk menampilkan pesan pending sementara
-
-        // Cari pinjaman terbaru user (urutkan berdasarkan tanggal)
+        // Ambil data pinjaman terakhir user
         db.collection("loan_applications")
             .whereEqualTo("userId", userId)
             .orderBy("applicationDate", Query.Direction.DESCENDING)
@@ -73,53 +72,74 @@ class ActiveLoanFragment : Fragment() {
 
                 if (!documents.isEmpty) {
                     val doc = documents.documents[0]
+
+                    // Ambil Field Dasar
                     val status = doc.getString("status") ?: ""
-                    val amount = doc.getDouble("amount") ?: 0.0
-                    val tenor = doc.getLong("tenor") ?: 0
-                    val monthly = doc.getDouble("monthlyInstallment") ?: 0.0
+                    val amountPokok = doc.getDouble("amount") ?: 0.0
+                    val tenor = doc.getLong("tenor") ?: 1
+
+                    // Ambil Field Kalkulasi (Logika Baru)
+                    // Jika totalPayable null (data lama), pakai amountPokok
+                    val totalPayable = doc.getDouble("totalPayable") ?: amountPokok
+                    val paidAmount = doc.getDouble("paidAmount") ?: 0.0
+
+                    // Hitung Sisa & Cicilan
+                    val remainingDebt = totalPayable - paidAmount
+                    val monthlyInstallment = totalPayable / tenor
+
                     val id = doc.id
 
                     when (status) {
                         "approved" -> {
-                            // TAMPILKAN DETAIL TAGIHAN
-                            binding.tvLoanId.text = id.take(8).uppercase()
-                            binding.tvLoanAmount.text = "Rp ${"%,.0f".format(amount)}"
-                            binding.tvLoanTenor.text = "$tenor Bulan"
-                            binding.tvMonthlyInstallment.text = "Rp ${"%,.0f".format(monthly)}"
-                            binding.tvLoanStatus.text = "Disetujui (Aktif)"
-                            binding.tvLoanStatus.setTextColor(android.graphics.Color.GREEN)
+                            // --- TAMPILKAN DATA REAL ---
+                            binding.tvLoanId.text = "ID: ${id.take(8).uppercase()}"
 
+                            // 1. Total Hutang (Pokok + Bunga)
+                            binding.tvLoanAmount.text = "Total Hutang: Rp ${"%,.0f".format(totalPayable)}"
+
+                            // 2. Tenor
+                            binding.tvLoanTenor.text = "Tenor: $tenor Bulan"
+
+                            // 3. Cicilan Per Bulan
+                            binding.tvMonthlyInstallment.text = "Cicilan: Rp ${"%,.0f".format(monthlyInstallment)} /bln"
+
+                            // 4. Status Pembayaran (Sisa Hutang)
+                            // Anda bisa manfaatkan TextView status atau buat TextView baru di XML untuk "Sisa"
+                            if (remainingDebt <= 0) {
+                                binding.tvLoanStatus.text = "LUNAS"
+                                binding.tvLoanStatus.setTextColor(android.graphics.Color.BLUE)
+                            } else {
+                                binding.tvLoanStatus.text = "Sisa: Rp ${"%,.0f".format(remainingDebt)}"
+                                binding.tvLoanStatus.setTextColor(android.graphics.Color.RED)
+                            }
+
+                            // Tampilkan Layout
                             binding.layoutLoanDetails.visibility = View.VISIBLE
                             binding.layoutNoLoan.visibility = View.GONE
+
+                            // Sembunyikan tombol ajukan jika masih punya hutang aktif
+                            binding.btnApplyLoan.visibility = View.GONE
                         }
+
+                        "paid" -> {
+                            // Status Lunas (History) - Tampilkan Kosong agar bisa ajukan baru
+                            // Atau tampilkan layout khusus "Selamat Anda Lunas"
+                            showEmptyState()
+                        }
+
                         "pending" -> {
-                            // TAMPILKAN STATUS ON PROGRESS
-                            // Kita bisa manipulasi UI 'layoutNoLoan' untuk menampilkan pesan ini
+                            // Tampilkan UI Sedang Diproses
                             binding.layoutLoanDetails.visibility = View.GONE
                             binding.layoutNoLoan.visibility = View.VISIBLE
 
-                            // Ganti teks di layout kosong jadi pesan pending
-                            // Asumsi di layout_active_loan.xml ada TextView di dalam layout_no_loan
-                            // Cari TextView pesan kosong (biasanya index ke-1 di LinearLayout layout_no_loan)
-                            // Atau lebih aman via ID jika sudah di set di XML.
-                            // Di sini saya pakai findViewById manual atau asumsi binding
+                            // Manipulasi text di layout kosong (opsional, perlu ID di XML)
+                            // binding.tvEmptyTitle.text = "Sedang Diproses"
 
-                            // Cara cepat: Kita ubah text view "Tidak ada pinjaman"
-                            // Pastikan ID di XML layout_no_loan punya TextView pesan
-                            // Misal: binding.tvEmptyMessage.text = "Pengajuan Sedang Diproses Admin"
-
-                            // Trik: Sembunyikan tombol ajukan jika sedang pending
-                            binding.btnApplyLoan.visibility = View.GONE
-
-                            // Tampilkan pesan lewat Toast atau ubah UI jika memungkinkan
-                            Toast.makeText(context, "Status: Pengajuan Sedang Diproses (On Progress)", Toast.LENGTH_LONG).show()
-
-                            // Jika mau ubah teks di layoutNoLoan secara dinamis (tambahkan ID di XML dulu)
-                            // binding.tvEmptyMessage.text = "Pengajuan Sedang Diproses"
+                            binding.btnApplyLoan.visibility = View.GONE // Jangan ajukan lagi
+                            Toast.makeText(context, "Pengajuan Anda sedang diperiksa Admin", Toast.LENGTH_LONG).show()
                         }
-                        else -> {
-                            // REJECTED atau status lain -> Tampilkan Kosong (Boleh ajukan lagi)
-                            binding.btnApplyLoan.visibility = View.VISIBLE
+
+                        else -> { // Rejected atau lainnya
                             showEmptyState()
                         }
                     }
@@ -130,7 +150,7 @@ class ActiveLoanFragment : Fragment() {
             .addOnFailureListener {
                 binding.progressBar.visibility = View.GONE
                 showEmptyState()
-                Toast.makeText(context, "Gagal memuat: ${it.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Gagal memuat data", Toast.LENGTH_SHORT).show()
             }
     }
 

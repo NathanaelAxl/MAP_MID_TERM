@@ -10,14 +10,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.map_mid_term.R
 import com.example.map_mid_term.adapters.LoanAdapter
-import com.example.map_mid_term.model.Loan
+import com.example.map_mid_term.data.model.LoanApplication
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.firestore.FirebaseFirestore
 
 class LoanListActivity : AppCompatActivity() {
 
     private lateinit var adapter: LoanAdapter
-    private val loans = ArrayList<Loan>() // Gunakan ArrayList kosong, bukan DummyData
+    private val loans = ArrayList<LoanApplication>()
     private val db = FirebaseFirestore.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,28 +43,26 @@ class LoanListActivity : AppCompatActivity() {
             showLoanDialog("Tambah Pinjaman Manual", null)
         }
 
-        // AMBIL DATA DARI DATABASE
         fetchLoans()
     }
 
     private fun fetchLoans() {
-        // Ambil data dari koleksi 'loan_applications' yang statusnya 'approved' (Aktif)
         db.collection("loan_applications")
             .whereEqualTo("status", "approved")
             .get()
             .addOnSuccessListener { documents ->
                 loans.clear()
                 for (doc in documents) {
-                    // Mapping manual dari Firestore ke Model Loan
-                    val id = doc.id
-                    val userId = doc.getString("userId") ?: ""
-                    val amount = doc.getDouble("amount") ?: 0.0
-                    val tenor = doc.getLong("tenor")?.toInt() ?: 0
-                    val status = doc.getString("status") ?: "Aktif"
-
-                    // Asumsi Model Loan kamu: Loan(id, memberId, amount, interest, status, duration)
-                    // Interest kita anggap default 1.5 jika tidak ada di DB
-                    loans.add(Loan(id, userId, amount, 1.5, status, tenor))
+                    try {
+                        val loan = doc.toObject(LoanApplication::class.java)
+                        // Pastikan ID terisi
+                        if (loan.id.isEmpty()) {
+                            loan.id = doc.id
+                        }
+                        loans.add(loan)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
                 adapter.notifyDataSetChanged()
             }
@@ -73,7 +71,7 @@ class LoanListActivity : AppCompatActivity() {
             }
     }
 
-    private fun deleteLoan(loan: Loan) {
+    private fun deleteLoan(loan: LoanApplication) {
         db.collection("loan_applications").document(loan.id)
             .delete()
             .addOnSuccessListener {
@@ -86,7 +84,7 @@ class LoanListActivity : AppCompatActivity() {
             }
     }
 
-    private fun showLoanDialog(title: String, data: Loan?) {
+    private fun showLoanDialog(title: String, data: LoanApplication?) {
         val view = LayoutInflater.from(this).inflate(R.layout.dialog_loan, null)
         val etMemberId = view.findViewById<EditText>(R.id.etMemberId)
         val etAmount = view.findViewById<EditText>(R.id.etLoanAmount)
@@ -94,9 +92,9 @@ class LoanListActivity : AppCompatActivity() {
 
         // Isi form jika edit
         data?.let {
-            etMemberId.setText(it.memberId)
+            etMemberId.setText(it.userId)
             etAmount.setText(it.amount.toString())
-            etTenor.setText(it.durationMonths.toString())
+            etTenor.setText(it.tenor.toString())
         }
 
         AlertDialog.Builder(this)
@@ -104,33 +102,51 @@ class LoanListActivity : AppCompatActivity() {
             .setView(view)
             .setPositiveButton("Simpan") { _, _ ->
                 val memberId = etMemberId.text.toString().trim()
-                val amount = etAmount.text.toString().toDoubleOrNull() ?: 0.0
-                val tenor = etTenor.text.toString().toIntOrNull() ?: 0
+                val amountInput = etAmount.text.toString().toDoubleOrNull() ?: 0.0
+                val tenorInput = etTenor.text.toString().toIntOrNull() ?: 0
 
                 if (memberId.isEmpty()) {
                     Toast.makeText(this, "Member ID Wajib diisi", Toast.LENGTH_SHORT).show()
                     return@setPositiveButton
                 }
 
-                // Simpan ke Firestore
-                val loanData = hashMapOf(
-                    "userId" to memberId, // Kita pakai input manual sbg userId
-                    "amount" to amount,
-                    "tenor" to tenor,
-                    "status" to "approved", // Langsung aktif karena input admin
-                    "applicationDate" to System.currentTimeMillis()
+                // --- LOGIC PERHITUNGAN BUNGA DI SINI ---
+                val interestRateFix = 1.5 // Bunga 1.5%
+                // Rumus: Pokok * (1.5 / 100) * Tenor Bulan
+                val totalInterest = amountInput * (interestRateFix / 100) * tenorInput
+                // Total yang harus dibayar = Pokok + Bunga
+                val totalPayableFix = amountInput + totalInterest
+
+                // Membuat object dengan data lengkap
+                val newLoan = LoanApplication(
+                    id = data?.id ?: "",
+                    amount = amountInput, // Pokok
+                    tenor = tenorInput,
+                    reason = "Input Manual Admin",
+                    status = "approved",
+                    userId = memberId,
+                    applicationDate = System.currentTimeMillis(),
+
+                    // Field Baru:
+                    interestRate = interestRateFix,
+                    totalPayable = totalPayableFix, // Total Hutang
+                    paidAmount = data?.paidAmount ?: 0.0 // Jika edit, pertahankan yg sdh dibayar
                 )
 
                 if (data == null) {
                     // Tambah Baru
-                    db.collection("loan_applications").add(loanData)
+                    val ref = db.collection("loan_applications").document()
+                    val loanWithId = newLoan.copy(id = ref.id)
+
+                    ref.set(loanWithId)
                         .addOnSuccessListener {
-                            fetchLoans() // Refresh list
-                            Toast.makeText(this, "Berhasil disimpan", Toast.LENGTH_SHORT).show()
+                            fetchLoans()
+                            Toast.makeText(this, "Berhasil disimpan. Total Hutang: Rp ${totalPayableFix.toInt()}", Toast.LENGTH_LONG).show()
                         }
                 } else {
                     // Update
-                    db.collection("loan_applications").document(data.id).update(loanData as Map<String, Any>)
+                    db.collection("loan_applications").document(data.id)
+                        .set(newLoan)
                         .addOnSuccessListener {
                             fetchLoans()
                             Toast.makeText(this, "Berhasil diupdate", Toast.LENGTH_SHORT).show()

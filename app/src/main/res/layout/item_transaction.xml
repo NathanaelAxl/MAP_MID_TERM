@@ -1,65 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/white"
-    android:padding="16dp">
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#FFFFFF">
 
-    <ImageView
-        android:id="@+id/iv_transaction_icon"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:src="@drawable/ic_arrow_upward"
-        android:layout_alignParentStart="true"
-        android:layout_centerVertical="true"
-        android:layout_marginEnd="16dp"/>
-
-    <LinearLayout
-        android:id="@+id/transaction_details"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_toEndOf="@id/iv_transaction_icon"
-        android:layout_toStartOf="@+id/iv_proof_image"
-        android:layout_centerVertical="true">
+        android:padding="12dp">
+
+        <ImageView
+            android:id="@+id/ivTransactionIcon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@android:drawable/stat_sys_download"
+            app:tint="#4CAF50"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/tv_transaction_description"
-            android:layout_width="wrap_content"
+            android:id="@+id/tvTransactionDescription"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Setoran Sukarela"
-            android:textSize="16sp"
-            android:textColor="@android:color/black"
-            android:textStyle="bold"/>
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            android:text="Simpanan Masuk"
+            android:textColor="#000000"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toStartOf="@+id/ivProofImage"
+            app:layout_constraintStart_toEndOf="@+id/ivTransactionIcon"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/tv_transaction_date"
+            android:id="@+id/tvTransactionDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="4dp"
+            android:text="20 Dec 2025"
+            android:textColor="#757575"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toStartOf="@+id/ivProofImage"
+            app:layout_constraintStart_toEndOf="@+id/ivTransactionIcon"
+            app:layout_constraintTop_toBottomOf="@+id/tvTransactionDescription" />
+
+        <ImageView
+            android:id="@+id/ivProofImage"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:src="@android:drawable/ic_menu_gallery"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/tvTransactionAmount"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tvTransactionAmount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="15 Oktober 2025"
-            android:textSize="14sp"/>
-    </LinearLayout>
+            android:text="+ Rp1.000.000"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="#4CAF50"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/iv_proof_image"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:scaleType="centerCrop"
-        android:src="@drawable/ic_image_placeholder"
-        android:layout_toStartOf="@+id/tv_transaction_amount"
-        android:layout_centerVertical="true"
-        android:layout_marginEnd="16dp"/>
-
-    <TextView
-        android:id="@+id/tv_transaction_amount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="+ Rp 50.000"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:textColor="#4CAF50"
-        android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"/>
-
-</RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
