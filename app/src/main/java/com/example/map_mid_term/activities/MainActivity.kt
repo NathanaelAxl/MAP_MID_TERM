@@ -2,101 +2,142 @@ package com.example.map_mid_term.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.MenuItem
+import android.view.View
+import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.navigation.findNavController
+import androidx.core.view.GravityCompat
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.map_mid_term.R
 import com.example.map_mid_term.databinding.ActivityMainBinding
-import com.example.map_mid_term.model.DummyData
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
-class       MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var appBarConfiguration: AppBarConfiguration
-
-    companion object {
-        var memberId: String? = null
-    }
+    private lateinit var auth: FirebaseAuth
+    private lateinit var db: FirebaseFirestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Inisialisasi Firebase
+        auth = FirebaseAuth.getInstance()
+        db = FirebaseFirestore.getInstance()
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // ✅ Ambil memberId dari LoginActivity
-        memberId = intent.getStringExtra("memberId")
-
-        // ✅ Tampilkan pesan selamat datang kalau berhasil login
-        val member = DummyData.members.find { it.id == memberId }
-        member?.let {
-            Toast.makeText(this, "Selamat datang, ${it.name}!", Toast.LENGTH_SHORT).show()
-        }
-
-        // --- NAVIGATION SETUP ---
-        val drawerLayout: DrawerLayout = binding.drawerLayout
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val navController = navHostFragment.navController
-
         setSupportActionBar(binding.toolbar)
 
-        // Tentukan top-level fragment
-        appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.homeFragment,
-                R.id.transactionFragment,
-                R.id.historyFragment,
-                R.id.profileFragment
-            ),
-            drawerLayout
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.fragmentContainerView) as NavHostFragment
+        val navController = navHostFragment.navController
+        binding.bottomNavigationView.setupWithNavController(navController)
+
+        // Setup Drawer Toggle (Tombol Hamburger)
+        val toggle = ActionBarDrawerToggle(
+            this, binding.drawerLayout, binding.toolbar,
+            R.string.navigation_drawer_open, R.string.navigation_drawer_close
         )
+        binding.drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
 
-        // Hubungkan toolbar dan bottom nav
-        setupActionBarWithNavController(navController, appBarConfiguration)
-        binding.bottomNavigation.setupWithNavController(navController)
+        binding.navView.setNavigationItemSelectedListener(this)
 
-        // --- HANDLE BOTTOM NAVIGATION ---
-        binding.bottomNavigation.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.homeFragment -> navController.navigate(R.id.homeFragment)
-                R.id.transactionFragment -> navController.navigate(R.id.transactionFragment)
-                R.id.historyFragment -> navController.navigate(R.id.historyFragment)
-                R.id.profileFragment -> navController.navigate(R.id.profileFragment)
-                else -> false
-            }
-            true
-        }
+        updateDrawerHeader()
 
-        // --- HANDLE DRAWER MENU ---
-        val navView: NavigationView = binding.navigationView
-        navView.setNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.homeFragment -> navController.navigate(R.id.homeFragment)
-                R.id.activeLoanFragment -> navController.navigate(R.id.activeLoanFragment)
-                R.id.profileFragment -> navController.navigate(R.id.profileFragment)
-                R.id.machineLearningFragment -> navController.navigate(R.id.machineLearningFragment)
-                R.id.menu_logout -> {
-                    // 🔹 Hapus data session (optional)
-                    memberId = null
-                    // 🔹 Balik ke LoginActivity
-                    startActivity(Intent(this, LoginActivity::class.java))
-                    finish()
+        // Atur tampilan Toolbar & BottomNav
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.homeFragment, R.id.transactionFragment,
+                R.id.profileFragment, R.id.historyFragment -> {
+                    binding.bottomNavigationView.visibility = View.VISIBLE
+                    supportActionBar?.show()
+                }
+                else -> {
+                    binding.bottomNavigationView.visibility = View.GONE
                 }
             }
-            drawerLayout.closeDrawers()
-            true
         }
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment)
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    // --- BAGIAN INI YANG SAYA PERBAIKI SESUAI XML KAMU ---
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        // Ambil NavController untuk navigasi
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as NavHostFragment
+        val navController = navHostFragment.navController
+
+        when (item.itemId) {
+            R.id.homeFragment -> {
+                // Arahkan ke Home
+                navController.navigate(R.id.homeFragment)
+            }
+            R.id.activeLoanFragment -> {
+                // Arahkan ke Fragment Pinjaman Aktif (Pastikan ID ini ada di nav_graph)
+                // Jika belum ada di nav_graph, baris ini akan error saat runtime
+                try { navController.navigate(R.id.activeLoanFragment) } catch(e: Exception) {
+                    Toast.makeText(this, "Halaman belum dibuat", Toast.LENGTH_SHORT).show()
+                }
+            }
+            R.id.profileFragment -> {
+                navController.navigate(R.id.profileFragment)
+            }
+            R.id.machineLearningFragment -> {
+                // SEBELUMNYA: Cuma Toast & di-comment
+                // Toast.makeText(this, "Fitur Medical Check (ML)", Toast.LENGTH_SHORT).show()
+                // navController.navigate(R.id.machineLearningFragment)
+
+                // PERBAIKAN: Langsung navigasi (dengan safety check biar gak crash)
+                if (navController.currentDestination?.id != R.id.machineLearningFragment) {
+                    navController.navigate(R.id.machineLearningFragment)
+                }
+            }
+            R.id.menu_logout -> {
+                // Ini tadi nav_logout, sekarang disesuaikan
+                auth.signOut()
+                val intent = Intent(this, LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
+        }
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
+        return true
+    }
+
+    override fun onBackPressed() {
+        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        } else {
+            super.onBackPressed()
+        }
+    }
+
+    private fun updateDrawerHeader() {
+        val userId = auth.currentUser?.uid
+        if (userId != null) {
+            // Pastikan layout nav_header_main.xml memiliki TextView dengan ID ini
+            val headerView = binding.navView.getHeaderView(0)
+            val tvName = headerView.findViewById<TextView>(R.id.tv_header_name)
+            val tvEmail = headerView.findViewById<TextView>(R.id.tv_header_email)
+
+            db.collection("members").document(userId).get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        tvName.text = document.getString("name") ?: "User"
+                        tvEmail.text = document.getString("email") ?: auth.currentUser?.email
+                    }
+                }
+        }
+    }
+
+    companion object {
+        var memberId: String? = null
     }
 }
