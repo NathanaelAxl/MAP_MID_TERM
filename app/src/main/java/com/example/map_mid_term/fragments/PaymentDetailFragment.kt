@@ -45,7 +45,7 @@ class PaymentDetailFragment : Fragment() {
         // 2. BUNGKUS DATA (Untuk dikirim ke langkah terakhir)
         val nextBundle = Bundle().apply {
             putString("title", title)
-            putDouble("amount", amount)
+            putFloat("amount", amount.toFloat())
             putString("loanId", loanId) // Ini "kunci" yang harus dibawa sampai akhir
         }
 
@@ -61,11 +61,13 @@ class PaymentDetailFragment : Fragment() {
 
         // Navigasi ke Upload Bukti
         binding.cardManualTransfer.setOnClickListener {
-            // Pastikan ID action ini benar ada di nav_graph.xml
             try {
+                // Pastikan ID ini sudah bersih di XML (lihat langkah 2)
                 findNavController().navigate(R.id.action_paymentDetailFragment_to_uploadProofFragment, nextBundle)
             } catch (e: Exception) {
-                Toast.makeText(context, "Fitur Upload belum siap", Toast.LENGTH_SHORT).show()
+                // Tampilkan pesan error asli di logcat agar ketahuan penyebabnya
+                e.printStackTrace()
+                Toast.makeText(context, "Gagal Navigasi: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

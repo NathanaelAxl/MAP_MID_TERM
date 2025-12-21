@@ -1,72 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.UploadProofFragment">
+    android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Unggah Bukti Pembayaran"
-            android:textColor="@color/black"
+            android:text="Upload Bukti Transfer"
             android:textSize="24sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:textColor="@color/black"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Silakan transfer ke rekening di bawah ini dan unggah bukti pembayaran Anda." />
-
-        <com.google.android.material.card.MaterialCardView
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:cardElevation="0dp"
-            app:strokeColor="?attr/colorPrimary"
-            app:strokeWidth="1dp">
-
+            app:cardBackgroundColor="#E8F5E9"
+            app:cardCornerRadius="8dp">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
+                android:padding="16dp"
+                android:orientation="vertical">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Bank BCA: 1234567890 a/n Koperasi Kita Bersama"
-                    android:textColor="@color/black"
-                    android:textIsSelectable="true"/>
-
+                    android:text="Silakan transfer ke rekening berikut:"
+                    android:textSize="14sp"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Bank Mandiri: 0987654321 a/n Koperasi Kita Bersama"
-                    android:textColor="@color/black"
-                    android:textIsSelectable="true"/>
-
+                    android:text="BCA 123-456-7890"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#2E7D32"
+                    android:layout_marginTop="4dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="a.n Koperasi Tabungin Sejahtera"
+                    android:textStyle="bold"/>
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Foto Bukti Pembayaran"
+            android:layout_marginTop="24dp"
+            android:textStyle="bold"/>
 
         <ImageView
-            android:id="@+id/iv_proof_preview"
+            android:id="@+id/ivProofPreview"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:layout_marginTop="24dp"
-            android:background="@drawable/ic_image_placeholder"
-            android:scaleType="centerInside"
-            android:src="@drawable/ic_camera"
-            app:tint="#A0A0A0" />
+            android:layout_marginTop="8dp"
+            android:src="@android:drawable/ic_menu_gallery"
+            android:background="#EEEEEE"
+            android:scaleType="centerInside"/>
+
+        <TextView
+            android:id="@+id/tvLocationInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Lokasi: Belum ada data"
+            android:textSize="12sp"
+            android:textColor="#757575"
+            android:gravity="center"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -75,31 +83,33 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/btn_open_camera"
-                style="?attr/materialButtonOutlinedStyle"
+                android:id="@+id/btnOpenCamera"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
                 android:layout_weight="1"
-                android:text="Ambil Foto" />
+                android:layout_marginEnd="8dp"
+                android:text="Kamera"
+                android:backgroundTint="#FF9800"
+                android:drawableLeft="@android:drawable/ic_menu_camera"/>
 
             <Button
-                android:id="@+id/btn_open_gallery"
-                style="?attr/materialButtonOutlinedStyle"
+                android:id="@+id/btnOpenGallery"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:layout_weight="1"
-                android:text="Dari Galeri" />
-
+                android:layout_marginStart="8dp"
+                android:text="Galeri"
+                android:backgroundTint="#2196F3"
+                android:drawableLeft="@android:drawable/ic_menu_gallery"/>
         </LinearLayout>
 
         <Button
-            android:id="@+id/btn_submit_proof"
+            android:id="@+id/btnSubmitPayment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
-            android:text="Kirim Bukti Pembayaran" />
+            android:text="Kirim Pembayaran"
+            android:enabled="false"/>
 
     </LinearLayout>
 </ScrollView>

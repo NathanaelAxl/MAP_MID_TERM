@@ -1,6 +1,7 @@
 package com.example.map_mid_term.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,12 +20,14 @@ class TransactionFragment : Fragment() {
     private var _binding: FragmentTransactionBinding? = null
     private val binding get() = _binding!!
 
+    // Gunakan ViewModel
     private val viewModel: TransactionViewModel by viewModels()
     private lateinit var transactionAdapter: TransactionAdapter
 
-    // Variabel untuk menyimpan data pinjaman aktif
+    // Variabel Data
     private var activeLoanId: String = ""
     private var monthlyBill: Double = 0.0
+    private var loanTitle: String = "Angsuran Pinjaman"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,6 +47,7 @@ class TransactionFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        // Refresh data setiap kali halaman dibuka
         viewModel.fetchTransactions()
         viewModel.checkActiveLoan()
     }
@@ -61,38 +65,41 @@ class TransactionFragment : Fragment() {
             }
         }
 
-        // 2. Data Pinjaman Aktif (Tagihan)
+        // 2. Data Tagihan Aktif
         viewModel.activeLoan.observe(viewLifecycleOwner) { loanData ->
             if (loanData != null) {
-                // ADA PINJAMAN -> Tampilkan Kartu
                 binding.layoutUpcomingPayment.visibility = View.VISIBLE
 
-                // --- AMBIL DATA REAL DARI VIEWMODEL ---
-                activeLoanId = loanData["id"] as? String ?: "" // Ambil ID Dokumen Asli
+                // Ambil ID Dokumen (Pastikan ViewModel mengirim field 'id')
+                activeLoanId = loanData["id"] as? String ?: ""
 
+                // Ambil data angka dengan aman (Safe Casting)
                 val totalPayable = (loanData["totalPayable"] as? Number)?.toDouble() ?: 0.0
                 val tenor = (loanData["tenor"] as? Number)?.toInt() ?: 1
 
-                // Hitung cicilan per bulan: Total Hutang / Tenor
-                // (Atau kamu bisa simpan field 'monthlyInstallment' di DB jika mau fix)
+                // Hitung cicilan
                 monthlyBill = if (tenor > 0) totalPayable / tenor else 0.0
+                loanTitle = "Angsuran Bulan Ini ($tenor Bulan)"
 
+                // Update UI
                 binding.tvPaymentAmount.text = "Rp ${"%,.0f".format(monthlyBill)}"
-                binding.tvPaymentTitle.text = "Angsuran Bulan Ini ($tenor Bulan)"
+                binding.tvPaymentTitle.text = loanTitle
                 binding.tvPaymentDueDate.text = "Jatuh Tempo: Segera"
 
             } else {
-                // TIDAK ADA PINJAMAN -> Sembunyikan Kartu
                 binding.layoutUpcomingPayment.visibility = View.GONE
+                activeLoanId = "" // Reset ID jika tidak ada tagihan
             }
         }
 
+        // 3. Loading State
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
     }
 
     private fun setupRecyclerView() {
+        // Inisialisasi Adapter dengan list kosong dulu
         transactionAdapter = TransactionAdapter(arrayListOf())
         binding.rvLatestTransactions.apply {
             layoutManager = LinearLayoutManager(context)
@@ -102,12 +109,12 @@ class TransactionFragment : Fragment() {
     }
 
     private fun setupListeners() {
-        // Klik Bayar Sekarang (Dari kartu tagihan)
+        // Tombol Bayar di Kartu Tagihan
         binding.btnPayNow.setOnClickListener {
             navigateToPayment()
         }
 
-        // Klik Menu "Bayar Angsuran" (Menu kotak)
+        // Tombol Menu Kotak "Bayar Angsuran"
         binding.cardBayarAngsuran.setOnClickListener {
             if (binding.layoutUpcomingPayment.visibility == View.VISIBLE) {
                 navigateToPayment()
@@ -116,24 +123,41 @@ class TransactionFragment : Fragment() {
             }
         }
 
+        // Tombol Tambah Simpanan
         binding.cardTambahSimpanan.setOnClickListener {
-            findNavController().navigate(R.id.action_transactionFragment_to_addSavingsFragment)
+            try {
+                findNavController().navigate(R.id.action_transactionFragment_to_addSavingsFragment)
+            } catch (e: Exception) {
+                Toast.makeText(context, "Menu belum siap", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
     private fun navigateToPayment() {
+        // 1. Cek Validasi ID
         if (activeLoanId.isEmpty()) {
-            Toast.makeText(context, "Data pinjaman belum siap", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Menunggu data pinjaman...", Toast.LENGTH_SHORT).show()
+            viewModel.checkActiveLoan() // Coba ambil ulang data
             return
         }
 
-        // Kirim ID dan Nominal ke PaymentDetailFragment
+        // 2. Siapkan Data (Bundle)
+        // Kita kirim Double, nanti PaymentDetailFragment yang ubah ke Float untuk Upload
         val bundle = Bundle().apply {
-            putString("title", "Bayar Angsuran")
-            putDouble("amount", monthlyBill)
-            putString("loanId", activeLoanId) // Kirim ID Asli
+            putString("title", loanTitle)
+            putFloat("amount", monthlyBill.toFloat())
+            putString("loanId", activeLoanId)
         }
-        findNavController().navigate(R.id.action_transactionFragment_to_paymentDetailFragment, bundle)
+
+        // 3. Eksekusi Navigasi dengan TRY-CATCH (Anti Force Close)
+        try {
+            findNavController().navigate(R.id.action_transactionFragment_to_paymentDetailFragment, bundle)
+        } catch (e: Exception) {
+            // Jika error, logcat akan mencatatnya dan Toast akan muncul
+            e.printStackTrace()
+            Log.e("NAV_ERROR", "Gagal navigasi: ${e.message}")
+            Toast.makeText(context, "Gagal membuka halaman bayar. Coba Clean Project.", Toast.LENGTH_LONG).show()
+        }
     }
 
     override fun onDestroyView() {

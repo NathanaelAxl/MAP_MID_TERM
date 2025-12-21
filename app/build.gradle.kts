@@ -81,4 +81,6 @@ dependencies {
 
     implementation("com.google.firebase:firebase-appcheck-playintegrity")
     implementation("com.google.firebase:firebase-appcheck-debug")
+
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 }

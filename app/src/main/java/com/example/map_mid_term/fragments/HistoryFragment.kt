@@ -24,7 +24,9 @@ class HistoryFragment : Fragment() {
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
     private lateinit var transactionAdapter: TransactionAdapter
-    private val transactionList = ArrayList<Transaction>()
+
+    // Inisialisasi list kosong di awal
+    private var transactionList = ArrayList<Transaction>()
 
     // Listener disimpan agar bisa dimatikan saat onDestroy
     private var firestoreListener: ListenerRegistration? = null
@@ -48,8 +50,9 @@ class HistoryFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        transactionAdapter = TransactionAdapter(transactionList)
-        // Gunakan binding? (safe call)
+        // Inisialisasi adapter dengan list kosong dulu
+        transactionAdapter = TransactionAdapter(arrayListOf())
+
         binding?.rvHistory?.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = transactionAdapter
@@ -59,7 +62,6 @@ class HistoryFragment : Fragment() {
     private fun fetchTransactionsFromFirestore() {
         val userId = auth.currentUser?.uid
         if (userId == null) {
-            Log.w("HistoryFragment", "User not logged in")
             binding?.tvNoTransactions?.text = "Anda harus login untuk melihat riwayat"
             binding?.tvNoTransactions?.visibility = View.VISIBLE
             return
@@ -83,8 +85,28 @@ class HistoryFragment : Fragment() {
 
                 if (snapshots != null && !snapshots.isEmpty) {
                     binding?.tvNoTransactions?.visibility = View.GONE
-                    val newTransactions = snapshots.toObjects(Transaction::class.java)
-                    transactionAdapter.updateData(newTransactions)
+
+                    val safeList = ArrayList<Transaction>()
+
+                    // --- REVISI ANTI FORCE CLOSE ---
+                    // Kita looping manual satu per satu
+                    for (document in snapshots) {
+                        try {
+                            // Coba convert dokumen ke object Transaction
+                            val trx = document.toObject(Transaction::class.java)
+                            // Set ID dokumen manual biar aman
+                            trx.id = document.id
+                            safeList.add(trx)
+                        } catch (error: Exception) {
+                            // Jika ada data rusak (misal timestamp error), dia masuk sini.
+                            // Aplikasi TIDAK AKAN CRASH, cuma mencatat error di log.
+                            Log.e("HistoryFragment", "Data rusak dilewati: ${document.id} - ${error.message}")
+                        }
+                    }
+
+                    // Masukkan data yang BERHASIL diambil saja ke adapter
+                    transactionAdapter.updateData(safeList)
+
                 } else {
                     Log.d("HistoryFragment", "No transactions found")
                     binding?.tvNoTransactions?.visibility = View.VISIBLE

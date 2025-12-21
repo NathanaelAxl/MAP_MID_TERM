@@ -8,7 +8,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.FirebaseFirestoreException
+import java.util.Date
 
 class TransactionViewModel : ViewModel() {
 
@@ -54,14 +54,19 @@ class TransactionViewModel : ViewModel() {
                     var balance = 0.0
 
                     for (doc in documents) {
-                        val trx = doc.toObject(Transaction::class.java)
-                        trx.id = doc.id
-                        list.add(trx)
+                        // Gunakan try-catch saat konversi agar tidak force close jika data kotor
+                        try {
+                            val trx = doc.toObject(Transaction::class.java)
+                            trx.id = doc.id
+                            list.add(trx)
 
-                        if (trx.type == "credit") {
-                            balance += trx.amount
-                        } else if (trx.type == "debit") {
-                            balance -= trx.amount
+                            if (trx.type == "credit") {
+                                balance += trx.amount
+                            } else if (trx.type == "debit") {
+                                balance -= trx.amount
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
                     }
 
@@ -72,7 +77,7 @@ class TransactionViewModel : ViewModel() {
             }
     }
 
-    // 2. Cek Pinjaman Aktif (REVISI PENTING: Memasukkan ID Dokumen)
+    // 2. Cek Pinjaman Aktif
     fun checkActiveLoan() {
         val userId = auth.currentUser?.uid ?: return
         if (loanListener != null) return
@@ -86,12 +91,8 @@ class TransactionViewModel : ViewModel() {
 
                 if (documents != null && !documents.isEmpty) {
                     val doc = documents.documents[0]
-
-                    // Kita ambil datanya menjadi MutableMap agar bisa disisipkan ID
                     val loanData = doc.data?.toMutableMap()
 
-                    // PENTING: Masukkan ID dokumen Firestore ke dalam map
-                    // Supaya Fragment bisa mengambilnya nanti (loanData["id"])
                     if (loanData != null) {
                         loanData["id"] = doc.id
                         _activeLoan.value = loanData
@@ -102,7 +103,7 @@ class TransactionViewModel : ViewModel() {
             }
     }
 
-    // 3. FUNGSI BAYAR ANGSURAN (LOGIKA REAL PAYMENT)
+    // 3. FUNGSI BAYAR ANGSURAN (UPDATE ID: 12548)
     fun payInstallment(
         loanId: String,
         paymentAmount: Double,
@@ -114,31 +115,28 @@ class TransactionViewModel : ViewModel() {
         val transactionRef = db.collection("transactions").document()
 
         db.runTransaction { transaction ->
-            // A. BACA DATA TERBARU (READ)
+            // A. BACA DATA
             val snapshot = transaction.get(loanRef)
 
             val totalPayable = snapshot.getDouble("totalPayable") ?: 0.0
             val currentPaid = snapshot.getDouble("paidAmount") ?: 0.0
             val userId = snapshot.getString("userId") ?: ""
 
-            // B. HITUNG MATEMATIKA
+            // B. HITUNG
             val newPaidAmount = currentPaid + paymentAmount
-
-            // Cek Lunas (Pakai toleransi 1.0 perak utk hindari koma floating point)
             val newStatus = if (newPaidAmount >= (totalPayable - 1.0)) "paid" else "approved"
 
-            // C. TULIS PERUBAHAN (WRITE)
-            // Update hutang
+            // C. UPDATE
             transaction.update(loanRef, "paidAmount", newPaidAmount)
             transaction.update(loanRef, "status", newStatus)
 
-            // Catat history
+            // D. BIKIN TRANSAKSI BARU (REVISI DI SINI)
             val newTrx = Transaction(
                 id = transactionRef.id,
-                title = "Bayar Angsuran",
+                description = "Bayar Angsuran", // Ganti 'title' jadi 'description'
                 amount = paymentAmount,
-                type = "loan_payment", // Tipe khusus cicilan
-                timestamp = System.currentTimeMillis(),
+                type = "loan_payment",
+                timestamp = Date(), // Ganti System.currentTimeMillis() jadi Date()
                 status = "success",
                 proofImageUrl = proofImageBase64,
                 userId = userId

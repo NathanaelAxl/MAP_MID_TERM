@@ -3,15 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <uses-feature android:name="android.hardware.camera" android:required="true" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature
-        android:name="android.hardware.camera"
-        android:required="false" />
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
@@ -29,15 +28,7 @@
         <activity
             android:name=".activities.SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"> <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
-        </activity>
-
-        <activity
-            android:name=".activities.LoginActivity"
-            android:exported="true">
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -45,23 +36,31 @@
         </activity>
 
         <activity
+            android:name=".activities.LoginActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".activities.RegisterActivity"
             android:exported="false"
             android:label="Registrasi Anggota" />
-        <!-- Saya hapus theme Admin di sini biar tampilannya konsisten sama Login -->
 
-        <!-- ========= USER SIDE ========= -->
         <activity
             android:name=".activities.MainActivity"
             android:exported="false"
             android:label="Beranda" />
 
-        <activity
-            android:name=".activities.CameraActivity"
-            android:exported="false"
-            android:label="@string/title_activity_camera" />
+        <activity android:name=".activities.CameraActivity" />
 
-        <!-- ========= ADMIN SIDE ========= -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <activity
             android:name=".activities.AdminActivity"
             android:exported="false"
@@ -109,6 +108,7 @@
             android:exported="false"
             android:label="Kas Koperasi"
             android:theme="@style/Theme.MAP_MID_TERM.Admin" />
+
         <activity
             android:name=".activities.AdminNotificationDetailActivity"
             android:exported="false"
