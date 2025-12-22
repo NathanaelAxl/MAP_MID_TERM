@@ -50,11 +50,26 @@ class ProfileFragment : Fragment() {
             try {
                 findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
             } catch (e: Exception) {
-                Toast.makeText(context, "Navigasi belum diatur", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Navigasi Edit Profil Error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // 2. Tombol Keluar
+        // --- REVISI DI SINI: TAMBAHAN TOMBOL UBAH PASSWORD ---
+        // Sebelumnya kode ini tidak ada, makanya tombolnya mati.
+        binding.cardChangePassword.setOnClickListener {
+            try {
+                // Pastikan ID 'action_profileFragment_to_changePasswordFragment' ada di nav_graph.xml
+                // Jika error, cek apakah fragment tujuannya sudah dibuat.
+                findNavController().navigate(R.id.action_profileFragment_to_changePasswordFragment)
+            } catch (e: Exception) {
+                // Jika belum punya fragment Ubah Password, munculkan pesan ini
+                Toast.makeText(context, "Fitur Ubah Sandi belum tersedia / ID Navigasi salah", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
+        }
+        // -----------------------------------------------------
+
+        // 3. Tombol Keluar
         binding.btnLogout.setOnClickListener {
             auth.signOut()
             val intent = Intent(requireContext(), LoginActivity::class.java)
@@ -100,14 +115,10 @@ class ProfileFragment : Fragment() {
                 }
                 val decodedBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
 
-                // --- REVISI DI SINI ---
-                // Gunakan Coil untuk load Bitmap agar bisa di-crop bulat
                 binding.ivProfilePhoto.load(decodedBitmap) {
                     crossfade(true)
-                    // Ini kuncinya biar bulat:
                     transformations(CircleCropTransformation())
                 }
-                // ----------------------
 
             } else {
                 // Tipe URL Online

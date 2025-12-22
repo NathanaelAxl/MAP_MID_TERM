@@ -19,6 +19,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.map_mid_term.activities.CameraActivity
 import com.example.map_mid_term.databinding.FragmentUploadProofBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import java.io.ByteArrayOutputStream
 import java.util.Date
@@ -147,27 +148,50 @@ class UploadProofFragment : Fragment() {
         }
     }
 
+    // --- REVISI UTAMA: AUTO-PAYMENT LOGIC ---
     private fun uploadTransactionToFirestore(base64Image: String) {
         binding.btnSubmitPayment.text = "Mengirim..."
 
         val userId = auth.currentUser?.uid ?: return
+        val batch = db.batch()
 
+        // 1. Buat Dokumen Transaksi Baru
+        val transactionRef = db.collection("transactions").document()
         val transactionData = hashMapOf(
+            "id" to transactionRef.id,
             "userId" to userId,
-            "loanId" to loanId,
+            "loanId" to loanId, // Simpan ID pinjaman yg dibayar
             "amount" to amount.toDouble(),
-            "type" to "debit",
-            "description" to "Angsuran Pinjaman",
-            "timestamp" to Date(),
+            // PENTING: Gunakan 'type' yang membuat warna merah di adapter ("Pengeluaran" atau "debit")
+            "type" to "loan_payment",
+            "description" to "Bayar Angsuran Pinjaman",
+            "date" to Date(), // Gunakan Date object (bukan timestamp)
             "location" to locationString,
             "proofImageUrl" to base64Image,
-            "status" to "pending_verification"
+            "status" to "success" // Langsung sukses
         )
+        batch.set(transactionRef, transactionData)
 
-        db.collection("transactions")
-            .add(transactionData)
+        // 2. Potong Saldo User
+        val userRef = db.collection("users").document(userId)
+        batch.update(userRef, "saldo", FieldValue.increment(-amount.toDouble()))
+
+        // 3. Update Status Pinjaman (Opsional: Update jumlah yang sudah dibayar)
+        if (loanId.isNotEmpty()) {
+            val loanRef = db.collection("loan_applications").document(loanId)
+            // Tambah field 'paidAmount' di dokumen pinjaman
+            batch.update(loanRef, "paidAmount", FieldValue.increment(amount.toDouble()))
+
+            // CATATAN: Idealnya kita cek kalau lunas, status jadi "paid".
+            // Tapi karena batch operation tidak bisa baca data (hanya tulis),
+            // Kita cukup update nominal bayarnya dulu.
+        }
+
+        // --- EKSEKUSI SEMUA ---
+        batch.commit()
             .addOnSuccessListener {
-                Toast.makeText(context, "Berhasil dikirim!", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Pembayaran Berhasil!", Toast.LENGTH_LONG).show()
+                // Kembali ke Home
                 findNavController().popBackStack(com.example.map_mid_term.R.id.homeFragment, false)
             }
             .addOnFailureListener { e ->
