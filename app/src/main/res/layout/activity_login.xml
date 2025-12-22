@@ -19,18 +19,8 @@
             android:id="@+id/imgLogo"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:src="@drawable/ic_tabungin"
+            android:src="@drawable/logo_tabungin"
             android:layout_marginBottom="16dp"/>
-
-        <TextView
-            android:id="@+id/tvTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="TABUNGIN"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@color/prim"
-            android:layout_marginBottom="32dp"/>
 
         <!-- Menggunakan TextInputLayout untuk UI yang lebih baik -->
         <com.google.android.material.textfield.TextInputLayout

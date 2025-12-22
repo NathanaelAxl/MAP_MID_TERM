@@ -11,6 +11,7 @@ import com.example.map_mid_term.R
 import com.example.map_mid_term.databinding.FragmentActiveLoanBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 
 class ActiveLoanFragment : Fragment() {
 
@@ -31,28 +32,22 @@ class ActiveLoanFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Tombol Kembali
         binding.btnBackToHome.setOnClickListener {
-            // Kembali ke halaman sebelumnya
             findNavController().popBackStack()
         }
 
-        // Tombol Ajukan (jika kosong)
         binding.btnApplyLoan.setOnClickListener {
-            // Arahkan ke formulir pengajuan jika ada di nav graph
             try {
                 findNavController().navigate(R.id.action_activeLoanFragment_to_loanApplicationFragment)
             } catch (e: Exception) {
-                // Fallback manual jika action belum dibuat di nav_graph
-                findNavController().navigate(R.id.loanApplicationFragment)
+                Toast.makeText(context, "Navigasi error", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // Ambil Data
-        fetchActiveLoan()
+        fetchLoanStatus()
     }
 
-    private fun fetchActiveLoan() {
+    private fun fetchLoanStatus() {
         val userId = auth.currentUser?.uid
         if (userId == null) {
             showEmptyState()
@@ -63,48 +58,74 @@ class ActiveLoanFragment : Fragment() {
         binding.layoutLoanDetails.visibility = View.GONE
         binding.layoutNoLoan.visibility = View.GONE
 
-        // Cari pinjaman user yang statusnya "approved"
+        // REVISI PENTING: Gunakan "requestDate" sesuai database kamu!
         db.collection("loan_applications")
             .whereEqualTo("userId", userId)
-            .whereEqualTo("status", "approved")
-            .limit(1) // Ambil 1 saja yang terbaru/aktif
+            .orderBy("requestDate", Query.Direction.DESCENDING)
+            .limit(1)
             .get()
             .addOnSuccessListener { documents ->
                 binding.progressBar.visibility = View.GONE
 
                 if (!documents.isEmpty) {
-                    // ADA PINJAMAN AKTIF
                     val doc = documents.documents[0]
-                    val amount = doc.getDouble("amount") ?: 0.0
-                    val tenor = doc.getLong("tenor") ?: 0
-                    val monthly = doc.getDouble("monthlyInstallment") ?: 0.0
+
+                    val status = doc.getString("status") ?: ""
+                    val amountPokok = doc.getDouble("amount") ?: 0.0
+                    val tenor = doc.getLong("tenor") ?: 1
+                    val totalPayable = doc.getDouble("totalPayable") ?: amountPokok
+                    val paidAmount = doc.getDouble("paidAmount") ?: 0.0
+
+                    val remainingDebt = totalPayable - paidAmount
+                    val monthlyInstallment = totalPayable / tenor
                     val id = doc.id
 
-                    // Isi Data ke UI
-                    binding.tvLoanId.text = id.take(8).uppercase() // Ambil 8 karakter ID aja biar rapi
-                    binding.tvLoanAmount.text = "Rp ${"%,.0f".format(amount)}"
-                    binding.tvLoanTenor.text = "$tenor Bulan"
-                    binding.tvMonthlyInstallment.text = "Rp ${"%,.0f".format(monthly)}"
-                    binding.tvLoanStatus.text = "Disetujui (Aktif)"
+                    when (status) {
+                        "approved" -> {
+                            binding.tvLoanId.text = "ID: ${id.take(8).uppercase()}"
+                            binding.tvLoanAmount.text = "Total Hutang: Rp ${"%,.0f".format(totalPayable)}"
+                            binding.tvLoanTenor.text = "Tenor: $tenor Bulan"
+                            binding.tvMonthlyInstallment.text = "Cicilan: Rp ${"%,.0f".format(monthlyInstallment)} /bln"
 
-                    // Tampilkan Card
-                    binding.layoutLoanDetails.visibility = View.VISIBLE
-                    binding.layoutNoLoan.visibility = View.GONE
+                            if (remainingDebt <= 0) {
+                                binding.tvLoanStatus.text = "LUNAS"
+                                binding.tvLoanStatus.setTextColor(android.graphics.Color.BLUE)
+                            } else {
+                                binding.tvLoanStatus.text = "Sisa: Rp ${"%,.0f".format(remainingDebt)}"
+                                binding.tvLoanStatus.setTextColor(android.graphics.Color.RED)
+                            }
+
+                            binding.layoutLoanDetails.visibility = View.VISIBLE
+                            binding.layoutNoLoan.visibility = View.GONE
+                            binding.btnApplyLoan.visibility = View.GONE
+                        }
+                        "pending" -> {
+                            // Tampilkan status pending (bisa reuse layout kosong atau buat layout khusus)
+                            binding.layoutLoanDetails.visibility = View.GONE
+                            binding.layoutNoLoan.visibility = View.VISIBLE
+                            // Disable tombol ajukan lagi
+                            binding.btnApplyLoan.visibility = View.GONE
+                            // Opsional: Ubah teks di layout kosong untuk memberitahu user
+                            Toast.makeText(context, "Pinjaman sedang diproses Admin", Toast.LENGTH_SHORT).show()
+                        }
+                        else -> { // Rejected / Paid
+                            showEmptyState()
+                        }
+                    }
                 } else {
-                    // TIDAK ADA
                     showEmptyState()
                 }
             }
             .addOnFailureListener {
                 binding.progressBar.visibility = View.GONE
                 showEmptyState()
-                Toast.makeText(context, "Gagal memuat data: ${it.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
     private fun showEmptyState() {
         binding.layoutLoanDetails.visibility = View.GONE
         binding.layoutNoLoan.visibility = View.VISIBLE
+        binding.btnApplyLoan.visibility = View.VISIBLE
     }
 
     override fun onDestroyView() {

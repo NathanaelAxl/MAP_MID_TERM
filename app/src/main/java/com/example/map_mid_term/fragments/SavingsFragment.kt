@@ -72,32 +72,27 @@ class SavingsFragment : Fragment() {
             // 3. Hitung-hitungan Saldo
             var totalWajib = 0.0
             var totalSukarela = 0.0
-            var totalPokok = 0.0 // Bisa di-hardcode 250rb kalau mau
+            var totalPokok = 0.0
 
             for (item in savingsList) {
-                // Logika deteksi jenis simpanan dari Judul
-                val title = item.title.lowercase()
-                if (title.contains("wajib")) {
+                // GANTI 'title' JADI 'description'
+                val deskripsi = item.description.lowercase()
+
+                if (deskripsi.contains("wajib")) {
                     totalWajib += item.amount
-                } else if (title.contains("sukarela")) {
+                } else if (deskripsi.contains("sukarela")) {
                     totalSukarela += item.amount
-                } else if (title.contains("pokok")) {
+                } else if (deskripsi.contains("pokok")) {
                     totalPokok += item.amount
                 } else {
-                    // Default masuk sukarela jika tidak jelas
                     totalSukarela += item.amount
                 }
             }
 
             currentTotalBalance = totalWajib + totalSukarela + totalPokok
 
-            // 4. Tampilkan ke UI
             binding.tvWajibBalance.text = "Rp ${"%,.0f".format(totalWajib)}"
             binding.tvSukarelaBalance.text = "Rp ${"%,.0f".format(totalSukarela)}"
-
-            // Simpanan pokok bisa kita anggap statis Rp 250.000 jika belum ada fitur bayar pokok
-            // Atau biarkan 0 jika ingin strict
-            // binding.tvPokokBalance.text = "Rp ${"%,.0f".format(totalPokok)}"
 
             updateTotalBalanceUI()
         }

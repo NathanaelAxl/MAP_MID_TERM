@@ -6,14 +6,13 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.RadioButton
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.example.map_mid_term.R
 import com.example.map_mid_term.databinding.FragmentLoanApplicationBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.Date
 
 class LoanApplicationFragment : Fragment() {
 
@@ -33,7 +32,6 @@ class LoanApplicationFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         setupCalculationListener()
 
         binding.btnSubmitLoan.setOnClickListener {
@@ -44,17 +42,13 @@ class LoanApplicationFragment : Fragment() {
     }
 
     private fun setupCalculationListener() {
-        // Hitung ulang setiap kali teks berubah
         binding.etLoanAmount.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) { calculateInstallment() }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        // Hitung ulang setiap kali tenor berubah
-        binding.rgTenor.setOnCheckedChangeListener { _, _ ->
-            calculateInstallment()
-        }
+        binding.rgTenor.setOnCheckedChangeListener { _, _ -> calculateInstallment() }
     }
 
     private fun calculateInstallment() {
@@ -66,16 +60,17 @@ class LoanApplicationFragment : Fragment() {
 
         val amount = amountStr.toDoubleOrNull() ?: 0.0
         val tenor = getSelectedTenor()
-
         if (tenor == 0) return
 
-        val pokok = amount / tenor
-        val bunga = amount * interestRate
-        val total = pokok + bunga
+        // Rumus: (Pokok + Bunga Total) / Tenor
+        val pokok = amount
+        val bungaTotal = amount * interestRate * tenor
+        val totalPinjaman = pokok + bungaTotal
+        val angsuranPerBulan = totalPinjaman / tenor
 
         binding.tvPokok.text = "Rp ${"%,.0f".format(pokok)}"
-        binding.tvBunga.text = "Rp ${"%,.0f".format(bunga)}"
-        binding.tvTotalInstallment.text = "Rp ${"%,.0f".format(total)}"
+        binding.tvBunga.text = "Rp ${"%,.0f".format(bungaTotal)}"
+        binding.tvTotalInstallment.text = "Rp ${"%,.0f".format(angsuranPerBulan)} /bulan"
     }
 
     private fun resetSimulation() {
@@ -85,17 +80,21 @@ class LoanApplicationFragment : Fragment() {
     }
 
     private fun getSelectedTenor(): Int {
-        return when (binding.rgTenor.checkedRadioButtonId) {
-            R.id.rb_3_months -> 3
-            R.id.rb_6_months -> 6
-            R.id.rb_12_months -> 12
+        val checkedId = binding.rgTenor.checkedRadioButtonId
+        return when (checkedId) {
+            binding.rgTenor.getChildAt(0).id -> 3
+            binding.rgTenor.getChildAt(1).id -> 6
+            binding.rgTenor.getChildAt(2).id -> 12
             else -> 0
         }
     }
 
     private fun submitLoanApplication() {
         setLoading(true)
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        val auth = FirebaseAuth.getInstance()
+        val db = FirebaseFirestore.getInstance()
+
+        val userId = auth.currentUser?.uid
         if (userId == null) {
             Toast.makeText(context, "Sesi habis", Toast.LENGTH_SHORT).show()
             setLoading(false)
@@ -105,45 +104,56 @@ class LoanApplicationFragment : Fragment() {
         val amount = binding.etLoanAmount.text.toString().toDouble()
         val tenor = getSelectedTenor()
         val reason = binding.etReason.text.toString()
+        val totalPayable = amount + (amount * interestRate * tenor)
 
-        // Hitung total yang harus dibayar per bulan (untuk disimpan di DB)
-        val monthlyInstallment = (amount / tenor) + (amount * interestRate)
+        // Ambil Nama User dulu agar Data Admin Lengkap
+        db.collection("members").document(userId).get()
+            .addOnSuccessListener { document ->
+                val userName = document.getString("name") ?: "User"
 
-        val loanData = hashMapOf(
-            "userId" to userId,
-            "amount" to amount,
-            "tenor" to tenor,
-            "reason" to reason,
-            "monthlyInstallment" to monthlyInstallment,
-            "status" to "pending", // Status awal PENDING
-            "applicationDate" to System.currentTimeMillis()
-        )
+                val loanData = hashMapOf(
+                    "userId" to userId,
+                    "userName" to userName,
+                    "amount" to amount,
+                    "tenor" to tenor,
+                    "reason" to reason,
+                    "interestRate" to interestRate,
+                    "totalPayable" to totalPayable,
+                    "paidAmount" to 0.0,
+                    "status" to "pending",
+                    "requestDate" to Date(), // Pakai Date Object
+                    "dueDate" to null
+                )
 
-        // Simpan ke koleksi 'loan_applications'
-        FirebaseFirestore.getInstance().collection("loan_applications")
-            .add(loanData)
-            .addOnSuccessListener {
-                setLoading(false)
-                Toast.makeText(context, "Pengajuan Berhasil Dikirim!", Toast.LENGTH_LONG).show()
-                findNavController().popBackStack()
+                db.collection("loan_applications")
+                    .add(loanData)
+                    .addOnSuccessListener {
+                        setLoading(false)
+                        Toast.makeText(context, "Pengajuan Berhasil!", Toast.LENGTH_LONG).show()
+                        findNavController().popBackStack()
+                    }
+                    .addOnFailureListener {
+                        setLoading(false)
+                        Toast.makeText(context, "Gagal: ${it.message}", Toast.LENGTH_SHORT).show()
+                    }
             }
             .addOnFailureListener {
                 setLoading(false)
-                Toast.makeText(context, "Gagal mengirim: ${it.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Gagal mengambil profil user", Toast.LENGTH_SHORT).show()
             }
     }
 
     private fun validateInput(): Boolean {
         if (binding.etLoanAmount.text.isNullOrEmpty()) {
-            binding.tilLoanAmount.error = "Isi jumlah pinjaman"
+            binding.tilLoanAmount.error = "Wajib diisi"
             return false
         }
         if (getSelectedTenor() == 0) {
-            Toast.makeText(context, "Pilih tenor pinjaman", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Pilih tenor", Toast.LENGTH_SHORT).show()
             return false
         }
         if (binding.etReason.text.isNullOrEmpty()) {
-            binding.tilReason.error = "Isi keperluan pinjaman"
+            binding.tilReason.error = "Wajib diisi"
             return false
         }
         return true

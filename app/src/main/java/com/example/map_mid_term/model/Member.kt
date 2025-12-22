@@ -3,16 +3,26 @@ package com.example.map_mid_term.model
 import com.google.firebase.firestore.PropertyName
 
 data class Member(
-    // Kita gunakan var dan default value "" agar bisa di-set setelah data diambil
+    @PropertyName("uid")
     var userId: String = "",
 
-    // Pastikan nama field ini sama dengan di Firestore kamu
-    // Jika di Firestore namanya "nama_lengkap", tambahkan @PropertyName("nama_lengkap")
+    @PropertyName("name")
     var name: String = "",
+
+    @PropertyName("email")
     var email: String = "",
+
+    @PropertyName("phone")
     var phone: String = "",
-    var role: String = "member"
+
+    @PropertyName("role")
+    var role: String = "member",
+
+    // TAMBAHKAN @PropertyName INI
+    // Agar Firestore tahu persis field mana yang harus diambil
+    @PropertyName("profileImageUrl")
+    var profileImageUrl: String? = null
 ) {
-    // Konstruktor kosong wajib untuk Firestore deserialization
-    constructor() : this("", "", "", "", "member")
+    // Konstruktor kosong wajib
+    constructor() : this("", "", "", "", "member", null)
 }

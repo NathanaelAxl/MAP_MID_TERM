@@ -1,9 +1,10 @@
-package com.example.map_mid_term.model
+package com.example.map_mid_term.data.model
 
-data class UserModel(
+data class User(
     var id: String = "",
     var name: String = "",
     var email: String = "",
-    var phone: String = "",
-    var role: String = "member" // Default role user baru
+    var phoneNumber: String = "",
+    var role: String = "",
+    var profileImageUrl: String? = null
 )

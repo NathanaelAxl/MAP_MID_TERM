@@ -1,58 +1,125 @@
 package com.example.map_mid_term.activities
 
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.map_mid_term.R
-import com.example.map_mid_term.adapters.TransactionAdapter // Ganti ke Adapter yang sudah fix
+import com.example.map_mid_term.adapters.AdminTransactionAdapter
 import com.example.map_mid_term.data.model.Transaction
-import com.google.android.material.appbar.MaterialToolbar
+import com.example.map_mid_term.databinding.ActivityTransactionListBinding
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
 class TransactionListActivity : AppCompatActivity() {
 
-    // Gunakan TransactionAdapter yang sudah support gambar Base64
-    private lateinit var adapter: TransactionAdapter
-    private val transactionList = ArrayList<Transaction>()
+    private lateinit var binding: ActivityTransactionListBinding
     private val db = FirebaseFirestore.getInstance()
+    private lateinit var adapter: AdminTransactionAdapter
+    private var transactionList = ArrayList<Transaction>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_transaction)
+        binding = ActivityTransactionListBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
-        toolbar.title = "Semua Transaksi"
-        toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
-
-        val recyclerView = findViewById<RecyclerView>(R.id.recyclerTransactions)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-
-        // Inisialisasi adapter
-        adapter = TransactionAdapter(transactionList)
-        recyclerView.adapter = adapter
-
+        setupToolbar()
+        setupRecyclerView()
         fetchTransactions()
     }
 
+    private fun setupToolbar() {
+        binding.toolbar.setNavigationOnClickListener { finish() }
+    }
+
+    private fun setupRecyclerView() {
+        // Sekarang Adapter menerima 2 parameter: List dan Lambda Function
+        adapter = AdminTransactionAdapter(transactionList) { transaction ->
+            showDeleteConfirmationDialog(transaction)
+        }
+
+        binding.rvTransactionList.apply {
+            layoutManager = LinearLayoutManager(this@TransactionListActivity)
+            adapter = this@TransactionListActivity.adapter
+        }
+    }
+
+    // --- REVISI: MENGGUNAKAN SNAPSHOT LISTENER (REALTIME) ---
     private fun fetchTransactions() {
-        // Ambil semua transaksi dari semua user (karena ini Admin)
+        binding.progressBar.visibility = View.VISIBLE
+        binding.tvEmpty.visibility = View.GONE
+
+        // Ganti .get() dengan .addSnapshotListener
         db.collection("transactions")
-            .orderBy("timestamp", Query.Direction.DESCENDING)
-            .get()
-            .addOnSuccessListener { documents ->
-                transactionList.clear()
-                for (doc in documents) {
-                    val trx = doc.toObject(Transaction::class.java)
-                    trx.id = doc.id
-                    transactionList.add(trx)
+            .orderBy("date", Query.Direction.DESCENDING)
+            .addSnapshotListener { documents, error ->
+                binding.progressBar.visibility = View.GONE
+
+                if (error != null) {
+                    Toast.makeText(this, "Gagal memuat data: ${error.message}", Toast.LENGTH_SHORT).show()
+                    return@addSnapshotListener
                 }
-                adapter.notifyDataSetChanged()
+
+                if (documents != null) {
+                    transactionList.clear() // Hapus data lama di list lokal
+
+                    val newList = ArrayList<Transaction>()
+                    for (doc in documents) {
+                        try {
+                            val trx = doc.toObject(Transaction::class.java)
+                            // Manual set ID karena @Exclude di model
+                            trx.id = doc.id
+                            newList.add(trx)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+
+                    // Update Adapter
+                    adapter.updateData(newList)
+
+                    // Logic Tampilan Kosong
+                    if (newList.isEmpty()) {
+                        binding.tvEmpty.visibility = View.VISIBLE
+                    } else {
+                        binding.tvEmpty.visibility = View.GONE
+                    }
+                }
+            }
+    }
+
+    private fun showDeleteConfirmationDialog(transaction: Transaction) {
+        AlertDialog.Builder(this)
+            .setTitle("Hapus Transaksi?")
+            .setMessage("Yakin ingin menghapus transaksi senilai Rp ${"%,.0f".format(transaction.amount)}?")
+            .setPositiveButton("Hapus") { dialog, _ ->
+                deleteTransaction(transaction)
+                dialog.dismiss()
+            }
+            .setNegativeButton("Batal") { dialog, _ -> dialog.dismiss() }
+            .show()
+    }
+
+    private fun deleteTransaction(transaction: Transaction) {
+        binding.progressBar.visibility = View.VISIBLE
+
+        db.collection("transactions").document(transaction.id)
+            .delete()
+            .addOnSuccessListener {
+                binding.progressBar.visibility = View.GONE
+                Toast.makeText(this, "Transaksi dihapus", Toast.LENGTH_SHORT).show()
+
+                // Panggil removeItem yang sudah kita buat di Adapter
+                adapter.removeItem(transaction)
+
+                if (adapter.itemCount == 0) {
+                    binding.tvEmpty.visibility = View.VISIBLE
+                }
             }
             .addOnFailureListener {
-                Toast.makeText(this, "Gagal memuat data: ${it.message}", Toast.LENGTH_SHORT).show()
+                binding.progressBar.visibility = View.GONE
+                Toast.makeText(this, "Gagal menghapus", Toast.LENGTH_SHORT).show()
             }
     }
 }

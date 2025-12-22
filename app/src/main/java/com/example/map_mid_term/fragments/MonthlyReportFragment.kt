@@ -13,6 +13,7 @@ import com.example.map_mid_term.adapters.TransactionAdapter
 import com.example.map_mid_term.databinding.FragmentMonthlyReportBinding
 import com.example.map_mid_term.data.model.Transaction
 import java.util.Calendar
+import java.util.Date
 
 class MonthlyReportFragment : Fragment() {
 
@@ -39,12 +40,10 @@ class MonthlyReportFragment : Fragment() {
     }
 
     private fun setupSpinners() {
-        // Setup Spinner Bulan
         val months = resources.getStringArray(R.array.months_array)
         val monthAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, months)
         binding.spinnerMonth.adapter = monthAdapter
 
-        // Setup Spinner Tahun
         val currentYear = Calendar.getInstance().get(Calendar.YEAR)
         val years = (currentYear - 5..currentYear).map { it.toString() }.reversed()
         val yearAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, years)
@@ -53,9 +52,12 @@ class MonthlyReportFragment : Fragment() {
 
     private fun setupRecyclerView() {
         val transactionList = arrayListOf<Transaction>()
-        transactionList.add(Transaction("Bayar Angsuran", "10 Okt 2025", 500000.0, "debit"))
-        transactionList.add(Transaction("Penarikan Tunai", "02 Okt 2025", 100000.0, "debit"))
-        transactionList.add(Transaction("Simpanan Wajib", "01 Okt 2025", 150000.0, "credit"))
+
+        // Fix: Use the new auxiliary constructor or named arguments
+        // constructor(description: String, date: Date?, amount: Double, type: String)
+        transactionList.add(Transaction("Bayar Angsuran", Date(), 500000.0, "debit"))
+        transactionList.add(Transaction("Penarikan Tunai", Date(), 100000.0, "debit"))
+        transactionList.add(Transaction("Simpanan Wajib", Date(), 150000.0, "credit"))
 
         val transactionAdapter = TransactionAdapter(transactionList)
         binding.rvReportTransactions.apply {

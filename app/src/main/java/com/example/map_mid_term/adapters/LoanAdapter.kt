@@ -7,12 +7,12 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.map_mid_term.R
-import com.example.map_mid_term.model.Loan
+import com.example.map_mid_term.data.model.LoanApplication
 
 class LoanAdapter(
-    private val loans: MutableList<Loan>,
-    private val onEdit: (Loan) -> Unit,
-    private val onDelete: (Loan) -> Unit
+    private val loans: MutableList<LoanApplication>,
+    private val onEdit: (LoanApplication) -> Unit,
+    private val onDelete: (LoanApplication) -> Unit
 ) : RecyclerView.Adapter<LoanAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -32,10 +32,16 @@ class LoanAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val loan = loans[position]
-        holder.tvLoanId.text = loan.id
-        holder.tvMemberId.text = "Member: ${loan.memberId}"
+
+        // PERBAIKAN DI SINI:
+        // 1. Ganti loanId menjadi id
+        holder.tvLoanId.text = "ID: ${loan.id}"
+
+        // 2. Hapus referensi 'name' karena tidak ada di model. Cukup tampilkan User ID.
+        holder.tvMemberId.text = "User ID: ${loan.userId}"
+
         holder.tvAmount.text = "Rp ${loan.amount}"
-        holder.tvInterest.text = "Bunga: ${loan.interestRate}%"
+        holder.tvInterest.text = "Tenor: ${loan.tenor} Bulan"
 
         holder.btnEdit.setOnClickListener { onEdit(loan) }
         holder.btnDelete.setOnClickListener { onDelete(loan) }

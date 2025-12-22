@@ -13,19 +13,16 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- PERBAIKAN: Hapus 'Budi' dari android:text -->
-        <!-- Gunakan tools:text untuk preview di Android Studio saja -->
         <TextView
             android:id="@+id/tv_greeting"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Selamat Datang..."
-            tools:text="Selamat Datang, Budi!"
+            tools:text="Selamat Datang, Nima!"
             android:textColor="@color/black"
             android:textSize="20sp"
             android:textStyle="bold" />
 
-        <!-- KARTU SALDO -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -49,13 +46,12 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp">
 
-                    <!-- Pastikan ini Rp 0 -->
                     <TextView
                         android:id="@+id/tv_total_balance"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Rp 0"
-                        tools:text="Rp 1.550.000,00"
+                        tools:text="Rp 2.500.000"
                         android:textColor="@color/black"
                         android:textSize="32sp"
                         android:textStyle="bold" />
@@ -80,11 +76,10 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="Simpanan Wajib: -"
-                    tools:text="Simpanan Wajib: Rp 1.200.000" />
+                    tools:text="Simpanan Wajib: Rp -" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- AKSES CEPAT -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -100,7 +95,6 @@
             android:layout_marginTop="8dp"
             android:orientation="horizontal">
 
-            <!-- KARTU PINJAMAN -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_pinjaman"
                 android:layout_width="0dp"
@@ -136,13 +130,18 @@
                         android:id="@+id/tv_pinjaman_status"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="12sp"
-                        android:gravity="center"
-                        tools:text="Status: Sedang Diproses" />
+                        android:layout_marginTop="4dp"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:textAlignment="center"
+                        android:visibility="gone"
+                        tools:text="Menunggu Konfirmasi"
+                        tools:visibility="visible"
+                        tools:textColor="#F57C00"/>
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- KARTU SIMPANAN -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_simpanan"
                 android:layout_width="0dp"
@@ -171,7 +170,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- KARTU RIWAYAT -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_laporan"
                 android:layout_width="0dp"
@@ -201,7 +199,6 @@
 
         </LinearLayout>
 
-        <!-- AREA PENGUMUMAN -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -218,10 +215,12 @@
             android:layout_marginTop="8dp">
 
             <TextView
+                android:id="@+id/tv_announcement_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="16dp"
-                android:text="Libur layanan kantor pada tanggal 17 Oktober 2025. Transaksi digital tetap berjalan normal." />
+                android:text="Memuat pengumuman..."
+                android:textColor="#333333"/>
 
         </androidx.cardview.widget.CardView>
 

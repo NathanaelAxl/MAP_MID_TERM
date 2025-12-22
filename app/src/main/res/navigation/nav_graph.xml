@@ -25,20 +25,27 @@
         <action
             android:id="@+id/action_homeFragment_to_transactionFragment"
             app:destination="@id/transactionFragment" />
-
         <action
             android:id="@+id/action_homeFragment_to_machineLearningFragment"
             app:destination="@id/machineLearningFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_addSavingsFragment"
+            app:destination="@id/addSavingsFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_historyFragment"
+            app:destination="@id/historyFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/transactionFragment"
         android:name="com.example.map_mid_term.fragments.TransactionFragment"
-        android:label="Transaksi"
+        android:label="fragment_transaction"
         tools:layout="@layout/fragment_transaction">
+
         <action
             android:id="@+id/action_transactionFragment_to_paymentDetailFragment"
             app:destination="@id/paymentDetailFragment" />
+
         <action
             android:id="@+id/action_transactionFragment_to_addSavingsFragment"
             app:destination="@id/addSavingsFragment" />
@@ -75,9 +82,6 @@
         android:name="com.example.map_mid_term.fragments.LoanApplicationFragment"
         android:label="Formulir Pengajuan Pinjaman"
         tools:layout="@layout/fragment_loan_application" />
-        <action
-            android:id="@+id/action_activeLoanFragment_to_loanApplicationFragment"
-            app:destination="@id/loanApplicationFragment" />
 
     <fragment
         android:id="@+id/monthlyReportFragment"
@@ -96,6 +100,10 @@
         android:name="com.example.map_mid_term.fragments.PaymentDetailFragment"
         android:label="Detail Pembayaran"
         tools:layout="@layout/fragment_payment_detail">
+
+        <argument android:name="title" app:argType="string" />
+        <argument android:name="amount" app:argType="float" /> <argument android:name="loanId" app:argType="string" />
+
         <action
             android:id="@+id/action_paymentDetailFragment_to_virtualAccountFragment"
             app:destination="@id/virtualAccountFragment" />
@@ -113,8 +121,15 @@
     <fragment
         android:id="@+id/uploadProofFragment"
         android:name="com.example.map_mid_term.fragments.UploadProofFragment"
-        android:label="Unggah Bukti Bayar"
-        tools:layout="@layout/fragment_upload_proof" />
+        android:label="Upload Bukti"
+        tools:layout="@layout/fragment_upload_proof">
+        <argument
+            android:name="amount"
+            app:argType="float" />
+        <argument
+            android:name="loanId"
+            app:argType="string" />
+    </fragment>
 
     <fragment
         android:id="@+id/addSavingsFragment"
@@ -140,7 +155,12 @@
         android:id="@+id/activeLoanFragment"
         android:name="com.example.map_mid_term.fragments.ActiveLoanFragment"
         android:label="Pinjaman Aktif"
-        tools:layout="@layout/fragment_active_loan" />
+        tools:layout="@layout/fragment_active_loan">
+
+        <action
+            android:id="@+id/action_activeLoanFragment_to_loanApplicationFragment"
+            app:destination="@id/loanApplicationFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/machineLearningFragment"

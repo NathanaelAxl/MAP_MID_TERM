@@ -8,9 +8,6 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 import java.util.concurrent.TimeUnit
 
-// ========================
-// 1. DATA MODELS
-// ========================
 data class HealthRequest(
     val age: Float,
     val BMI: Float,

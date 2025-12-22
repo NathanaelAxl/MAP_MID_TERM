@@ -1,6 +1,7 @@
 package com.example.map_mid_term.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,9 +23,10 @@ class TransactionFragment : Fragment() {
     private val viewModel: TransactionViewModel by viewModels()
     private lateinit var transactionAdapter: TransactionAdapter
 
-    // Data pinjaman aktif (disimpan sementara untuk dikirim ke halaman bayar)
     private var activeLoanId: String = ""
-    private var activeLoanAmount: Double = 0.0
+    // REVISI: Gunakan Double untuk perhitungan matematika biar akurat
+    private var monthlyBill: Double = 0.0
+    private var loanTitle: String = "Angsuran Pinjaman"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,13 +46,11 @@ class TransactionFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Ambil data terbaru setiap kali halaman dibuka
         viewModel.fetchTransactions()
-        viewModel.checkActiveLoan() // Cek apakah ada hutang?
+        viewModel.checkActiveLoan()
     }
 
     private fun observeViewModel() {
-        // 1. List Transaksi
         viewModel.transactions.observe(viewLifecycleOwner) { transactions ->
             if (transactions.isNullOrEmpty()) {
                 binding.tvNoTransactions.visibility = View.VISIBLE
@@ -62,24 +62,26 @@ class TransactionFragment : Fragment() {
             }
         }
 
-        // 2. Data Pinjaman Aktif (Tagihan)
         viewModel.activeLoan.observe(viewLifecycleOwner) { loanData ->
             if (loanData != null) {
-                // ADA PINJAMAN AKTIF -> Tampilkan Kartu
                 binding.layoutUpcomingPayment.visibility = View.VISIBLE
+                activeLoanId = loanData["id"] as? String ?: ""
 
-                val monthly = loanData["monthlyInstallment"] as? Double ?: 0.0
-                // Simpan untuk navigasi bayar
-                activeLoanAmount = monthly
-                // Jika ID dokumen disimpan di map, ambil. Jika tidak, pakai dummy dulu atau ambil dr snapshot
-                activeLoanId = "LOAN-ACT"
+                // Perhitungan menggunakan Double
+                val totalPayable = (loanData["totalPayable"] as? Number)?.toDouble() ?: 0.0
+                val tenor = (loanData["tenor"] as? Number)?.toInt() ?: 1
 
-                binding.tvPaymentAmount.text = "Rp ${"%,.0f".format(monthly)}"
-                binding.tvPaymentTitle.text = "Angsuran Bulan Ini"
-                binding.tvPaymentDueDate.text = "Jatuh Tempo: 25 Bulan Ini"
+                monthlyBill = if (tenor > 0) totalPayable / tenor else 0.0
+                loanTitle = "Angsuran Bulan Ini ($tenor Bulan)"
+
+                // Tampilkan format uang
+                binding.tvPaymentAmount.text = "Rp ${"%,.0f".format(monthlyBill)}"
+                binding.tvPaymentTitle.text = loanTitle
+                binding.tvPaymentDueDate.text = "Jatuh Tempo: Segera"
+
             } else {
-                // TIDAK ADA PINJAMAN -> Sembunyikan Kartu
                 binding.layoutUpcomingPayment.visibility = View.GONE
+                activeLoanId = ""
             }
         }
 
@@ -98,32 +100,46 @@ class TransactionFragment : Fragment() {
     }
 
     private fun setupListeners() {
-        // Klik Bayar Sekarang (Dari kartu tagihan)
-        binding.btnPayNow.setOnClickListener {
-            navigateToPayment(activeLoanAmount)
-        }
+        binding.btnPayNow.setOnClickListener { navigateToPayment() }
 
-        // Klik Menu "Bayar Angsuran"
         binding.cardBayarAngsuran.setOnClickListener {
             if (binding.layoutUpcomingPayment.visibility == View.VISIBLE) {
-                navigateToPayment(activeLoanAmount)
+                navigateToPayment()
             } else {
                 Toast.makeText(context, "Tidak ada tagihan aktif", Toast.LENGTH_SHORT).show()
             }
         }
 
         binding.cardTambahSimpanan.setOnClickListener {
-            findNavController().navigate(R.id.action_transactionFragment_to_addSavingsFragment)
+            try {
+                findNavController().navigate(R.id.action_transactionFragment_to_addSavingsFragment)
+            } catch (e: Exception) {
+                Toast.makeText(context, "Menu belum siap", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
-    private fun navigateToPayment(amount: Double) {
+    private fun navigateToPayment() {
+        if (activeLoanId.isEmpty()) {
+            Toast.makeText(context, "Menunggu data pinjaman...", Toast.LENGTH_SHORT).show()
+            viewModel.checkActiveLoan()
+            return
+        }
+
+        // --- REVISI: Gunakan putFloat agar sesuai dengan nav_graph.xml ---
         val bundle = Bundle().apply {
-            putString("title", "Bayar Angsuran")
-            putDouble("amount", amount)
+            putString("title", loanTitle)
+            putFloat("amount", monthlyBill.toFloat()) // Konversi Double ke Float saat kirim
             putString("loanId", activeLoanId)
         }
-        findNavController().navigate(R.id.action_transactionFragment_to_paymentDetailFragment, bundle)
+
+        try {
+            findNavController().navigate(R.id.action_transactionFragment_to_paymentDetailFragment, bundle)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e("NAV_ERROR", "Gagal navigasi: ${e.message}")
+            Toast.makeText(context, "Gagal membuka halaman bayar.", Toast.LENGTH_LONG).show()
+        }
     }
 
     override fun onDestroyView() {

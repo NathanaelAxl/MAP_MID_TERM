@@ -12,8 +12,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
-
-    // Inisialisasi Firebase
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
 
@@ -25,16 +23,7 @@ class LoginActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
 
-        // --- REVISI UNTUK DEMO ---
-        // Saya matikan fitur Auto Login ini sementara dengan memberikan komentar (/* ... */)
-        // Tujuannya: Agar saat aplikasi dibuka atau setelah logout, user TETAP di halaman login.
-
-        /* if (auth.currentUser != null) {
-            checkUserRoleAndRedirect(auth.currentUser!!.uid)
-            return
-        }
-        */
-
+        // Tombol Login
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
@@ -46,7 +35,7 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        // FUNGSI KLIK UNTUK PINDAH KE HALAMAN REGISTRASI
+        // Tombol Register
         binding.tvRegister.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
@@ -56,54 +45,53 @@ class LoginActivity : AppCompatActivity() {
         binding.btnLogin.isEnabled = false
         binding.btnLogin.text = "Loading..."
 
-        // 1. Cek Email & Password di Firebase Authentication
         auth.signInWithEmailAndPassword(email, pass)
             .addOnSuccessListener { result ->
                 val uid = result.user?.uid
                 if (uid != null) {
-                    // Jika Auth sukses, lanjutkan cek Role di Firestore
                     checkUserRoleAndRedirect(uid)
+                } else {
+                    // Jika UID null (sangat jarang), reset tombol
+                    resetButton()
+                    showErrorDialog("Login Gagal", "Gagal mendapatkan User ID.")
                 }
             }
-            .addOnFailureListener {
-                // Login gagal
-                binding.btnLogin.isEnabled = true
-                binding.btnLogin.text = "Masuk"
-                showErrorDialog("Login Gagal", "Email atau password salah. Silakan coba lagi.")
+            .addOnFailureListener { e ->
+                // Login gagal (password salah/email tidak ada)
+                resetButton()
+                showErrorDialog("Login Gagal", "Email atau password salah: ${e.message}")
             }
     }
 
     private fun checkUserRoleAndRedirect(uid: String) {
-        // 2. Ambil data user dari koleksi "members" di Firestore
         db.collection("members").document(uid).get()
             .addOnSuccessListener { document ->
-                binding.btnLogin.isEnabled = true
-                binding.btnLogin.text = "Masuk"
+                resetButton() // Aktifkan tombol lagi sebelum pindah (untuk jaga-jaga)
 
                 if (document.exists()) {
                     val role = document.getString("role")
 
-                    if (role == "pengurus") {
-                        // Login sebagai admin
+                    if (role == "pengurus" || role == "admin") {
                         startActivity(Intent(this, AdminActivity::class.java))
                     } else {
-                        // Login sebagai member biasa
                         startActivity(Intent(this, MainActivity::class.java))
                     }
-                    finish()
+                    finish() // Tutup LoginActivity
                 } else {
-                    // Ini seharusnya tidak terjadi jika Register sukses
                     showErrorDialog("Error Data", "Data user tidak ditemukan di database.")
                 }
             }
-            .addOnFailureListener {
-                binding.btnLogin.isEnabled = true
-                binding.btnLogin.text = "Masuk"
-                showErrorDialog("Error Database", "Gagal mengambil data user: ${it.message}")
+            .addOnFailureListener { e ->
+                resetButton()
+                showErrorDialog("Error Database", "Gagal mengambil data user: ${e.message}")
             }
     }
 
-    // Fungsi pengganti AlertDialog biasa agar tidak mengganggu UI
+    private fun resetButton() {
+        binding.btnLogin.isEnabled = true
+        binding.btnLogin.text = "Masuk"
+    }
+
     private fun showErrorDialog(title: String, message: String) {
         AlertDialog.Builder(this)
             .setTitle(title)

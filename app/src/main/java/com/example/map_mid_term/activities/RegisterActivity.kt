@@ -6,7 +6,6 @@ import android.util.Patterns
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.map_mid_term.databinding.ActivityRegisterBinding
-import com.example.map_mid_term.model.UserModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -42,41 +41,49 @@ class RegisterActivity : AppCompatActivity() {
         val phone = binding.etPhone.text.toString().trim()
         val password = binding.etPassword.text.toString().trim()
 
-        binding.btnRegister.isEnabled = false
-        binding.btnRegister.text = "Loading..."
+        setLoading(true)
 
         // 1. Buat Akun di Authentication
         auth.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener { authResult ->
                 val userId = authResult.user?.uid
                 if (userId != null) {
-                    // 2. Simpan Data Tambahan ke Firestore
-                    val newUser = UserModel(
-                        id = userId,
-                        name = name,
-                        email = email,
-                        phone = phone,
-                        role = "member"
-                    )
-
-                    db.collection("members").document(userId).set(newUser)
-                        .addOnSuccessListener {
-                            Toast.makeText(this, "Registrasi Berhasil!", Toast.LENGTH_LONG).show()
-                            auth.signOut()
-                            startActivity(Intent(this, LoginActivity::class.java))
-                            finish()
-                        }
-                        .addOnFailureListener { e ->
-                            Toast.makeText(this, "Gagal simpan data: ${e.message}", Toast.LENGTH_SHORT).show()
-                            binding.btnRegister.isEnabled = true
-                            binding.btnRegister.text = "Daftar"
-                        }
+                    saveMemberData(userId, name, email, phone)
                 }
             }
             .addOnFailureListener { e ->
+                setLoading(false)
                 Toast.makeText(this, "Gagal Daftar: ${e.message}", Toast.LENGTH_SHORT).show()
-                binding.btnRegister.isEnabled = true
-                binding.btnRegister.text = "Daftar"
+            }
+    }
+
+    private fun saveMemberData(userId: String, name: String, email: String, phone: String) {
+        // REVISI PENTING: Gunakan HashMap agar field-nya pasti cocok dengan fitur lain
+        val memberData = hashMapOf(
+            "uid" to userId,
+            "name" to name,
+            "email" to email,
+            "phone" to phone, // Pastikan namanya 'phone', bukan 'phoneNumber'
+            "role" to "member",
+            "createdAt" to System.currentTimeMillis()
+        )
+
+        // REVISI FATAL: Ubah "users" menjadi "members"
+        // Agar terbaca di HomeFragment dan LoanApplicationFragment
+        db.collection("members").document(userId).set(memberData)
+            .addOnSuccessListener {
+                Toast.makeText(this, "Registrasi Berhasil! Silakan Login.", Toast.LENGTH_LONG).show()
+                auth.signOut() // Logout agar user login manual
+
+                // Pindah ke Login
+                val intent = Intent(this, LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
+            .addOnFailureListener { e ->
+                setLoading(false)
+                Toast.makeText(this, "Gagal simpan data: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -96,5 +103,10 @@ class RegisterActivity : AppCompatActivity() {
         if (password != confirmPassword) { binding.tilConfirmPassword.error = "Password tidak sama"; isValid = false } else binding.tilConfirmPassword.error = null
 
         return isValid
+    }
+
+    private fun setLoading(isLoading: Boolean) {
+        binding.btnRegister.isEnabled = !isLoading
+        binding.btnRegister.text = if (isLoading) "Loading..." else "Daftar Sekarang"
     }
 }

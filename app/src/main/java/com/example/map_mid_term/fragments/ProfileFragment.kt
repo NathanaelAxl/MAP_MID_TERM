@@ -1,15 +1,17 @@
 package com.example.map_mid_term.fragments
 
 import android.content.Intent
-import android.graphics.drawable.GradientDrawable
+import android.graphics.BitmapFactory
+import android.util.Base64
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import coil.load
+import coil.transform.CircleCropTransformation
 import com.example.map_mid_term.R
 import com.example.map_mid_term.activities.LoginActivity
 import com.example.map_mid_term.databinding.FragmentProfileBinding
@@ -21,7 +23,6 @@ class ProfileFragment : Fragment() {
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
 
-    // Inisialisasi Firebase
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
 
@@ -33,92 +34,93 @@ class ProfileFragment : Fragment() {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        loadUserProfile()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // 1. Ambil data asli dari Firestore
-        loadUserProfile()
-
-        // 2. Siapkan tombol-tombol
-        setupClickListeners()
+        setupListeners()
     }
 
-    private fun loadUserProfile() {
-        val userId = auth.currentUser?.uid
-
-        if (userId != null) {
-            // Tampilkan loading state sementara (opsional)
-            binding.tvProfileName.text = "Memuat..."
-
-            db.collection("members").document(userId).get()
-                .addOnSuccessListener { document ->
-                    if (document.exists()) {
-                        // Ambil data dari database
-                        val name = document.getString("name") ?: "Tanpa Nama"
-                        val email = document.getString("email") ?: auth.currentUser?.email
-                        val phone = document.getString("phone") ?: "-"
-
-                        // Masukkan ke UI (pastikan binding tidak null)
-                        if (_binding != null) {
-                            binding.tvProfileName.text = name
-                            binding.tvProfileEmail.text = email
-                            binding.tvProfilePhone.text = phone
-
-                            // Status keanggotaan (Default Aktif dulu untuk demo)
-                            binding.tvMembershipStatus.text = "Anggota Aktif"
-                            val background = binding.tvMembershipStatus.background as? GradientDrawable
-                            background?.setColor(ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
-                        }
-                    }
-                }
-                .addOnFailureListener {
-                    if (_binding != null) {
-                        binding.tvProfileName.text = "Gagal memuat"
-                        Toast.makeText(context, "Gagal mengambil data profil", Toast.LENGTH_SHORT).show()
-                    }
-                }
-        }
-    }
-
-    private fun setupClickListeners() {
-        // Tombol Edit (Navigasi aman)
-        binding.btnEditProfile.setOnClickListener {
+    private fun setupListeners() {
+        // 1. Tombol Edit Profil
+        binding.tvEditProfile.setOnClickListener {
             try {
                 findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
             } catch (e: Exception) {
-                Toast.makeText(context, "Fitur Edit Profil segera hadir", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Navigasi belum diatur", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // --- FITUR LOGOUT (PENTING UNTUK DEMO) ---
-        binding.menuLogout.setOnClickListener {
-            performLogout()
-        }
-
-        // Tombol menu lainnya (Toast saja biar aman)
-        binding.menuChangePassword.setOnClickListener {
-            Toast.makeText(context, "Fitur Ubah Sandi berjalan", Toast.LENGTH_SHORT).show()
-        }
-
-        binding.menuHelpCenter.setOnClickListener {
-            Toast.makeText(context, "Membuka Pusat Bantuan...", Toast.LENGTH_SHORT).show()
+        // 2. Tombol Keluar
+        binding.btnLogout.setOnClickListener {
+            auth.signOut()
+            val intent = Intent(requireContext(), LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            requireActivity().finish()
         }
     }
 
-    private fun performLogout() {
-        // 1. Sign out dari Firebase
-        auth.signOut()
+    private fun loadUserProfile() {
+        val user = auth.currentUser
+        val userId = user?.uid ?: return
 
-        // 2. Pindah ke Halaman Login & Hapus history navigasi
-        // (Agar pas ditekan 'Back' tidak balik ke dalam aplikasi lagi)
-        val intent = Intent(requireContext(), LoginActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
+        binding.tvEmail.text = user.email
 
-        // 3. Tutup fragment/activity saat ini (opsional karena flag di atas sudah handle)
-        activity?.finish()
+        db.collection("members").document(userId).get()
+            .addOnSuccessListener { document ->
+                if (_binding != null && document.exists()) {
+                    val name = document.getString("name") ?: "Anggota"
+                    val phone = document.getString("phone") ?: "-"
+                    val photoStr = document.getString("profileImageUrl")
 
-        Toast.makeText(context, "Berhasil Keluar", Toast.LENGTH_SHORT).show()
+                    binding.tvName.text = name
+                    binding.tvPhone.text = phone
+
+                    if (!photoStr.isNullOrEmpty()) {
+                        loadProfileImage(photoStr)
+                    } else {
+                        // Placeholder (Vector Drawable)
+                        binding.ivProfilePhoto.setImageResource(R.drawable.ic_profile_placeholder)
+                    }
+                }
+            }
+    }
+
+    private fun loadProfileImage(base64OrUrl: String) {
+        try {
+            if (base64OrUrl.length > 200 && !base64OrUrl.startsWith("http")) {
+                // Tipe Base64 (Data dari Database)
+                var decodedBytes = Base64.decode(base64OrUrl, Base64.NO_WRAP)
+                if (decodedBytes == null || decodedBytes.isEmpty()) {
+                    decodedBytes = Base64.decode(base64OrUrl, Base64.DEFAULT)
+                }
+                val decodedBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+
+                // --- REVISI DI SINI ---
+                // Gunakan Coil untuk load Bitmap agar bisa di-crop bulat
+                binding.ivProfilePhoto.load(decodedBitmap) {
+                    crossfade(true)
+                    // Ini kuncinya biar bulat:
+                    transformations(CircleCropTransformation())
+                }
+                // ----------------------
+
+            } else {
+                // Tipe URL Online
+                binding.ivProfilePhoto.load(base64OrUrl) {
+                    transformations(CircleCropTransformation())
+                    placeholder(R.drawable.ic_profile_placeholder)
+                    error(R.drawable.ic_profile_placeholder)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            binding.ivProfilePhoto.setImageResource(R.drawable.ic_profile_placeholder)
+        }
     }
 
     override fun onDestroyView() {

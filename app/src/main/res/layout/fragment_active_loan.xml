@@ -192,7 +192,7 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:text="Kembali"
-            android:backgroundTint="#2196F3"
+            android:backgroundTint="?attr/colorPrimary"
             android:layout_marginTop="32dp" />
 
     </LinearLayout>

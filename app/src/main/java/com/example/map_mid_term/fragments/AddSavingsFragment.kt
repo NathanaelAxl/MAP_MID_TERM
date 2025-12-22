@@ -1,61 +1,67 @@
 package com.example.map_mid_term.fragments
 
+import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
 import com.example.map_mid_term.R
 import com.example.map_mid_term.databinding.FragmentAddSavingsBinding
-import com.example.map_mid_term.viewmodels.TransactionViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
-import java.io.InputStream
+import java.util.Date
 
 class AddSavingsFragment : Fragment() {
 
     private var _binding: FragmentAddSavingsBinding? = null
     private val binding get() = _binding!!
 
-    // Diasumsikan kamu sudah membuat TransactionViewModel
-    private val viewModel: TransactionViewModel by viewModels()
-
     private var imageBase64: String? = null
+    private val nominalSimpananWajib = 100000.0
 
-    // Launcher untuk membuka Galeri
-    private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let {
-            // ID IV yang benar: iv_preview_proof
-            binding.ivProofPreview.visibility = View.VISIBLE
-            binding.layoutPlaceholderImage.visibility = View.GONE
-            binding.ivRemoveImage.visibility = View.VISIBLE
-
-            // Gunakan Glide
-            Glide.with(this)
-                .load(it)
-                .centerCrop()
-                .into(binding.ivProofPreview)
-
-            compressAndEncodeImage(it)
+    // --- 1. LAUNCHER IZIN KAMERA ---
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            openCamera()
+        } else {
+            Toast.makeText(requireContext(), "Izin kamera ditolak", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private val nominalSimpananWajib = 100000
+    private val galleryLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let { processImageUri(it) }
+    }
+
+    private val cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val bitmap = result.data?.extras?.get("data") as? Bitmap
+            if (bitmap != null) {
+                processBitmap(bitmap)
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -68,23 +74,12 @@ class AddSavingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupUIListeners()
-        observeViewModel()
-
-        // Setup tombol hapus gambar
-        binding.ivRemoveImage.setOnClickListener {
-            imageBase64 = null
-            binding.ivProofPreview.setImageURI(null)
-            binding.ivProofPreview.visibility = View.GONE
-            binding.layoutPlaceholderImage.visibility = View.VISIBLE
-            binding.ivRemoveImage.visibility = View.GONE
-        }
     }
 
     private fun setupUIListeners() {
         binding.rgSavingsType.setOnCheckedChangeListener { _, checkedId ->
             if (checkedId == R.id.rb_wajib) {
-                // Saat pilih Wajib, isi otomatis tapi BIARKAN user mengedit jika mau
-                binding.etDepositAmount.setText(nominalSimpananWajib.toString())
+                binding.etDepositAmount.setText(nominalSimpananWajib.toInt().toString())
                 binding.etDepositAmount.isEnabled = false
             } else {
                 binding.etDepositAmount.setText("")
@@ -92,9 +87,12 @@ class AddSavingsFragment : Fragment() {
             }
         }
 
-        // PERBAIKAN: Pasang listener di CARD (Kotak Besar), bukan di tombol btnSelectImage yang hidden
         binding.cardImagePicker.setOnClickListener {
-            pickImageLauncher.launch("image/*")
+            showImageSourceDialog()
+        }
+
+        binding.ivRemoveImage.setOnClickListener {
+            resetImageSelection()
         }
 
         binding.btnSaveTransaction.setOnClickListener {
@@ -104,121 +102,156 @@ class AddSavingsFragment : Fragment() {
         }
     }
 
-    // Menyimpan Transaksi ke Firestore
+    private fun showImageSourceDialog() {
+        val options = arrayOf("Ambil Foto (Kamera)", "Pilih dari Galeri")
+        AlertDialog.Builder(requireContext())
+            .setTitle("Upload Bukti Transfer")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> checkCameraPermissionAndOpen()
+                    1 -> galleryLauncher.launch("image/*")
+                }
+            }
+            .show()
+    }
+
+    private fun checkCameraPermissionAndOpen() {
+        when {
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                openCamera()
+            }
+            else -> {
+                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }
+    }
+
+    private fun openCamera() {
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        try {
+            cameraLauncher.launch(intent)
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "Gagal membuka kamera", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun processImageUri(uri: Uri) {
+        try {
+            val inputStream = requireContext().contentResolver.openInputStream(uri)
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            processBitmap(bitmap)
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "Gagal memuat gambar", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun processBitmap(bitmap: Bitmap) {
+        binding.ivProofPreview.setImageBitmap(bitmap)
+        binding.ivProofPreview.visibility = View.VISIBLE
+        binding.layoutPlaceholderImage.visibility = View.GONE
+        binding.ivRemoveImage.visibility = View.VISIBLE
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val compressedBase64 = compressBitmapToBase64(bitmap)
+            withContext(Dispatchers.Main) {
+                imageBase64 = compressedBase64
+            }
+        }
+    }
+
+    private fun resetImageSelection() {
+        imageBase64 = null
+        binding.ivProofPreview.setImageDrawable(null)
+        binding.ivProofPreview.visibility = View.GONE
+        binding.layoutPlaceholderImage.visibility = View.VISIBLE
+        binding.ivRemoveImage.visibility = View.GONE
+    }
+
+    // --- REVISI UTAMA: LOGIC SIMPANAN LANGSUNG MASUK SALDO ---
     private fun saveTransaction() {
-        viewModel.setLoading(true)
+        setLoading(true)
 
         val amountStr = binding.etDepositAmount.text.toString().trim()
         val amount = amountStr.toDoubleOrNull() ?: 0.0
-
-        // Cek Radio Button yang tercentang di Radio Group
-        val type = if (binding.rgSavingsType.checkedRadioButtonId == R.id.rb_wajib) "Wajib" else "Sukarela"
+        val typeLabel = if (binding.rgSavingsType.checkedRadioButtonId == R.id.rb_wajib) "Wajib" else "Sukarela"
         val userId = FirebaseAuth.getInstance().currentUser?.uid
 
-        if (userId == null || imageBase64 == null) {
-            viewModel.setLoading(false)
-            Toast.makeText(requireContext(), "Data user atau gambar tidak lengkap", Toast.LENGTH_SHORT).show()
-            return
-        }
+        if (userId == null) return
 
+        val db = FirebaseFirestore.getInstance()
+        val batch = db.batch()
+
+        // 1. Siapkan Dokumen Baru di collection 'transactions'
+        val transactionRef = db.collection("transactions").document()
+
+        // Data Transaksi
         val transactionData = hashMapOf(
-            "title" to "Simpanan $type",
+            "id" to transactionRef.id,
+            "userId" to userId,
             "amount" to amount,
-            "type" to "credit",
-            "timestamp" to System.currentTimeMillis(),
-            "proofImageUrl" to imageBase64,
-            "userId" to userId
+            "type" to "Simpanan", // PENTING: Pakai "Simpanan" agar adapter warnanya HIJAU
+            "title" to "Simpanan $typeLabel", // Optional, untuk backup
+            "description" to "Setoran Simpanan $typeLabel", // Ini yang dipakai adapter
+            "status" to "success", // Langsung sukses (Auto-Approve)
+            "date" to Date(), // Sesuai Model Transaction.kt
+            "proofImageUrl" to imageBase64
         )
 
-        FirebaseFirestore.getInstance().collection("transactions")
-            .add(transactionData)
+        // 2. Siapkan Update Saldo User
+        val userRef = db.collection("users").document(userId)
+
+        // --- MASUKKAN KE BATCH (Semua jalan bareng) ---
+
+        // A. Buat History
+        batch.set(transactionRef, transactionData)
+
+        // B. Update Saldo User (+ amount)
+        batch.update(userRef, "saldo", FieldValue.increment(amount))
+
+        // --- EKSEKUSI ---
+        batch.commit()
             .addOnSuccessListener {
-                viewModel.setLoading(false)
-                Toast.makeText(requireContext(), "Transaksi berhasil disimpan!", Toast.LENGTH_SHORT).show()
+                setLoading(false)
+                Toast.makeText(requireContext(), "Berhasil! Saldo ditambahkan.", Toast.LENGTH_LONG).show()
                 findNavController().popBackStack()
             }
             .addOnFailureListener { e ->
-                viewModel.setLoading(false)
-                Toast.makeText(requireContext(), "Gagal menyimpan: ${e.message}", Toast.LENGTH_LONG).show()
+                setLoading(false)
+                Toast.makeText(requireContext(), "Gagal: ${e.message}", Toast.LENGTH_LONG).show()
             }
     }
 
-    private fun observeViewModel() {
-        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.btnSaveTransaction.isEnabled = !isLoading
-            binding.cardImagePicker.isEnabled = !isLoading
-
-            // Tampilkan progress bar (asumsi ID progress_bar ada di XML)
-            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-        }
+    private fun compressBitmapToBase64(bitmap: Bitmap): String {
+        val outputStream = ByteArrayOutputStream()
+        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 600, 600 * bitmap.height / bitmap.width, false)
+        scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 60, outputStream)
+        val byteArray = outputStream.toByteArray()
+        return Base64.encodeToString(byteArray, Base64.DEFAULT)
     }
 
     private fun validateInput(): Boolean {
         if (binding.rgSavingsType.checkedRadioButtonId == -1) {
-            Toast.makeText(requireContext(), "Silakan pilih jenis simpanan", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Pilih jenis simpanan", Toast.LENGTH_SHORT).show()
             return false
         }
-
-        val amountText = binding.etDepositAmount.text.toString()
-        if (amountText.isEmpty() || amountText.toDoubleOrNull() ?: 0.0 <= 0) {
-            binding.tilDepositAmount.error = "Jumlah setoran tidak valid"
+        val amount = binding.etDepositAmount.text.toString().toDoubleOrNull() ?: 0.0
+        if (amount <= 0) {
+            binding.tilDepositAmount.error = "Nominal tidak valid"
             return false
         }
-
         if (imageBase64 == null) {
-            Toast.makeText(requireContext(), "Silakan pilih bukti pembayaran", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Wajib upload bukti transfer", Toast.LENGTH_SHORT).show()
             return false
         }
-        binding.tilDepositAmount.error = null
         return true
     }
 
-    private fun compressAndEncodeImage(uri: Uri) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                withContext(Dispatchers.Main) {
-                    binding.btnSaveTransaction.isEnabled = false
-                }
-
-                val inputStream = requireContext().contentResolver.openInputStream(uri)
-                val bitmap = BitmapFactory.decodeStream(inputStream)
-
-                val compressedBitmap = compressBitmap(bitmap, 800)
-
-                val byteArrayOutputStream = ByteArrayOutputStream()
-                compressedBitmap.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream)
-                val byteArray = byteArrayOutputStream.toByteArray()
-                val encodedString = Base64.encodeToString(byteArray, Base64.DEFAULT)
-
-                withContext(Dispatchers.Main) {
-                    imageBase64 = encodedString
-                    val sizeInKB = encodedString.toByteArray().size / 1024
-                    Toast.makeText(requireContext(), "Gambar siap ($sizeInKB KB)", Toast.LENGTH_SHORT).show()
-                    binding.btnSaveTransaction.isEnabled = true
-                }
-
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    binding.btnSaveTransaction.isEnabled = true
-                    Toast.makeText(requireContext(), "Gagal memproses gambar: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
-
-    private fun compressBitmap(bitmap: Bitmap, maxWidth: Int): Bitmap {
-        var width = bitmap.width
-        var height = bitmap.height
-
-        val bitmapRatio = width.toFloat() / height.toFloat()
-        if (bitmapRatio > 1) {
-            width = maxWidth
-            height = (width / bitmapRatio).toInt()
-        } else {
-            height = maxWidth
-            width = (height * bitmapRatio).toInt()
-        }
-        return Bitmap.createScaledBitmap(bitmap, width, height, false)
+    private fun setLoading(isLoading: Boolean) {
+        binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        binding.btnSaveTransaction.isEnabled = !isLoading
     }
 
     override fun onDestroyView() {

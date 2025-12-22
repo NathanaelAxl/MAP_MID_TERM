@@ -1,10 +1,10 @@
 package com.example.map_mid_term.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.map_mid_term.adapters.TransactionAdapter
@@ -19,11 +19,9 @@ class HistoryFragment : Fragment() {
     private var _binding: FragmentHistoryBinding? = null
     private val binding get() = _binding!!
 
-    // BARU: Firebase & Adapter instances
-    private lateinit var auth: FirebaseAuth
-    private lateinit var firestore: FirebaseFirestore
+    private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
     private lateinit var transactionAdapter: TransactionAdapter
-    private val transactionList = ArrayList<Transaction>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,56 +33,59 @@ class HistoryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // BARU: Inisialisasi Firebase
-        auth = FirebaseAuth.getInstance()
-        firestore = FirebaseFirestore.getInstance()
-
         setupRecyclerView()
-        fetchTransactionsFromFirestore()
+        loadTransactionHistory()
     }
 
     private fun setupRecyclerView() {
-        // DIUBAH: Menginisialisasi adapter dengan list kosong
-        transactionAdapter = TransactionAdapter(transactionList)
-        binding.rvHistory.apply {
+        transactionAdapter = TransactionAdapter(arrayListOf())
+
+        // ID ini sekarang SUDAH COCOK dengan XML
+        binding.rvTransactionHistory.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = transactionAdapter
         }
     }
 
-    // BARU: Fungsi untuk mengambil data dari Firestore
-    private fun fetchTransactionsFromFirestore() {
-        val userId = auth.currentUser?.uid
-        if (userId == null) {
-            Log.w("HistoryFragment", "User not logged in")
-            binding.tvNoTransactions.text = "Anda harus login untuk melihat riwayat"
-            binding.tvNoTransactions.visibility = View.VISIBLE
-            return
-        }
+    private fun loadTransactionHistory() {
+        val userId = auth.currentUser?.uid ?: return
 
-        binding.progressBar.visibility = View.VISIBLE // Tampilkan progress bar
+        binding.progressBar.visibility = View.VISIBLE
+        binding.tvEmpty.visibility = View.GONE
 
-        firestore.collection("transactions")
+        // Query berdasarkan 'date'
+        db.collection("transactions")
             .whereEqualTo("userId", userId)
-            .orderBy("timestamp", Query.Direction.DESCENDING)
-            .addSnapshotListener { snapshots, e ->
-                binding.progressBar.visibility = View.GONE // Sembunyikan progress bar
+            .orderBy("date", Query.Direction.DESCENDING)
+            .get()
+            .addOnSuccessListener { documents ->
+                binding.progressBar.visibility = View.GONE
+                val transactionList = ArrayList<Transaction>()
 
-                if (e != null) {
-                    Log.w("HistoryFragment", "Listen failed.", e)
-                    return@addSnapshotListener
+                for (doc in documents) {
+                    try {
+                        val trx = doc.toObject(Transaction::class.java)
+                        trx.id = doc.id
+                        transactionList.add(trx)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
 
-                if (snapshots != null && !snapshots.isEmpty) {
-                    binding.tvNoTransactions.visibility = View.GONE
-                    val newTransactions = snapshots.toObjects(Transaction::class.java)
-                    transactionAdapter.updateData(newTransactions)
+                transactionAdapter.updateData(transactionList)
+
+                // Logic Tampilkan/Sembunyikan pesan kosong
+                if (transactionList.isEmpty()) {
+                    binding.tvEmpty.visibility = View.VISIBLE
+                    binding.rvTransactionHistory.visibility = View.GONE
                 } else {
-                    Log.d("HistoryFragment", "No transactions found")
-                    binding.tvNoTransactions.visibility = View.VISIBLE
-                    transactionAdapter.updateData(emptyList()) // Kosongkan list
+                    binding.tvEmpty.visibility = View.GONE
+                    binding.rvTransactionHistory.visibility = View.VISIBLE
                 }
+            }
+            .addOnFailureListener {
+                binding.progressBar.visibility = View.GONE
+                Toast.makeText(context, "Gagal memuat: ${it.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
