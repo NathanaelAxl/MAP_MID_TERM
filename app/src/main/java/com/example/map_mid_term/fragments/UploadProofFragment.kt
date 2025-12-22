@@ -49,7 +49,6 @@ class UploadProofFragment : Fragment() {
             val loc = data?.getStringExtra("location_result")
 
             if (photoPath != null) {
-                // Resize di awal saat load file untuk hemat memori
                 currentBitmap = decodeSampledBitmapFromFile(photoPath, 600, 600)
                 locationString = loc ?: "Lokasi Tersimpan"
                 updateUIPreview()
@@ -67,9 +66,7 @@ class UploadProofFragment : Fragment() {
                 try {
                     val inputStream = requireContext().contentResolver.openInputStream(imageUri)
                     val originalBitmap = BitmapFactory.decodeStream(inputStream)
-
-                    // Langsung resize saat ambil dari galeri
-                    currentBitmap = resizeBitmap(originalBitmap, 600) // Max 600px
+                    currentBitmap = resizeBitmap(originalBitmap, 600)
                     locationString = "Upload dari Galeri"
                     updateUIPreview()
                 } catch (e: Exception) {
@@ -125,13 +122,9 @@ class UploadProofFragment : Fragment() {
         binding.btnSubmitPayment.isEnabled = false
         binding.btnSubmitPayment.text = "Mengompres Data..."
 
-        // Gunakan Thread/Handler biar UI tidak macet saat kompresi
         try {
             val base64Image = convertBitmapToBase64(currentBitmap)
 
-            // CEK UKURAN STRING (PENTING!)
-            // Firestore max 1MB (sekitar 1.4 juta karakter base64)
-            // Kita batasi di 900.000 karakter biar aman
             if (base64Image.length > 900_000) {
                 binding.btnSubmitPayment.isEnabled = true
                 binding.btnSubmitPayment.text = "Kirim Pembayaran"
@@ -148,61 +141,78 @@ class UploadProofFragment : Fragment() {
         }
     }
 
-    // --- REVISI UTAMA: AUTO-PAYMENT LOGIC ---
+    // --- REVISI UTAMA: LOGIKA DETEKSI LUNAS OTOMATIS (TRANSACTION) ---
     private fun uploadTransactionToFirestore(base64Image: String) {
         binding.btnSubmitPayment.text = "Mengirim..."
 
         val userId = auth.currentUser?.uid ?: return
-        val batch = db.batch()
 
-        // 1. Buat Dokumen Transaksi Baru
-        val transactionRef = db.collection("transactions").document()
-        val transactionData = hashMapOf(
-            "id" to transactionRef.id,
-            "userId" to userId,
-            "loanId" to loanId, // Simpan ID pinjaman yg dibayar
-            "amount" to amount.toDouble(),
-            // PENTING: Gunakan 'type' yang membuat warna merah di adapter ("Pengeluaran" atau "debit")
-            "type" to "loan_payment",
-            "description" to "Bayar Angsuran Pinjaman",
-            "date" to Date(), // Gunakan Date object (bukan timestamp)
-            "location" to locationString,
-            "proofImageUrl" to base64Image,
-            "status" to "success" // Langsung sukses
-        )
-        batch.set(transactionRef, transactionData)
-
-        // 2. Potong Saldo User
-        val userRef = db.collection("users").document(userId)
-        batch.update(userRef, "saldo", FieldValue.increment(-amount.toDouble()))
-
-        // 3. Update Status Pinjaman (Opsional: Update jumlah yang sudah dibayar)
-        if (loanId.isNotEmpty()) {
-            val loanRef = db.collection("loan_applications").document(loanId)
-            // Tambah field 'paidAmount' di dokumen pinjaman
-            batch.update(loanRef, "paidAmount", FieldValue.increment(amount.toDouble()))
-
-            // CATATAN: Idealnya kita cek kalau lunas, status jadi "paid".
-            // Tapi karena batch operation tidak bisa baca data (hanya tulis),
-            // Kita cukup update nominal bayarnya dulu.
+        if (loanId.isEmpty()) {
+            Toast.makeText(context, "ID Pinjaman tidak ditemukan", Toast.LENGTH_SHORT).show()
+            binding.btnSubmitPayment.isEnabled = true
+            return
         }
 
-        // --- EKSEKUSI SEMUA ---
-        batch.commit()
-            .addOnSuccessListener {
-                Toast.makeText(context, "Pembayaran Berhasil!", Toast.LENGTH_LONG).show()
-                // Kembali ke Home
-                findNavController().popBackStack(com.example.map_mid_term.R.id.homeFragment, false)
-            }
-            .addOnFailureListener { e ->
-                binding.btnSubmitPayment.isEnabled = true
-                binding.btnSubmitPayment.text = "Kirim Pembayaran"
-                Log.e("UPLOAD_ERROR", e.message.toString())
-                Toast.makeText(context, "Gagal Kirim: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-    }
+        val loanRef = db.collection("loan_applications").document(loanId)
+        val userRef = db.collection("members").document(userId) // Pakai 'members' sesuai profil
+        val transactionRef = db.collection("transactions").document()
 
-    // --- FUNGSI KOMPRESI & RESIZE (VERSI LEBIH KUAT) ---
+        db.runTransaction { transaction ->
+            // 1. BACA Data Pinjaman Terkini
+            val loanSnapshot = transaction.get(loanRef)
+            val totalPayable = loanSnapshot.getDouble("totalPayable") ?: 0.0
+            val currentPaid = loanSnapshot.getDouble("paidAmount") ?: 0.0
+
+            // 2. Hitung Matematika
+            val amountToPay = amount.toDouble()
+            val newPaidAmount = currentPaid + amountToPay
+
+            // 3. Tentukan Status: Apakah sudah Lunas?
+            var newStatus = "approved" // Default masih jalan
+            if (newPaidAmount >= totalPayable) {
+                newStatus = "paid" // SET LUNAS JIKA SUDAH LUNAS
+            }
+
+            // 4. Siapkan Data History
+            val transactionData = hashMapOf(
+                "id" to transactionRef.id,
+                "userId" to userId,
+                "loanId" to loanId,
+                "amount" to amountToPay,
+                "type" to "loan_payment",
+                "description" to if (newStatus == "paid") "Pelunasan Pinjaman" else "Angsuran Pinjaman",
+                "date" to Date(),
+                "location" to locationString,
+                "proofImageUrl" to base64Image,
+                "status" to "success"
+            )
+
+            // --- EKSEKUSI UPDATE ---
+            // A. Update Pinjaman
+            transaction.update(loanRef, "paidAmount", newPaidAmount)
+            transaction.update(loanRef, "status", newStatus)
+
+            // B. Potong Saldo User (di collection members)
+            // Gunakan update, asumsikan user sudah ada karena dia sedang login
+            transaction.update(userRef, "saldo", FieldValue.increment(-amountToPay))
+
+            // C. Catat History
+            transaction.set(transactionRef, transactionData)
+
+            newStatus // Return status baru
+        }.addOnSuccessListener { statusAkhir ->
+            val pesan = if (statusAkhir == "paid") "Pinjaman LUNAS! Terima kasih." else "Angsuran Berhasil."
+            Toast.makeText(context, pesan, Toast.LENGTH_LONG).show()
+
+            // Kembali ke Home
+            findNavController().popBackStack(com.example.map_mid_term.R.id.homeFragment, false)
+        }.addOnFailureListener { e ->
+            binding.btnSubmitPayment.isEnabled = true
+            binding.btnSubmitPayment.text = "Kirim Pembayaran"
+            Log.e("UPLOAD_ERROR", e.message.toString())
+            Toast.makeText(context, "Gagal: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
 
     private fun resizeBitmap(source: Bitmap, maxLength: Int): Bitmap {
         try {
@@ -224,35 +234,26 @@ class UploadProofFragment : Fragment() {
 
     private fun convertBitmapToBase64(bitmap: Bitmap?): String {
         if (bitmap == null) return ""
-
-        // 1. Pastikan resize dulu ke maksimal 600px (Kecil tapi cukup jelas di HP)
         val resized = resizeBitmap(bitmap, 600)
-
-        // 2. Kompres ke JPEG Quality 50%
         val outputStream = ByteArrayOutputStream()
         resized.compress(Bitmap.CompressFormat.JPEG, 50, outputStream)
-
         val byteArray = outputStream.toByteArray()
         return Base64.encodeToString(byteArray, Base64.DEFAULT)
     }
 
-    // Helper untuk load file tanpa OutOfMemory
     private fun decodeSampledBitmapFromFile(path: String, reqWidth: Int, reqHeight: Int): Bitmap {
         val options = BitmapFactory.Options().apply {
             inJustDecodeBounds = true
         }
         BitmapFactory.decodeFile(path, options)
-
         options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
         options.inJustDecodeBounds = false
-
         return BitmapFactory.decodeFile(path, options)
     }
 
     private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
         val (height: Int, width: Int) = options.run { outHeight to outWidth }
         var inSampleSize = 1
-
         if (height > reqHeight || width > reqWidth) {
             val halfHeight: Int = height / 2
             val halfWidth: Int = width / 2

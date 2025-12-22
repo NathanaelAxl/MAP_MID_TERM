@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.map_mid_term.R
-import com.example.map_mid_term.data.model.Transaction
 import com.example.map_mid_term.databinding.FragmentHomeBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -34,29 +33,24 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupUI()
 
-        // Memanggil fungsi pemantau data
-        monitorUserProfile()   // UNTUK NAMA
-        monitorTotalBalance()  // UNTUK SALDO
-        monitorLoanStatus()    // UNTUK STATUS PINJAMAN
+        monitorUserProfile()
+        monitorTotalBalance()
+        monitorLoanStatus()
         loadAnnouncement()
     }
 
-    // --- FIX 1: Ambil Nama dari 'members' (Bukan users) ---
     private fun monitorUserProfile() {
         val uid = userId ?: return
         db.collection("members").document(uid)
             .addSnapshotListener { document, _ ->
                 if (_binding != null && document != null) {
-                    // Fallback ke "Anggota" hanya jika field 'name' benar-benar kosong
                     val name = document.getString("name") ?: "Anggota"
-                    // Ambil kata pertama saja biar rapi
                     val firstName = name.split(" ")[0]
                     binding.tvGreeting.text = "Selamat Datang, $firstName!"
                 }
             }
     }
 
-    // --- FIX 2: Hitung Saldo dari History Transaksi (Agar 400rb + 100rb terbaca) ---
     private fun monitorTotalBalance() {
         val uid = userId ?: return
 
@@ -68,12 +62,9 @@ class HomeFragment : Fragment() {
                 var total = 0.0
                 if (documents != null) {
                     for (doc in documents) {
-                        // Pastikan model Transaction kamu punya field 'amount' dan 'type'
                         val amount = doc.getDouble("amount") ?: 0.0
-                        val type = doc.getString("type") ?: "" // "Pemasukan" atau "Pengeluaran"
+                        val type = doc.getString("type") ?: ""
 
-                        // LOGIKA SALDO:
-                        // Sesuaikan string ini dengan apa yang kamu simpan di database
                         if (type.equals("Pemasukan", ignoreCase = true) ||
                             type.equals("credit", ignoreCase = true) ||
                             type.equals("Simpanan", ignoreCase = true)) {
@@ -91,6 +82,7 @@ class HomeFragment : Fragment() {
             }
     }
 
+    // --- REVISI UTAMA: LOGIKA STATUS PINJAMAN ---
     private fun monitorLoanStatus() {
         if (userId == null) return
         db.collection("loan_applications")
@@ -110,18 +102,26 @@ class HomeFragment : Fragment() {
                             "pending" -> {
                                 binding.tvPinjamanStatus.text = "Menunggu Konfirmasi"
                                 binding.tvPinjamanStatus.setTextColor(Color.parseColor("#F57C00"))
+                                binding.cardPinjaman.isEnabled = false
                             }
                             "approved" -> {
-                                binding.tvPinjamanStatus.text = "Disetujui"
+                                binding.tvPinjamanStatus.text = "Pinjaman Aktif"
                                 binding.tvPinjamanStatus.setTextColor(Color.parseColor("#388E3C"))
+                                binding.cardPinjaman.isEnabled = true
                             }
                             "rejected" -> {
                                 binding.tvPinjamanStatus.text = "Ditolak"
                                 binding.tvPinjamanStatus.setTextColor(Color.RED)
+                                binding.cardPinjaman.isEnabled = true
                             }
                             "paid" -> {
+                                // SKENARIO LUNAS:
+                                // Tampilkan teks LUNAS berwarna BIRU
                                 binding.tvPinjamanStatus.text = "Lunas"
                                 binding.tvPinjamanStatus.setTextColor(Color.BLUE)
+                                // Tombol aktif kembali (Balik Normal) agar user bisa klik
+                                // Nanti di LoanFragment user bisa lihat history atau ajukan baru
+                                binding.cardPinjaman.isEnabled = true
                             }
                             else -> binding.tvPinjamanStatus.visibility = View.GONE
                         }
@@ -146,7 +146,6 @@ class HomeFragment : Fragment() {
             val currentAmount = binding.tvTotalBalance.tag as? Double ?: 0.0
             updateBalanceUI(currentAmount)
         }
-        // Pastikan ID navigasi ini benar sesuai nav_graph kamu
         binding.cardSimpanan.setOnClickListener {
             safeNavigate(R.id.action_homeFragment_to_addSavingsFragment)
         }

@@ -201,15 +201,20 @@ class AddSavingsFragment : Fragment() {
         )
 
         // 2. Siapkan Update Saldo User
-        val userRef = db.collection("users").document(userId)
+        val userRef = db.collection("members").document(userId)
 
         // --- MASUKKAN KE BATCH (Semua jalan bareng) ---
 
         // A. Buat History
-        batch.set(transactionRef, transactionData)
+            batch.set(transactionRef, transactionData)
 
-        // B. Update Saldo User (+ amount)
-        batch.update(userRef, "saldo", FieldValue.increment(amount))
+            // B. Update Saldo User (+ amount)
+            // Kita gunakan .set dengan merge supaya kalau field 'saldo' belum ada, dia akan membuatnya otomatis
+            // dan kalau dokumennya belum sempurna, dia tidak akan crash (NOT_FOUND)
+            val saldoUpdate = hashMapOf<String, Any>(
+                "saldo" to FieldValue.increment(amount)
+            )
+            batch.set(userRef, saldoUpdate, com.google.firebase.firestore.SetOptions.merge())
 
         // --- EKSEKUSI ---
         batch.commit()

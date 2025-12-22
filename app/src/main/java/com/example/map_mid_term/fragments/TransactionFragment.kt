@@ -64,20 +64,30 @@ class TransactionFragment : Fragment() {
 
         viewModel.activeLoan.observe(viewLifecycleOwner) { loanData ->
             if (loanData != null) {
-                binding.layoutUpcomingPayment.visibility = View.VISIBLE
                 activeLoanId = loanData["id"] as? String ?: ""
+                val status = loanData["status"] as? String ?: ""
 
-                // Perhitungan menggunakan Double
-                val totalPayable = (loanData["totalPayable"] as? Number)?.toDouble() ?: 0.0
-                val tenor = (loanData["tenor"] as? Number)?.toInt() ?: 1
+                // --- REVISI: Cek Status Lunas ---
+                // Jika status == "paid", sembunyikan tagihan
+                if (status == "paid") {
+                    binding.layoutUpcomingPayment.visibility = View.GONE
+                    // Opsional: Bisa tampilkan pesan "Selamat, pinjaman lunas!" di tempat lain
+                } else {
+                    // Jika BELUM lunas ("approved"), Tampilkan Tagihan
+                    binding.layoutUpcomingPayment.visibility = View.VISIBLE
 
-                monthlyBill = if (tenor > 0) totalPayable / tenor else 0.0
-                loanTitle = "Angsuran Bulan Ini ($tenor Bulan)"
+                    // Perhitungan menggunakan Double
+                    val totalPayable = (loanData["totalPayable"] as? Number)?.toDouble() ?: 0.0
+                    val tenor = (loanData["tenor"] as? Number)?.toInt() ?: 1
 
-                // Tampilkan format uang
-                binding.tvPaymentAmount.text = "Rp ${"%,.0f".format(monthlyBill)}"
-                binding.tvPaymentTitle.text = loanTitle
-                binding.tvPaymentDueDate.text = "Jatuh Tempo: Segera"
+                    monthlyBill = if (tenor > 0) totalPayable / tenor else 0.0
+                    loanTitle = "Angsuran Bulan Ini ($tenor Bulan)"
+
+                    // Tampilkan format uang
+                    binding.tvPaymentAmount.text = "Rp ${"%,.0f".format(monthlyBill)}"
+                    binding.tvPaymentTitle.text = loanTitle
+                    binding.tvPaymentDueDate.text = "Jatuh Tempo: Segera"
+                }
 
             } else {
                 binding.layoutUpcomingPayment.visibility = View.GONE
