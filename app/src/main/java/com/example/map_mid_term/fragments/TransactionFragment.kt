@@ -20,12 +20,11 @@ class TransactionFragment : Fragment() {
     private var _binding: FragmentTransactionBinding? = null
     private val binding get() = _binding!!
 
-    // Gunakan ViewModel
     private val viewModel: TransactionViewModel by viewModels()
     private lateinit var transactionAdapter: TransactionAdapter
 
-    // Variabel Data
     private var activeLoanId: String = ""
+    // REVISI: Gunakan Double untuk perhitungan matematika biar akurat
     private var monthlyBill: Double = 0.0
     private var loanTitle: String = "Angsuran Pinjaman"
 
@@ -47,13 +46,11 @@ class TransactionFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Refresh data setiap kali halaman dibuka
         viewModel.fetchTransactions()
         viewModel.checkActiveLoan()
     }
 
     private fun observeViewModel() {
-        // 1. List Transaksi
         viewModel.transactions.observe(viewLifecycleOwner) { transactions ->
             if (transactions.isNullOrEmpty()) {
                 binding.tvNoTransactions.visibility = View.VISIBLE
@@ -65,41 +62,35 @@ class TransactionFragment : Fragment() {
             }
         }
 
-        // 2. Data Tagihan Aktif
         viewModel.activeLoan.observe(viewLifecycleOwner) { loanData ->
             if (loanData != null) {
                 binding.layoutUpcomingPayment.visibility = View.VISIBLE
-
-                // Ambil ID Dokumen (Pastikan ViewModel mengirim field 'id')
                 activeLoanId = loanData["id"] as? String ?: ""
 
-                // Ambil data angka dengan aman (Safe Casting)
+                // Perhitungan menggunakan Double
                 val totalPayable = (loanData["totalPayable"] as? Number)?.toDouble() ?: 0.0
                 val tenor = (loanData["tenor"] as? Number)?.toInt() ?: 1
 
-                // Hitung cicilan
                 monthlyBill = if (tenor > 0) totalPayable / tenor else 0.0
                 loanTitle = "Angsuran Bulan Ini ($tenor Bulan)"
 
-                // Update UI
+                // Tampilkan format uang
                 binding.tvPaymentAmount.text = "Rp ${"%,.0f".format(monthlyBill)}"
                 binding.tvPaymentTitle.text = loanTitle
                 binding.tvPaymentDueDate.text = "Jatuh Tempo: Segera"
 
             } else {
                 binding.layoutUpcomingPayment.visibility = View.GONE
-                activeLoanId = "" // Reset ID jika tidak ada tagihan
+                activeLoanId = ""
             }
         }
 
-        // 3. Loading State
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
     }
 
     private fun setupRecyclerView() {
-        // Inisialisasi Adapter dengan list kosong dulu
         transactionAdapter = TransactionAdapter(arrayListOf())
         binding.rvLatestTransactions.apply {
             layoutManager = LinearLayoutManager(context)
@@ -109,12 +100,8 @@ class TransactionFragment : Fragment() {
     }
 
     private fun setupListeners() {
-        // Tombol Bayar di Kartu Tagihan
-        binding.btnPayNow.setOnClickListener {
-            navigateToPayment()
-        }
+        binding.btnPayNow.setOnClickListener { navigateToPayment() }
 
-        // Tombol Menu Kotak "Bayar Angsuran"
         binding.cardBayarAngsuran.setOnClickListener {
             if (binding.layoutUpcomingPayment.visibility == View.VISIBLE) {
                 navigateToPayment()
@@ -123,7 +110,6 @@ class TransactionFragment : Fragment() {
             }
         }
 
-        // Tombol Tambah Simpanan
         binding.cardTambahSimpanan.setOnClickListener {
             try {
                 findNavController().navigate(R.id.action_transactionFragment_to_addSavingsFragment)
@@ -134,29 +120,25 @@ class TransactionFragment : Fragment() {
     }
 
     private fun navigateToPayment() {
-        // 1. Cek Validasi ID
         if (activeLoanId.isEmpty()) {
             Toast.makeText(context, "Menunggu data pinjaman...", Toast.LENGTH_SHORT).show()
-            viewModel.checkActiveLoan() // Coba ambil ulang data
+            viewModel.checkActiveLoan()
             return
         }
 
-        // 2. Siapkan Data (Bundle)
-        // Kita kirim Double, nanti PaymentDetailFragment yang ubah ke Float untuk Upload
+        // --- REVISI: Gunakan putFloat agar sesuai dengan nav_graph.xml ---
         val bundle = Bundle().apply {
             putString("title", loanTitle)
-            putFloat("amount", monthlyBill.toFloat())
+            putFloat("amount", monthlyBill.toFloat()) // Konversi Double ke Float saat kirim
             putString("loanId", activeLoanId)
         }
 
-        // 3. Eksekusi Navigasi dengan TRY-CATCH (Anti Force Close)
         try {
             findNavController().navigate(R.id.action_transactionFragment_to_paymentDetailFragment, bundle)
         } catch (e: Exception) {
-            // Jika error, logcat akan mencatatnya dan Toast akan muncul
             e.printStackTrace()
             Log.e("NAV_ERROR", "Gagal navigasi: ${e.message}")
-            Toast.makeText(context, "Gagal membuka halaman bayar. Coba Clean Project.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "Gagal membuka halaman bayar.", Toast.LENGTH_LONG).show()
         }
     }
 

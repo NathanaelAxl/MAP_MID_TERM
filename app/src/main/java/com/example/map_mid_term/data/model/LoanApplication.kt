@@ -1,19 +1,21 @@
 package com.example.map_mid_term.data.model
 
+import com.google.firebase.firestore.ServerTimestamp
+import java.util.Date
+
 data class LoanApplication(
     var id: String = "",
-    val amount: Double = 0.0,      // Pokok Pinjaman
-    val tenor: Int = 0,            // Lama pinjam (bulan)
-    val reason: String = "",
-    val status: String = "",
-    val userId: String = "",
-    val applicationDate: Long = 0,
+    var userId: String = "",
+    var userName: String = "", // Tambahkan ini biar admin enak baca
+    var amount: Double = 0.0,
+    var tenor: Int = 0, // Bulan
+    var interestRate: Double = 0.0, // Bunga
+    var totalPayable: Double = 0.0, // Total yang harus dibayar
+    var paidAmount: Double = 0.0, // Yang sudah dibayar
+    var status: String = "pending", // pending, approved, rejected, paid
+    var reason: String = "", // Alasan pinjaman
 
-    // --- TAMBAHAN BARU UNTUK BUNGA (Wajib ada) ---
-    val interestRate: Double = 1.5, // Default 1.5%
-    val totalPayable: Double = 0.0, // Total (Pokok + Bunga)
-    val paidAmount: Double = 0.0    // Yang sudah dibayar
-) {
-    // Konstruktor kosong wajib untuk Firestore
-    constructor() : this("", 0.0, 0, "", "", "", 0, 1.5, 0.0, 0.0)
-}
+    @ServerTimestamp
+    var requestDate: Date? = null,
+    var dueDate: Date? = null
+)

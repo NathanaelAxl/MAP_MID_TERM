@@ -12,13 +12,14 @@ import androidx.navigation.fragment.findNavController
 import com.example.map_mid_term.databinding.FragmentLoanApplicationBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.Date
 
 class LoanApplicationFragment : Fragment() {
 
     private var _binding: FragmentLoanApplicationBinding? = null
     private val binding get() = _binding!!
 
-    // Bunga fix 1.5% per bulan
+    // Bunga fix 1.5% (Disamakan dengan logic Admin)
     private val interestRate = 0.015
 
     override fun onCreateView(
@@ -31,7 +32,6 @@ class LoanApplicationFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         setupCalculationListener()
 
         binding.btnSubmitLoan.setOnClickListener {
@@ -48,9 +48,7 @@ class LoanApplicationFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        binding.rgTenor.setOnCheckedChangeListener { _, _ ->
-            calculateInstallment()
-        }
+        binding.rgTenor.setOnCheckedChangeListener { _, _ -> calculateInstallment() }
     }
 
     private fun calculateInstallment() {
@@ -62,7 +60,6 @@ class LoanApplicationFragment : Fragment() {
 
         val amount = amountStr.toDoubleOrNull() ?: 0.0
         val tenor = getSelectedTenor()
-
         if (tenor == 0) return
 
         val pokok = amount / tenor
@@ -81,14 +78,9 @@ class LoanApplicationFragment : Fragment() {
     }
 
     private fun getSelectedTenor(): Int {
-        // Sesuaikan ID RadioButton dengan layout XML Anda (misal rb_3_months)
-        // Jika ID di XML adalah rb_3_bulan, ganti di sini.
-        // Saya asumsikan ID standar rb_3_months dll.
         val checkedId = binding.rgTenor.checkedRadioButtonId
-        // Anda perlu memastikan ID di XML fragment_loan_application.xml Anda sesuai.
-        // Contoh sederhana jika ID-nya dinamis atau Anda pakai when:
         return when (checkedId) {
-            binding.rgTenor.getChildAt(0).id -> 3 // Asumsi urutan 3, 6, 12
+            binding.rgTenor.getChildAt(0).id -> 3
             binding.rgTenor.getChildAt(1).id -> 6
             binding.rgTenor.getChildAt(2).id -> 12
             else -> 0
@@ -97,7 +89,10 @@ class LoanApplicationFragment : Fragment() {
 
     private fun submitLoanApplication() {
         setLoading(true)
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        val auth = FirebaseAuth.getInstance()
+        val db = FirebaseFirestore.getInstance()
+
+        val userId = auth.currentUser?.uid
         if (userId == null) {
             Toast.makeText(context, "Sesi habis", Toast.LENGTH_SHORT).show()
             setLoading(false)
@@ -108,29 +103,49 @@ class LoanApplicationFragment : Fragment() {
         val tenor = getSelectedTenor()
         val reason = binding.etReason.text.toString()
 
-        val monthlyInstallment = (amount / tenor) + (amount * interestRate)
+        // Hitung total bayar estimasi
+        val totalPayable = amount + (amount * interestRate * tenor)
 
-        // DATA YANG DIKIRIM KE FIREBASE
-        val loanData = hashMapOf(
-            "userId" to userId,
-            "amount" to amount,
-            "tenor" to tenor,
-            "reason" to reason,
-            "monthlyInstallment" to monthlyInstallment,
-            "status" to "pending", // STATUS AWAL: PENDING
-            "applicationDate" to System.currentTimeMillis()
-        )
+        // 1. AMBIL NAMA USER DULU (Supaya Admin senang)
+        db.collection("members").document(userId).get()
+            .addOnSuccessListener { document ->
+                val userName = document.getString("name") ?: "User Tanpa Nama"
 
-        FirebaseFirestore.getInstance().collection("loan_applications")
-            .add(loanData)
-            .addOnSuccessListener {
-                setLoading(false)
-                Toast.makeText(context, "Pengajuan Berhasil! Menunggu persetujuan admin.", Toast.LENGTH_LONG).show()
-                findNavController().popBackStack()
+                // 2. SIAPKAN DATA (Sesuai Model LoanApplication Admin)
+                val loanData = hashMapOf(
+                    "userId" to userId,
+                    "userName" to userName, // PENTING: Kirim Nama
+                    "amount" to amount,
+                    "tenor" to tenor,
+                    "reason" to reason,
+                    "interestRate" to interestRate,
+                    "totalPayable" to totalPayable,
+                    "paidAmount" to 0.0,
+
+                    "status" to "pending", // STATUS PASTI PENDING
+
+                    // REVISI: Gunakan 'requestDate' dan Object Date()
+                    "requestDate" to Date(),
+                    "dueDate" to null
+                )
+
+                // 3. KIRIM KE FIRESTORE
+                db.collection("loan_applications")
+                    .add(loanData)
+                    .addOnSuccessListener {
+                        setLoading(false)
+                        // Teks Toast yang BENAR
+                        Toast.makeText(context, "Pengajuan Berhasil! Menunggu verifikasi admin.", Toast.LENGTH_LONG).show()
+                        findNavController().popBackStack()
+                    }
+                    .addOnFailureListener {
+                        setLoading(false)
+                        Toast.makeText(context, "Gagal mengirim: ${it.message}", Toast.LENGTH_SHORT).show()
+                    }
             }
             .addOnFailureListener {
                 setLoading(false)
-                Toast.makeText(context, "Gagal mengirim: ${it.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Gagal mengambil data user", Toast.LENGTH_SHORT).show()
             }
     }
 

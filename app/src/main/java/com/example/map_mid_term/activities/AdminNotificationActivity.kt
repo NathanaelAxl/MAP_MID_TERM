@@ -23,12 +23,13 @@ class AdminNotificationActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setupRecyclerView()
-        fetchPendingLoans() // Mulai memantau data
+        fetchPendingLoans()
 
         binding.toolbar.setNavigationOnClickListener { finish() }
     }
 
     private fun setupRecyclerView() {
+        // Menggunakan Adapter Khusus Notifikasi
         adapter = AdminNotificationAdapter(
             arrayListOf(),
             onApprove = { loan -> updateLoanStatus(loan, "approved") },
@@ -38,17 +39,17 @@ class AdminNotificationActivity : AppCompatActivity() {
         binding.rvNotifications.adapter = adapter
     }
 
-    // FUNGSI REAL-TIME: Memantau pengajuan yang 'pending'
     private fun fetchPendingLoans() {
         binding.progressBar.visibility = View.VISIBLE
 
         db.collection("loan_applications")
-            .whereEqualTo("status", "pending") // Hanya ambil yang belum diproses
-            .orderBy("applicationDate", Query.Direction.DESCENDING)
+            .whereEqualTo("status", "pending") // Filter hanya yang Pending
+            .orderBy("requestDate", Query.Direction.DESCENDING) // REVISI: requestDate (bukan applicationDate)
             .addSnapshotListener { documents, error ->
                 binding.progressBar.visibility = View.GONE
 
                 if (error != null) {
+                    // Jika error index, cek Logcat untuk link pembuatan index
                     Toast.makeText(this, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
                     return@addSnapshotListener
                 }
@@ -58,7 +59,13 @@ class AdminNotificationActivity : AppCompatActivity() {
                     for (doc in documents) {
                         try {
                             val loan = doc.toObject(LoanApplication::class.java)
-                            loan.id = doc.id // Penting: Simpan ID dokumen
+                            loan.id = doc.id
+
+                            // Fallback nama jika kosong
+                            if (loan.userName.isEmpty()) {
+                                loan.userName = "ID: ${loan.userId.take(5)}"
+                            }
+
                             list.add(loan)
                         } catch (e: Exception) {
                             e.printStackTrace()
@@ -76,38 +83,31 @@ class AdminNotificationActivity : AppCompatActivity() {
             }
     }
 
-    // --- REVISI UTAMA ADA DI SINI ---
     private fun updateLoanStatus(loan: LoanApplication, newStatus: String) {
         Toast.makeText(this, "Memproses...", Toast.LENGTH_SHORT).show()
 
-        // Siapkan map data yang akan diupdate
         val updates = mutableMapOf<String, Any>(
             "status" to newStatus
         )
 
-        // JIKA DI-APPROVE: Hitung Bunga & Total Hutang
+        // Logic jika disetujui (Hitung final hutang)
         if (newStatus == "approved") {
-            val rate = 1.5 // Bunga 1.5%
-
-            // Rumus: Pokok * (1.5/100) * Tenor
+            // Samakan logic bunga dengan fragment user (1.5%)
+            // Atau kalau mau hardcode 5% seperti rencana awal admin, silakan.
+            // Di sini saya pakai 1.5% biar konsisten sama tampilan user.
+            val rate = 1.5
             val totalInterest = loan.amount * (rate / 100) * loan.tenor
-
-            // Total Bayar = Pokok + Total Bunga
             val totalPayable = loan.amount + totalInterest
 
-            // Masukkan ke dalam map updates
             updates["totalPayable"] = totalPayable
-            updates["interestRate"] = rate
-            updates["paidAmount"] = 0.0 // Reset pembayaran jadi 0
+            updates["paidAmount"] = 0.0
         }
 
-        // Eksekusi Update ke Firestore
         db.collection("loan_applications").document(loan.id)
             .update(updates)
             .addOnSuccessListener {
                 val pesan = if (newStatus == "approved") "Pinjaman Disetujui!" else "Pinjaman Ditolak"
                 Toast.makeText(this, pesan, Toast.LENGTH_SHORT).show()
-                // Data di list otomatis hilang karena listener
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Gagal update: ${it.message}", Toast.LENGTH_SHORT).show()

@@ -8,45 +8,34 @@
     android:background="#F5F5F5"
     tools:context=".activities.AdminActivity">
 
-    <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
         android:orientation="horizontal"
-        android:padding="20dp"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:paddingHorizontal="8dp">
 
-        <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/ic_profile"
-            app:tint="@color/white"/>
-        <!-- Ganti ic_profile dengan icon yang ada, atau @android:drawable/ic_menu_my_calendar -->
+        <ImageButton
+            android:id="@+id/btn_logout_admin"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_arrow_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="@color/white"
+            android:contentDescription="Kembali ke Login"
+            android:padding="12dp"
+            android:scaleType="fitCenter"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="8dp"
             android:text="Dashboard Admin"
             android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold" />
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
-
-        <!-- Tombol Logout Admin -->
-        <ImageView
-            android:id="@+id/btn_logout_admin"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_back"
-            app:tint="@color/white"
-            android:rotation="180"/>
-        <!-- Icon Logout/Back -->
     </LinearLayout>
 
     <ScrollView
@@ -61,12 +50,12 @@
             android:alignmentMode="alignMargins"
             android:columnOrderPreserved="false">
 
-            <!-- MENU 1: DATA ANGGOTA -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/menu_data_anggota"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_gravity="fill"
                 android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp"
@@ -88,17 +77,18 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="Data Anggota"
+                        android:textAlignment="center"
                         android:textStyle="bold"
                         android:textColor="@color/black"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- MENU 2: DATA PINJAMAN -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/menu_data_pinjaman"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_gravity="fill"
                 android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp"
@@ -120,17 +110,18 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="Data Pinjaman"
+                        android:textAlignment="center"
                         android:textStyle="bold"
                         android:textColor="@color/black"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- MENU 3: TRANSAKSI -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/menu_transaksi"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_gravity="fill"
                 android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp"
@@ -152,17 +143,18 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="Transaksi"
+                        android:textAlignment="center"
                         android:textStyle="bold"
                         android:textColor="@color/black"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- MENU 4: LAPORAN (Opsional) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/menu_laporan"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_gravity="fill"
                 android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp"
@@ -184,17 +176,18 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="Laporan"
+                        android:textAlignment="center"
                         android:textStyle="bold"
                         android:textColor="@color/black"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- MENU 5: NOTIFIKASI (Sudah Selesai) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/menu_notifikasi"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_gravity="fill"
                 android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp"
@@ -216,20 +209,23 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="Notifikasi"
+                        android:textAlignment="center"
                         android:textStyle="bold"
                         android:textColor="@color/black"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- MENU 6: KAS KOPERASI (Opsional) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/menu_kas"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_gravity="fill"
                 android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
+                app:cardElevation="4dp"
+                android:clickable="true"
+                android:focusable="true">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -239,13 +235,14 @@
                     <ImageView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:src="@drawable/ic_savings"
+                        android:src="@android:drawable/ic_dialog_info"
                         app:tint="#4CAF50"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:text="Kas Koperasi"
+                        android:text="Buat\nPengumuman"
+                        android:textAlignment="center"
                         android:textStyle="bold"
                         android:textColor="@color/black"/>
                 </LinearLayout>

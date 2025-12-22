@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.map_mid_term.adapters.TransactionAdapter
+import com.example.map_mid_term.adapters.TransactionAdapter // Pakai yang ini!
 import com.example.map_mid_term.data.model.Transaction
 import com.example.map_mid_term.databinding.FragmentHistoryBinding
 import com.google.firebase.auth.FirebaseAuth
@@ -18,17 +18,14 @@ import com.google.firebase.firestore.Query
 class HistoryFragment : Fragment() {
 
     private var _binding: FragmentHistoryBinding? = null
-    // Menggunakan safe call untuk binding
     private val binding get() = _binding
 
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
+
+    // Kita pakai TransactionAdapter, BUKAN HistoryAdapter
     private lateinit var transactionAdapter: TransactionAdapter
 
-    // Inisialisasi list kosong di awal
-    private var transactionList = ArrayList<Transaction>()
-
-    // Listener disimpan agar bisa dimatikan saat onDestroy
     private var firestoreListener: ListenerRegistration? = null
 
     override fun onCreateView(
@@ -50,7 +47,7 @@ class HistoryFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        // Inisialisasi adapter dengan list kosong dulu
+        // Inisialisasi adapter
         transactionAdapter = TransactionAdapter(arrayListOf())
 
         binding?.rvHistory?.apply {
@@ -62,62 +59,53 @@ class HistoryFragment : Fragment() {
     private fun fetchTransactionsFromFirestore() {
         val userId = auth.currentUser?.uid
         if (userId == null) {
-            binding?.tvNoTransactions?.text = "Anda harus login untuk melihat riwayat"
+            binding?.tvNoTransactions?.text = "Silakan login kembali"
             binding?.tvNoTransactions?.visibility = View.VISIBLE
             return
         }
 
         binding?.progressBar?.visibility = View.VISIBLE
 
-        firestoreListener = firestore.collection("transactions")
+        val query = firestore.collection("transactions")
             .whereEqualTo("userId", userId)
             .orderBy("timestamp", Query.Direction.DESCENDING)
-            .addSnapshotListener { snapshots, e ->
-                // PENTING: Cek binding null sebelum update UI
-                if (_binding == null) return@addSnapshotListener
 
-                binding?.progressBar?.visibility = View.GONE
+        firestoreListener = query.addSnapshotListener { snapshots, e ->
+            if (_binding == null) return@addSnapshotListener
+            binding?.progressBar?.visibility = View.GONE
 
-                if (e != null) {
-                    Log.w("HistoryFragment", "Listen failed.", e)
-                    return@addSnapshotListener
-                }
-
-                if (snapshots != null && !snapshots.isEmpty) {
-                    binding?.tvNoTransactions?.visibility = View.GONE
-
-                    val safeList = ArrayList<Transaction>()
-
-                    // --- REVISI ANTI FORCE CLOSE ---
-                    // Kita looping manual satu per satu
-                    for (document in snapshots) {
-                        try {
-                            // Coba convert dokumen ke object Transaction
-                            val trx = document.toObject(Transaction::class.java)
-                            // Set ID dokumen manual biar aman
-                            trx.id = document.id
-                            safeList.add(trx)
-                        } catch (error: Exception) {
-                            // Jika ada data rusak (misal timestamp error), dia masuk sini.
-                            // Aplikasi TIDAK AKAN CRASH, cuma mencatat error di log.
-                            Log.e("HistoryFragment", "Data rusak dilewati: ${document.id} - ${error.message}")
-                        }
-                    }
-
-                    // Masukkan data yang BERHASIL diambil saja ke adapter
-                    transactionAdapter.updateData(safeList)
-
-                } else {
-                    Log.d("HistoryFragment", "No transactions found")
-                    binding?.tvNoTransactions?.visibility = View.VISIBLE
-                    transactionAdapter.updateData(emptyList())
-                }
+            if (e != null) {
+                // ⚠️ PENTING: KLIK LINK DI LOGCAT JIKA MUNCUL ERROR DISINI ⚠️
+                Log.e("HistoryFragment", "Error ambil data: ${e.message}", e)
+                return@addSnapshotListener
             }
+
+            if (snapshots != null && !snapshots.isEmpty) {
+                binding?.tvNoTransactions?.visibility = View.GONE
+
+                val safeList = ArrayList<Transaction>()
+                for (document in snapshots) {
+                    try {
+                        val trx = document.toObject(Transaction::class.java)
+                        trx.id = document.id
+                        // Hanya masukkan data yang punya tanggal biar gak error sort
+                        if(trx.timestamp != null) {
+                            safeList.add(trx)
+                        }
+                    } catch (error: Exception) {
+                        Log.e("HistoryFragment", "Data rusak: ${document.id}")
+                    }
+                }
+                transactionAdapter.updateData(safeList)
+            } else {
+                binding?.tvNoTransactions?.visibility = View.VISIBLE
+                transactionAdapter.updateData(emptyList())
+            }
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // Matikan listener database
         firestoreListener?.remove()
         _binding = null
     }

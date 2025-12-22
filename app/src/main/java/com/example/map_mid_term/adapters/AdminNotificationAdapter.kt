@@ -31,20 +31,28 @@ class AdminNotificationAdapter(
     override fun onBindViewHolder(holder: AdminViewHolder, position: Int) {
         val loan = loanList[position]
         holder.binding.apply {
-            // Tampilkan Data
-            // Note: Kita butuh field 'userName' di LoanApplication, atau ambil manual dari collection user.
-            // Untuk simplifikasi, kita pakai ID user atau placeholder dulu jika belum ada field nama.
-            tvUserName.text = "User ID: ${loan.userId.take(5)}..."
 
+            // 1. Tampilkan Nama (Prioritas userName, kalau kosong baru pakai userId)
+            val displayName = if (loan.userName.isNotEmpty()) loan.userName else "ID: ${loan.userId}"
+            tvUserName.text = displayName
+
+            // 2. Format Uang
             tvLoanAmount.text = "Rp ${"%,.0f".format(loan.amount)}"
+
+            // 3. Tenor & Alasan
             tvLoanTenor.text = "${loan.tenor} Bulan"
             tvLoanReason.text = loan.reason
 
-            // Format Tanggal
+            // 4. Format Tanggal (PERBAIKAN ERROR DI SINI)
+            // Ganti 'applicationDate' menjadi 'requestDate'
             val sdf = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-            tvDate.text = try {
-                sdf.format(loan.applicationDate)
-            } catch (e: Exception) { "-" }
+
+            // Cek null dulu biar aman
+            if (loan.requestDate != null) {
+                tvDate.text = sdf.format(loan.requestDate!!)
+            } else {
+                tvDate.text = "-"
+            }
 
             // Listener Tombol
             btnApprove.setOnClickListener { onApprove(loan) }
