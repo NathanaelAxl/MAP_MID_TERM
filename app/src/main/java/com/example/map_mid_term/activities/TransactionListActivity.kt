@@ -17,7 +17,6 @@ class TransactionListActivity : AppCompatActivity() {
     private lateinit var binding: ActivityTransactionListBinding
     private val db = FirebaseFirestore.getInstance()
     private lateinit var adapter: AdminTransactionAdapter
-    // Kita simpan list di level Activity agar mudah dikelola
     private var transactionList = ArrayList<Transaction>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,16 +30,12 @@ class TransactionListActivity : AppCompatActivity() {
     }
 
     private fun setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener {
-            finish()
-        }
+        binding.toolbar.setNavigationOnClickListener { finish() }
     }
 
     private fun setupRecyclerView() {
-        // PERBAIKAN DI SINI:
-        // Kita kirimkan lambda function (kurung kurawal) sebagai parameter kedua 'onDeleteClick'
+        // Sekarang Adapter menerima 2 parameter: List dan Lambda Function
         adapter = AdminTransactionAdapter(transactionList) { transaction ->
-            // Kode ini akan jalan saat tombol sampah ditekan di Adapter
             showDeleteConfirmationDialog(transaction)
         }
 
@@ -50,41 +45,49 @@ class TransactionListActivity : AppCompatActivity() {
         }
     }
 
+    // --- REVISI: MENGGUNAKAN SNAPSHOT LISTENER (REALTIME) ---
     private fun fetchTransactions() {
         binding.progressBar.visibility = View.VISIBLE
         binding.tvEmpty.visibility = View.GONE
 
+        // Ganti .get() dengan .addSnapshotListener
         db.collection("transactions")
-            .orderBy("timestamp", Query.Direction.DESCENDING)
-            .get()
-            .addOnSuccessListener { documents ->
+            .orderBy("date", Query.Direction.DESCENDING)
+            .addSnapshotListener { documents, error ->
                 binding.progressBar.visibility = View.GONE
-                transactionList.clear()
 
-                for (doc in documents) {
-                    try {
-                        val trx = doc.toObject(Transaction::class.java)
-                        trx.id = doc.id
-                        transactionList.add(trx)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+                if (error != null) {
+                    Toast.makeText(this, "Gagal memuat data: ${error.message}", Toast.LENGTH_SHORT).show()
+                    return@addSnapshotListener
+                }
+
+                if (documents != null) {
+                    transactionList.clear() // Hapus data lama di list lokal
+
+                    val newList = ArrayList<Transaction>()
+                    for (doc in documents) {
+                        try {
+                            val trx = doc.toObject(Transaction::class.java)
+                            // Manual set ID karena @Exclude di model
+                            trx.id = doc.id
+                            newList.add(trx)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+
+                    // Update Adapter
+                    adapter.updateData(newList)
+
+                    // Logic Tampilan Kosong
+                    if (newList.isEmpty()) {
+                        binding.tvEmpty.visibility = View.VISIBLE
+                    } else {
+                        binding.tvEmpty.visibility = View.GONE
                     }
                 }
-
-                // Beritahu adapter bahwa data berubah
-                adapter.notifyDataSetChanged()
-
-                if (transactionList.isEmpty()) {
-                    binding.tvEmpty.visibility = View.VISIBLE
-                }
-            }
-            .addOnFailureListener {
-                binding.progressBar.visibility = View.GONE
-                Toast.makeText(this, "Gagal memuat data", Toast.LENGTH_SHORT).show()
             }
     }
-
-    // --- LOGIKA HAPUS DATA ---
 
     private fun showDeleteConfirmationDialog(transaction: Transaction) {
         AlertDialog.Builder(this)
@@ -94,9 +97,7 @@ class TransactionListActivity : AppCompatActivity() {
                 deleteTransaction(transaction)
                 dialog.dismiss()
             }
-            .setNegativeButton("Batal") { dialog, _ ->
-                dialog.dismiss()
-            }
+            .setNegativeButton("Batal") { dialog, _ -> dialog.dismiss() }
             .show()
     }
 
@@ -107,9 +108,9 @@ class TransactionListActivity : AppCompatActivity() {
             .delete()
             .addOnSuccessListener {
                 binding.progressBar.visibility = View.GONE
-                Toast.makeText(this, "Transaksi berhasil dihapus", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Transaksi dihapus", Toast.LENGTH_SHORT).show()
 
-                // Hapus dari tampilan tanpa reload internet (Biar cepat & hemat kuota)
+                // Panggil removeItem yang sudah kita buat di Adapter
                 adapter.removeItem(transaction)
 
                 if (adapter.itemCount == 0) {

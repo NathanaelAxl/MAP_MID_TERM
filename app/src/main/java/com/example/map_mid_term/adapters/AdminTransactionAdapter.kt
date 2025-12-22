@@ -1,89 +1,77 @@
 package com.example.map_mid_term.adapters
 
-import android.graphics.Color
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.example.map_mid_term.R
 import com.example.map_mid_term.data.model.Transaction
+import com.example.map_mid_term.databinding.ItemTransactionBinding // Pastikan XML item_transaction ada
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+// REVISI: Tambahkan parameter 'onDeleteClick' di konstruktor
 class AdminTransactionAdapter(
-    private var transactionList: MutableList<Transaction>,
-    private val onDeleteClick: (Transaction) -> Unit
-) : RecyclerView.Adapter<AdminTransactionAdapter.TransactionViewHolder>() {
+    private var transactionList: ArrayList<Transaction>,
+    private val onDeleteClick: (Transaction) -> Unit // Callback untuk tombol hapus
+) : RecyclerView.Adapter<AdminTransactionAdapter.AdminTransactionViewHolder>() {
 
-    class TransactionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val tvStatus: TextView = itemView.findViewById(R.id.tvStatus)
-        val tvDate: TextView = itemView.findViewById(R.id.tvDate)
-        val tvDescription: TextView = itemView.findViewById(R.id.tvDescription)
-        val tvUserId: TextView = itemView.findViewById(R.id.tvUserId)
-        val tvAmount: TextView = itemView.findViewById(R.id.tvAmount)
+    private val dateFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
 
-        // View Baru yang kita tambahkan di XML:
-        val ivIcon: ImageView = itemView.findViewById(R.id.ivTransactionIcon)
-        val btnDelete: ImageButton = itemView.findViewById(R.id.btnDeleteTransaction)
-    }
+    inner class AdminTransactionViewHolder(val binding: ItemTransactionBinding) :
+        RecyclerView.ViewHolder(binding.root)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TransactionViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_admin_transaction, parent, false)
-        return TransactionViewHolder(view)
-    }
-
-    override fun onBindViewHolder(holder: TransactionViewHolder, position: Int) {
-        val trx = transactionList[position]
-
-        holder.tvDescription.text = trx.description
-        holder.tvUserId.text = "ID: ${trx.userId}"
-        holder.tvStatus.text = trx.status.uppercase()
-
-        // Format Tanggal
-        if (trx.timestamp != null) {
-            val sdf = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
-            holder.tvDate.text = sdf.format(trx.timestamp!!)
-        } else {
-            holder.tvDate.text = "-"
-        }
-
-        // Format Uang & Logika Icon
-        val formattedAmount = "Rp ${"%,.0f".format(trx.amount)}"
-
-        if (trx.type == "credit") {
-            // UANG MASUK (Hijau & Panah Atas)
-            holder.tvAmount.text = "+ $formattedAmount"
-            holder.tvAmount.setTextColor(Color.parseColor("#2E7D32")) // Hijau
-
-            holder.ivIcon.setImageResource(R.drawable.ic_arrow_upward) // Panah Naik
-            holder.ivIcon.setColorFilter(Color.parseColor("#2E7D32")) // Icon Hijau
-        } else {
-            // UANG KELUAR (Merah & Panah Bawah)
-            holder.tvAmount.text = "- $formattedAmount"
-            holder.tvAmount.setTextColor(Color.parseColor("#D32F2F")) // Merah
-
-            holder.ivIcon.setImageResource(R.drawable.ic_arrow_downward) // Panah Turun
-            holder.ivIcon.setColorFilter(Color.parseColor("#D32F2F")) // Icon Merah
-        }
-
-        // Warna Status Badge
-        if (trx.status == "success" || trx.status == "verified") {
-            holder.tvStatus.setTextColor(Color.parseColor("#2E7D32"))
-        } else {
-            holder.tvStatus.setTextColor(Color.parseColor("#FF9800"))
-        }
-
-        // Logika Klik Tombol Hapus
-        holder.btnDelete.setOnClickListener {
-            onDeleteClick(trx)
-        }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AdminTransactionViewHolder {
+        val binding = ItemTransactionBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return AdminTransactionViewHolder(binding)
     }
 
     override fun getItemCount(): Int = transactionList.size
+
+    override fun onBindViewHolder(holder: AdminTransactionViewHolder, position: Int) {
+        val transaction = transactionList[position]
+        val context = holder.itemView.context
+
+        holder.binding.apply {
+            tvTransactionDescription.text = transaction.description
+
+            // Gunakan .date sesuai model terbaru
+            tvTransactionDate.text = try {
+                transaction.date?.let { dateFormat.format(it) } ?: "-"
+            } catch (e: Exception) { "-" }
+
+            val amountStr = "Rp ${"%,.0f".format(transaction.amount)}"
+
+            if (transaction.type == "credit") {
+                tvTransactionAmount.text = "+ $amountStr"
+                tvTransactionAmount.setTextColor(ContextCompat.getColor(context, android.R.color.holo_green_dark))
+                ivTransactionIcon.setImageResource(android.R.drawable.stat_sys_download)
+            } else {
+                tvTransactionAmount.text = "- $amountStr"
+                tvTransactionAmount.setTextColor(ContextCompat.getColor(context, android.R.color.holo_red_dark))
+                ivTransactionIcon.setImageResource(android.R.drawable.stat_sys_upload)
+            }
+
+            // --- LOGIC TOMBOL HAPUS ---
+            // Asumsi di item_transaction.xml ada tombol/icon sampah dengan ID btnDelete
+            // Kalau tidak ada, kamu bisa pasang di root view (itemView.setOnClickListener)
+            // Di sini saya pakai itemView.setOnLongClickListener sebagai alternatif jika tidak ada tombol delete khusus
+            root.setOnLongClickListener {
+                onDeleteClick(transaction)
+                true
+            }
+
+            // Jika kamu punya tombol sampah di XML, uncomment ini:
+            /*
+            ivDelete.setOnClickListener {
+                onDeleteClick(transaction)
+            }
+            */
+        }
+    }
 
     fun updateData(newList: List<Transaction>) {
         transactionList.clear()
@@ -91,6 +79,7 @@ class AdminTransactionAdapter(
         notifyDataSetChanged()
     }
 
+    // REVISI: Fungsi ini yang dicari oleh Activity
     fun removeItem(transaction: Transaction) {
         val position = transactionList.indexOf(transaction)
         if (position != -1) {

@@ -1,27 +1,46 @@
 package com.example.map_mid_term.data.model
 
-import com.google.firebase.firestore.ServerTimestamp
+import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.PropertyName
 import java.util.Date
 
 data class Transaction(
+    // @Exclude means this field is not stored in the Firestore document itself,
+    // but we fill it manually using document.id when fetching.
+    @Exclude
     var id: String = "",
-    var userId: String = "",
-    var amount: Double = 0.0,
-    var type: String = "", // "credit" atau "debit"
 
-    // Ganti 'title' jadi 'description' supaya cocok dengan kode UploadProofFragment kita tadi
+    @PropertyName("userId")
+    var userId: String = "",
+
+    @PropertyName("amount")
+    var amount: Double = 0.0,
+
+    @PropertyName("type")
+    var type: String = "", // "credit" or "debit" or "loan_payment"
+
+    @PropertyName("description")
     var description: String = "",
 
+    // Use 'date' to align with the ViewModel and Adapter.
+    // Firestore stores this as a Timestamp, which maps to java.util.Date.
+    @PropertyName("date")
+    var date: Date? = null,
+
+    @PropertyName("status")
     var status: String = "success",
-    var proofImageUrl: String? = null,
 
-    // PENTING: Gunakan Date? agar cocok dengan format Timestamp di Firestore
-    @ServerTimestamp
-    var timestamp: Date? = null,
+    @PropertyName("proofImageUrl")
+    var proofImageUrl: String? = null
+) {
+    // Required empty constructor for Firestore
+    constructor() : this("", "", 0.0, "", "", null, "success", null)
 
-    // Tambahan field (opsional) biar data lokasi & loanId tidak hilang saat diambil
-    var location: String = "",
-    var loanId: String = ""
-)
-// TIDAK PERLU constructor() tambahan lagi.
-// Karena semua field sudah ada nilai default-nya (= ...), Kotlin otomatis membuatkan constructor kosong.
+    // Auxiliary constructor for dummy data in MonthlyReportFragment
+    constructor(description: String, date: Date?, amount: Double, type: String) : this() {
+        this.description = description
+        this.date = date
+        this.amount = amount
+        this.type = type
+    }
+}

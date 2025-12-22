@@ -10,6 +10,10 @@ import com.example.map_mid_term.data.model.LoanApplication
 import com.example.map_mid_term.databinding.ActivityAdminNotificationBinding
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.Timestamp
+import java.util.HashMap
+import com.google.firebase.firestore.SetOptions
 
 class AdminNotificationActivity : AppCompatActivity() {
 
@@ -84,33 +88,61 @@ class AdminNotificationActivity : AppCompatActivity() {
     }
 
     private fun updateLoanStatus(loan: LoanApplication, newStatus: String) {
-        Toast.makeText(this, "Memproses...", Toast.LENGTH_SHORT).show()
+        // Tampilkan loading/toast
+        Toast.makeText(this, "Memproses ${newStatus}...", Toast.LENGTH_SHORT).show()
 
-        val updates = mutableMapOf<String, Any>(
-            "status" to newStatus
-        )
+        // 1. Siapkan Batch (Agar semua operasi jalan bersamaan)
+        val batch = db.batch()
 
-        // Logic jika disetujui (Hitung final hutang)
+        // Referensi Dokumen Pinjaman
+        val loanRef = db.collection("loan_applications").document(loan.id)
+
+        // --- UPDATE 1: Status Pinjaman ---
+        val updates = HashMap<String, Any>()
+        updates["status"] = newStatus
+
         if (newStatus == "approved") {
-            // Samakan logic bunga dengan fragment user (1.5%)
-            // Atau kalau mau hardcode 5% seperti rencana awal admin, silakan.
-            // Di sini saya pakai 1.5% biar konsisten sama tampilan user.
-            val rate = 1.5
+            val rate = 1.5 // Bunga 1.5%
             val totalInterest = loan.amount * (rate / 100) * loan.tenor
             val totalPayable = loan.amount + totalInterest
-
             updates["totalPayable"] = totalPayable
             updates["paidAmount"] = 0.0
+
+            // --- UPDATE 2: Tambah Saldo User (Hanya jika Approved) ---
+            val userRef = db.collection("users").document(loan.userId)
+            // FieldValue.increment adalah cara aman menambah angka di database tanpa perlu baca data lama dulu
+            val dataSaldo = hashMapOf<String, Any>(
+                "saldo" to FieldValue.increment(loan.amount)
+            )
+            // Menggunakan set(..., SetOptions.merge()) tidak akan error walau user tidak ditemukan
+            batch.set(userRef, dataSaldo, SetOptions.merge())
+
+            // --- UPDATE 3: Buat Catatan History (Hanya jika Approved) ---
+            val transactionRef = db.collection("transactions").document() // Auto ID
+            val transactionData = hashMapOf(
+                "id" to transactionRef.id,
+                "userId" to loan.userId,
+                "title" to "Pinjaman Disetujui", // Judul transaksi
+                "type" to "Pemasukan", // atau "Loan" tergantung filter kamu
+                "amount" to loan.amount,
+                "date" to Timestamp.now(), // Penting untuk sorting history
+                "status" to "success"
+            )
+            batch.set(transactionRef, transactionData)
         }
 
-        db.collection("loan_applications").document(loan.id)
-            .update(updates)
+        // Masukkan update pinjaman ke dalam batch
+        batch.update(loanRef, updates)
+
+        // --- EKSEKUSI SEMUA SEKALIGUS ---
+        batch.commit()
             .addOnSuccessListener {
-                val pesan = if (newStatus == "approved") "Pinjaman Disetujui!" else "Pinjaman Ditolak"
+                val pesan = if (newStatus == "approved") "Pinjaman Disetujui & Saldo Cair!" else "Pinjaman Ditolak"
                 Toast.makeText(this, pesan, Toast.LENGTH_SHORT).show()
+                // Data di adapter akan refresh otomatis karena kamu pakai addSnapshotListener di fetchPendingLoans
             }
-            .addOnFailureListener {
-                Toast.makeText(this, "Gagal update: ${it.message}", Toast.LENGTH_SHORT).show()
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Gagal memproses: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 }

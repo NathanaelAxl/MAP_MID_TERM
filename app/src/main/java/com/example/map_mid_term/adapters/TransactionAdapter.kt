@@ -17,6 +17,7 @@ import java.util.Locale
 class TransactionAdapter(private var transactionList: ArrayList<Transaction>) :
     RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder>() {
 
+    // Format tanggal: 22 Dec 2025
     private val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
 
     inner class TransactionViewHolder(val binding: ItemTransactionBinding) :
@@ -38,57 +39,70 @@ class TransactionAdapter(private var transactionList: ArrayList<Transaction>) :
         val context = holder.itemView.context
 
         holder.binding.apply {
-            // --- JUDUL OTOMATIS (PENGGANTI TITLE) ---
-            val judulTransaksi = if (transaction.type == "credit") {
-                "Simpanan Masuk"
+
+            // --- 1. DESCRIPTION (Sesuai Model: var description) ---
+            if (transaction.description.isNotEmpty()) {
+                tvTransactionDescription.text = transaction.description
             } else {
-                "Pembayaran/Angsuran"
+                tvTransactionDescription.text = "Transaksi"
             }
-            tvTransactionDescription.text = judulTransaksi
 
-            // --- TANGGAL ---
-            tvTransactionDate.text = try {
-                transaction.timestamp?.let { dateFormat.format(it) } ?: "N/A"
-            } catch (e: Exception) { "-" }
+            // --- 2. DATE (Sesuai Model: var date: Date?) ---
+            // Karena tipe datanya sudah 'Date?', kita tidak perlu .toDate() atau konversi Long.
+            // Langsung format saja.
+            val dateObj = transaction.date
+            if (dateObj != null) {
+                tvTransactionDate.text = dateFormat.format(dateObj)
+            } else {
+                tvTransactionDate.text = "-"
+            }
 
-            // --- NOMINAL & WARNA ---
-            if (transaction.type == "credit") {
-                // Uang Masuk (Hijau)
+            // --- 3. AMOUNT & TYPE (Logic Warna & Icon) ---
+            // Kita cek tipe transaksi (Case Insensitive biar aman)
+            val type = transaction.type
+            val isIncome = type.equals("credit", ignoreCase = true) ||
+                    type.equals("Pemasukan", ignoreCase = true) ||
+                    type.equals("Simpanan", ignoreCase = true)
+
+            if (isIncome) {
+                // Uang Masuk: Hijau
                 tvTransactionAmount.text = "+ Rp${"%,.0f".format(transaction.amount)}"
                 tvTransactionAmount.setTextColor(ContextCompat.getColor(context, android.R.color.holo_green_dark))
-                // Pakai icon bawaan Android
+
                 ivTransactionIcon.setImageResource(android.R.drawable.stat_sys_download)
+                ivTransactionIcon.setColorFilter(ContextCompat.getColor(context, android.R.color.holo_green_dark))
             } else {
-                // Uang Keluar (Merah)
+                // Uang Keluar: Merah
                 tvTransactionAmount.text = "- Rp${"%,.0f".format(transaction.amount)}"
                 tvTransactionAmount.setTextColor(ContextCompat.getColor(context, android.R.color.holo_red_dark))
-                // Pakai icon bawaan Android
+
                 ivTransactionIcon.setImageResource(android.R.drawable.stat_sys_upload)
+                ivTransactionIcon.setColorFilter(ContextCompat.getColor(context, android.R.color.holo_red_dark))
             }
 
-            // --- LOAD GAMBAR BUKTI (Base64 / URL) ---
-            // Asumsi: Di model Transaction kamu ada field 'proofImageUrl'
-            // Jika error di baris ini, pastikan Transaction.kt punya var proofImageUrl: String? = null
-            if (transaction.proofImageUrl != null && transaction.proofImageUrl!!.isNotEmpty()) {
-                ivProofImage.visibility = View.VISIBLE
-                val imageString = transaction.proofImageUrl!!
+            // --- 4. PROOF IMAGE (Bukti Transfer) ---
+            val proofString = transaction.proofImageUrl
 
-                if (imageString.length > 200 && !imageString.startsWith("http")) {
+            if (!proofString.isNullOrEmpty()) {
+                ivProofImage.visibility = View.VISIBLE
+
+                if (proofString.startsWith("http")) {
+                    // Jika URL (Internet)
+                    ivProofImage.load(proofString) {
+                        crossfade(true)
+                        placeholder(android.R.drawable.ic_menu_gallery)
+                    }
+                } else {
+                    // Jika Base64 (String panjang)
                     try {
-                        // Decode Base64
-                        val decodedString = Base64.decode(imageString, Base64.DEFAULT)
-                        val decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
+                        val decodedBytes = Base64.decode(proofString, Base64.DEFAULT)
+                        val decodedBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
 
                         ivProofImage.load(decodedBitmap) {
                             crossfade(true)
                         }
                     } catch (e: Exception) {
                         ivProofImage.visibility = View.GONE
-                    }
-                } else {
-                    // Load URL Biasa
-                    ivProofImage.load(imageString) {
-                        crossfade(true)
                     }
                 }
             } else {

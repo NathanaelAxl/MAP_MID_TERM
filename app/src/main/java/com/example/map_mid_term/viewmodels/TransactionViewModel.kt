@@ -33,16 +33,17 @@ class TransactionViewModel : ViewModel() {
     private var transactionListener: ListenerRegistration? = null
     private var loanListener: ListenerRegistration? = null
 
-    // 1. Ambil Riwayat & Hitung Saldo
+    // 1. Fetch Transactions
     fun fetchTransactions() {
         val userId = auth.currentUser?.uid ?: return
         if (transactionListener != null) return
 
         _isLoading.value = true
 
+        // Fix: orderBy "date" instead of "timestamp" to match Model
         transactionListener = db.collection("transactions")
             .whereEqualTo("userId", userId)
-            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .orderBy("date", Query.Direction.DESCENDING)
             .addSnapshotListener { documents, error ->
                 if (error != null) {
                     _isLoading.value = false
@@ -54,7 +55,6 @@ class TransactionViewModel : ViewModel() {
                     var balance = 0.0
 
                     for (doc in documents) {
-                        // Gunakan try-catch saat konversi agar tidak force close jika data kotor
                         try {
                             val trx = doc.toObject(Transaction::class.java)
                             trx.id = doc.id
@@ -62,7 +62,7 @@ class TransactionViewModel : ViewModel() {
 
                             if (trx.type == "credit") {
                                 balance += trx.amount
-                            } else if (trx.type == "debit") {
+                            } else if (trx.type == "debit" || trx.type == "loan_payment") {
                                 balance -= trx.amount
                             }
                         } catch (e: Exception) {
@@ -77,7 +77,7 @@ class TransactionViewModel : ViewModel() {
             }
     }
 
-    // 2. Cek Pinjaman Aktif
+    // 2. Check Active Loan
     fun checkActiveLoan() {
         val userId = auth.currentUser?.uid ?: return
         if (loanListener != null) return
@@ -103,7 +103,7 @@ class TransactionViewModel : ViewModel() {
             }
     }
 
-    // 3. FUNGSI BAYAR ANGSURAN (UPDATE ID: 12548)
+    // 3. Pay Installment
     fun payInstallment(
         loanId: String,
         paymentAmount: Double,
@@ -115,14 +115,14 @@ class TransactionViewModel : ViewModel() {
         val transactionRef = db.collection("transactions").document()
 
         db.runTransaction { transaction ->
-            // A. BACA DATA
+            // A. READ DATA
             val snapshot = transaction.get(loanRef)
 
             val totalPayable = snapshot.getDouble("totalPayable") ?: 0.0
             val currentPaid = snapshot.getDouble("paidAmount") ?: 0.0
             val userId = snapshot.getString("userId") ?: ""
 
-            // B. HITUNG
+            // B. CALCULATE
             val newPaidAmount = currentPaid + paymentAmount
             val newStatus = if (newPaidAmount >= (totalPayable - 1.0)) "paid" else "approved"
 
@@ -130,16 +130,16 @@ class TransactionViewModel : ViewModel() {
             transaction.update(loanRef, "paidAmount", newPaidAmount)
             transaction.update(loanRef, "status", newStatus)
 
-            // D. BIKIN TRANSAKSI BARU (REVISI DI SINI)
+            // D. CREATE NEW TRANSACTION (Fix: Use correct Constructor)
             val newTrx = Transaction(
                 id = transactionRef.id,
-                description = "Bayar Angsuran", // Ganti 'title' jadi 'description'
+                userId = userId,
                 amount = paymentAmount,
                 type = "loan_payment",
-                timestamp = Date(), // Ganti System.currentTimeMillis() jadi Date()
+                description = "Bayar Angsuran",
+                date = Date(), // Use java.util.Date()
                 status = "success",
-                proofImageUrl = proofImageBase64,
-                userId = userId
+                proofImageUrl = proofImageBase64
             )
             transaction.set(transactionRef, newTrx)
         }

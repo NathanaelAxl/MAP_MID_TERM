@@ -8,20 +8,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.map_mid_term.adapters.AdminTransactionAdapter
 import com.example.map_mid_term.data.model.Transaction
-import com.example.map_mid_term.databinding.ActivityTransactionListBinding // Sesuaikan nama binding kamu
+import com.example.map_mid_term.databinding.ActivityTransactionListBinding
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
 class AdminTransactionActivity : AppCompatActivity() {
 
-    // Sesuaikan nama binding dengan nama XML layout kamu
-    // Misal: activity_transaction_list.xml -> ActivityTransactionListBinding
     private lateinit var binding: ActivityTransactionListBinding
-
     private val db = FirebaseFirestore.getInstance()
     private lateinit var adapter: AdminTransactionAdapter
-
-    // Gunakan ArrayList agar kompatibel dengan MutableList
     private var transactionList = ArrayList<Transaction>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,21 +24,18 @@ class AdminTransactionActivity : AppCompatActivity() {
         binding = ActivityTransactionListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setupListeners()
         setupRecyclerView()
         loadTransactions()
-        setupListeners()
     }
 
     private fun setupListeners() {
-        binding.toolbar.setNavigationOnClickListener {
-            finish()
-        }
+        binding.toolbar.setNavigationOnClickListener { finish() }
     }
 
     private fun setupRecyclerView() {
-        // ERROR 'Too many arguments' AKAN HILANG SETELAH ADAPTER DIUPDATE
+        // Fix: Masukkan lambda function sebagai parameter kedua
         adapter = AdminTransactionAdapter(transactionList) { transaction ->
-            // Callback: Ini akan dipanggil saat item di-long click atau tombol hapus ditekan
             showDeleteConfirmationDialog(transaction)
         }
 
@@ -56,11 +48,10 @@ class AdminTransactionActivity : AppCompatActivity() {
         binding.tvEmpty.visibility = View.GONE
 
         db.collection("transactions")
-            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .orderBy("date", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener { documents ->
                 binding.progressBar.visibility = View.GONE
-                transactionList.clear() // Bersihkan list lama
 
                 val newList = ArrayList<Transaction>()
                 for (document in documents) {
@@ -68,12 +59,9 @@ class AdminTransactionActivity : AppCompatActivity() {
                         val transaction = document.toObject(Transaction::class.java)
                         transaction.id = document.id
                         newList.add(transaction)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
+                    } catch (e: Exception) { e.printStackTrace() }
                 }
 
-                // Gunakan fungsi updateData di adapter
                 adapter.updateData(newList)
 
                 if (newList.isEmpty()) {
@@ -82,44 +70,35 @@ class AdminTransactionActivity : AppCompatActivity() {
             }
             .addOnFailureListener { exception ->
                 binding.progressBar.visibility = View.GONE
-                Toast.makeText(this, "Gagal memuat: ${exception.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Gagal: ${exception.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
     private fun showDeleteConfirmationDialog(transaction: Transaction) {
         AlertDialog.Builder(this)
             .setTitle("Hapus Transaksi?")
-            .setMessage("Data transaksi sebesar Rp ${"%,.0f".format(transaction.amount)} akan dihapus permanen.")
+            .setMessage("Hapus permanen Rp ${"%,.0f".format(transaction.amount)}?")
             .setPositiveButton("Hapus") { dialog, _ ->
                 deleteTransactionFromFirestore(transaction)
                 dialog.dismiss()
             }
-            .setNegativeButton("Batal") { dialog, _ ->
-                dialog.dismiss()
-            }
+            .setNegativeButton("Batal") { dialog, _ -> dialog.dismiss() }
             .show()
     }
 
     private fun deleteTransactionFromFirestore(transaction: Transaction) {
         binding.progressBar.visibility = View.VISIBLE
-
         db.collection("transactions").document(transaction.id)
             .delete()
             .addOnSuccessListener {
                 binding.progressBar.visibility = View.GONE
                 Toast.makeText(this, "Berhasil dihapus", Toast.LENGTH_SHORT).show()
-
-                // Hapus dari UI Adapter
-                adapter.removeItem(transaction)
-
-                // Cek kosong atau tidak
-                if (adapter.itemCount == 0) {
-                    binding.tvEmpty.visibility = View.VISIBLE
-                }
+                adapter.removeItem(transaction) // Fix: removeItem sudah ada sekarang
+                if (adapter.itemCount == 0) binding.tvEmpty.visibility = View.VISIBLE
             }
             .addOnFailureListener { e ->
                 binding.progressBar.visibility = View.GONE
-                Toast.makeText(this, "Gagal menghapus: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Gagal: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 }

@@ -19,7 +19,7 @@ class LoanApplicationFragment : Fragment() {
     private var _binding: FragmentLoanApplicationBinding? = null
     private val binding get() = _binding!!
 
-    // Bunga fix 1.5% (Disamakan dengan logic Admin)
+    // Bunga fix 1.5% per bulan
     private val interestRate = 0.015
 
     override fun onCreateView(
@@ -62,13 +62,15 @@ class LoanApplicationFragment : Fragment() {
         val tenor = getSelectedTenor()
         if (tenor == 0) return
 
-        val pokok = amount / tenor
-        val bunga = amount * interestRate
-        val total = pokok + bunga
+        // Rumus: (Pokok + Bunga Total) / Tenor
+        val pokok = amount
+        val bungaTotal = amount * interestRate * tenor
+        val totalPinjaman = pokok + bungaTotal
+        val angsuranPerBulan = totalPinjaman / tenor
 
         binding.tvPokok.text = "Rp ${"%,.0f".format(pokok)}"
-        binding.tvBunga.text = "Rp ${"%,.0f".format(bunga)}"
-        binding.tvTotalInstallment.text = "Rp ${"%,.0f".format(total)}"
+        binding.tvBunga.text = "Rp ${"%,.0f".format(bungaTotal)}"
+        binding.tvTotalInstallment.text = "Rp ${"%,.0f".format(angsuranPerBulan)} /bulan"
     }
 
     private fun resetSimulation() {
@@ -102,64 +104,56 @@ class LoanApplicationFragment : Fragment() {
         val amount = binding.etLoanAmount.text.toString().toDouble()
         val tenor = getSelectedTenor()
         val reason = binding.etReason.text.toString()
-
-        // Hitung total bayar estimasi
         val totalPayable = amount + (amount * interestRate * tenor)
 
-        // 1. AMBIL NAMA USER DULU (Supaya Admin senang)
+        // Ambil Nama User dulu agar Data Admin Lengkap
         db.collection("members").document(userId).get()
             .addOnSuccessListener { document ->
-                val userName = document.getString("name") ?: "User Tanpa Nama"
+                val userName = document.getString("name") ?: "User"
 
-                // 2. SIAPKAN DATA (Sesuai Model LoanApplication Admin)
                 val loanData = hashMapOf(
                     "userId" to userId,
-                    "userName" to userName, // PENTING: Kirim Nama
+                    "userName" to userName,
                     "amount" to amount,
                     "tenor" to tenor,
                     "reason" to reason,
                     "interestRate" to interestRate,
                     "totalPayable" to totalPayable,
                     "paidAmount" to 0.0,
-
-                    "status" to "pending", // STATUS PASTI PENDING
-
-                    // REVISI: Gunakan 'requestDate' dan Object Date()
-                    "requestDate" to Date(),
+                    "status" to "pending",
+                    "requestDate" to Date(), // Pakai Date Object
                     "dueDate" to null
                 )
 
-                // 3. KIRIM KE FIRESTORE
                 db.collection("loan_applications")
                     .add(loanData)
                     .addOnSuccessListener {
                         setLoading(false)
-                        // Teks Toast yang BENAR
-                        Toast.makeText(context, "Pengajuan Berhasil! Menunggu verifikasi admin.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "Pengajuan Berhasil!", Toast.LENGTH_LONG).show()
                         findNavController().popBackStack()
                     }
                     .addOnFailureListener {
                         setLoading(false)
-                        Toast.makeText(context, "Gagal mengirim: ${it.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Gagal: ${it.message}", Toast.LENGTH_SHORT).show()
                     }
             }
             .addOnFailureListener {
                 setLoading(false)
-                Toast.makeText(context, "Gagal mengambil data user", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Gagal mengambil profil user", Toast.LENGTH_SHORT).show()
             }
     }
 
     private fun validateInput(): Boolean {
         if (binding.etLoanAmount.text.isNullOrEmpty()) {
-            binding.tilLoanAmount.error = "Isi jumlah pinjaman"
+            binding.tilLoanAmount.error = "Wajib diisi"
             return false
         }
         if (getSelectedTenor() == 0) {
-            Toast.makeText(context, "Pilih tenor pinjaman", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Pilih tenor", Toast.LENGTH_SHORT).show()
             return false
         }
         if (binding.etReason.text.isNullOrEmpty()) {
-            binding.tilReason.error = "Isi keperluan pinjaman"
+            binding.tilReason.error = "Wajib diisi"
             return false
         }
         return true

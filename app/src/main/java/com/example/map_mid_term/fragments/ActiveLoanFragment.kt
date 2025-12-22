@@ -37,13 +37,10 @@ class ActiveLoanFragment : Fragment() {
         }
 
         binding.btnApplyLoan.setOnClickListener {
-            // Navigasi ke form pengajuan
             try {
                 findNavController().navigate(R.id.action_activeLoanFragment_to_loanApplicationFragment)
             } catch (e: Exception) {
-                // Fallback jika ID action belum ada (bisa pakai ID fragment tujuan langsung)
-                // findNavController().navigate(R.id.loanApplicationFragment)
-                Toast.makeText(context, "Navigasi belum di-setup", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Navigasi error", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -61,10 +58,10 @@ class ActiveLoanFragment : Fragment() {
         binding.layoutLoanDetails.visibility = View.GONE
         binding.layoutNoLoan.visibility = View.GONE
 
-        // Ambil data pinjaman terakhir user
+        // REVISI PENTING: Gunakan "requestDate" sesuai database kamu!
         db.collection("loan_applications")
             .whereEqualTo("userId", userId)
-            .orderBy("applicationDate", Query.Direction.DESCENDING)
+            .orderBy("requestDate", Query.Direction.DESCENDING)
             .limit(1)
             .get()
             .addOnSuccessListener { documents ->
@@ -73,38 +70,23 @@ class ActiveLoanFragment : Fragment() {
                 if (!documents.isEmpty) {
                     val doc = documents.documents[0]
 
-                    // Ambil Field Dasar
                     val status = doc.getString("status") ?: ""
                     val amountPokok = doc.getDouble("amount") ?: 0.0
                     val tenor = doc.getLong("tenor") ?: 1
-
-                    // Ambil Field Kalkulasi (Logika Baru)
-                    // Jika totalPayable null (data lama), pakai amountPokok
                     val totalPayable = doc.getDouble("totalPayable") ?: amountPokok
                     val paidAmount = doc.getDouble("paidAmount") ?: 0.0
 
-                    // Hitung Sisa & Cicilan
                     val remainingDebt = totalPayable - paidAmount
                     val monthlyInstallment = totalPayable / tenor
-
                     val id = doc.id
 
                     when (status) {
                         "approved" -> {
-                            // --- TAMPILKAN DATA REAL ---
                             binding.tvLoanId.text = "ID: ${id.take(8).uppercase()}"
-
-                            // 1. Total Hutang (Pokok + Bunga)
                             binding.tvLoanAmount.text = "Total Hutang: Rp ${"%,.0f".format(totalPayable)}"
-
-                            // 2. Tenor
                             binding.tvLoanTenor.text = "Tenor: $tenor Bulan"
-
-                            // 3. Cicilan Per Bulan
                             binding.tvMonthlyInstallment.text = "Cicilan: Rp ${"%,.0f".format(monthlyInstallment)} /bln"
 
-                            // 4. Status Pembayaran (Sisa Hutang)
-                            // Anda bisa manfaatkan TextView status atau buat TextView baru di XML untuk "Sisa"
                             if (remainingDebt <= 0) {
                                 binding.tvLoanStatus.text = "LUNAS"
                                 binding.tvLoanStatus.setTextColor(android.graphics.Color.BLUE)
@@ -113,33 +95,20 @@ class ActiveLoanFragment : Fragment() {
                                 binding.tvLoanStatus.setTextColor(android.graphics.Color.RED)
                             }
 
-                            // Tampilkan Layout
                             binding.layoutLoanDetails.visibility = View.VISIBLE
                             binding.layoutNoLoan.visibility = View.GONE
-
-                            // Sembunyikan tombol ajukan jika masih punya hutang aktif
                             binding.btnApplyLoan.visibility = View.GONE
                         }
-
-                        "paid" -> {
-                            // Status Lunas (History) - Tampilkan Kosong agar bisa ajukan baru
-                            // Atau tampilkan layout khusus "Selamat Anda Lunas"
-                            showEmptyState()
-                        }
-
                         "pending" -> {
-                            // Tampilkan UI Sedang Diproses
+                            // Tampilkan status pending (bisa reuse layout kosong atau buat layout khusus)
                             binding.layoutLoanDetails.visibility = View.GONE
                             binding.layoutNoLoan.visibility = View.VISIBLE
-
-                            // Manipulasi text di layout kosong (opsional, perlu ID di XML)
-                            // binding.tvEmptyTitle.text = "Sedang Diproses"
-
-                            binding.btnApplyLoan.visibility = View.GONE // Jangan ajukan lagi
-                            Toast.makeText(context, "Pengajuan Anda sedang diperiksa Admin", Toast.LENGTH_LONG).show()
+                            // Disable tombol ajukan lagi
+                            binding.btnApplyLoan.visibility = View.GONE
+                            // Opsional: Ubah teks di layout kosong untuk memberitahu user
+                            Toast.makeText(context, "Pinjaman sedang diproses Admin", Toast.LENGTH_SHORT).show()
                         }
-
-                        else -> { // Rejected atau lainnya
+                        else -> { // Rejected / Paid
                             showEmptyState()
                         }
                     }
@@ -150,7 +119,6 @@ class ActiveLoanFragment : Fragment() {
             .addOnFailureListener {
                 binding.progressBar.visibility = View.GONE
                 showEmptyState()
-                Toast.makeText(context, "Gagal memuat data", Toast.LENGTH_SHORT).show()
             }
     }
 

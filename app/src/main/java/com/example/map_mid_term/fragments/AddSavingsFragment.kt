@@ -23,6 +23,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.map_mid_term.R
 import com.example.map_mid_term.databinding.FragmentAddSavingsBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,12 +39,11 @@ class AddSavingsFragment : Fragment() {
     private var imageBase64: String? = null
     private val nominalSimpananWajib = 100000.0
 
-    // --- 1. LAUNCHER IZIN KAMERA (BARU) ---
+    // --- 1. LAUNCHER IZIN KAMERA ---
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            // Kalau diizinkan user, langsung buka kamera
             openCamera()
         } else {
             Toast.makeText(requireContext(), "Izin kamera ditolak", Toast.LENGTH_SHORT).show()
@@ -108,25 +108,22 @@ class AddSavingsFragment : Fragment() {
             .setTitle("Upload Bukti Transfer")
             .setItems(options) { _, which ->
                 when (which) {
-                    0 -> checkCameraPermissionAndOpen() // Panggil fungsi cek izin
+                    0 -> checkCameraPermissionAndOpen()
                     1 -> galleryLauncher.launch("image/*")
                 }
             }
             .show()
     }
 
-    // --- 2. FUNGSI CEK IZIN SEBELUM BUKA KAMERA (BARU) ---
     private fun checkCameraPermissionAndOpen() {
         when {
             ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED -> {
-                // Izin sudah ada, buka kamera
                 openCamera()
             }
             else -> {
-                // Belum ada izin, minta izin dulu
                 requestPermissionLauncher.launch(Manifest.permission.CAMERA)
             }
         }
@@ -173,6 +170,7 @@ class AddSavingsFragment : Fragment() {
         binding.ivRemoveImage.visibility = View.GONE
     }
 
+    // --- REVISI UTAMA: LOGIC SIMPANAN LANGSUNG MASUK SALDO ---
     private fun saveTransaction() {
         setLoading(true)
 
@@ -183,22 +181,41 @@ class AddSavingsFragment : Fragment() {
 
         if (userId == null) return
 
+        val db = FirebaseFirestore.getInstance()
+        val batch = db.batch()
+
+        // 1. Siapkan Dokumen Baru di collection 'transactions'
+        val transactionRef = db.collection("transactions").document()
+
+        // Data Transaksi
         val transactionData = hashMapOf(
+            "id" to transactionRef.id,
             "userId" to userId,
             "amount" to amount,
-            "type" to "credit",
-            "title" to "Simpanan $typeLabel",
-            "description" to "Setoran Simpanan $typeLabel",
-            "status" to "pending_verification",
-            "timestamp" to Date(),
+            "type" to "Simpanan", // PENTING: Pakai "Simpanan" agar adapter warnanya HIJAU
+            "title" to "Simpanan $typeLabel", // Optional, untuk backup
+            "description" to "Setoran Simpanan $typeLabel", // Ini yang dipakai adapter
+            "status" to "success", // Langsung sukses (Auto-Approve)
+            "date" to Date(), // Sesuai Model Transaction.kt
             "proofImageUrl" to imageBase64
         )
 
-        FirebaseFirestore.getInstance().collection("transactions")
-            .add(transactionData)
+        // 2. Siapkan Update Saldo User
+        val userRef = db.collection("users").document(userId)
+
+        // --- MASUKKAN KE BATCH (Semua jalan bareng) ---
+
+        // A. Buat History
+        batch.set(transactionRef, transactionData)
+
+        // B. Update Saldo User (+ amount)
+        batch.update(userRef, "saldo", FieldValue.increment(amount))
+
+        // --- EKSEKUSI ---
+        batch.commit()
             .addOnSuccessListener {
                 setLoading(false)
-                Toast.makeText(requireContext(), "Berhasil! Menunggu verifikasi admin.", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Berhasil! Saldo ditambahkan.", Toast.LENGTH_LONG).show()
                 findNavController().popBackStack()
             }
             .addOnFailureListener { e ->

@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.map_mid_term.R
@@ -31,44 +30,90 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         setupUI()
-        loadUserData()
-        calculateTotalBalance()
-        loadAnnouncement()
 
-        // PANGGIL FUNGSI INI AGAR STATUS MUNCUL
-        checkLoanStatus()
+        // Memanggil fungsi pemantau data
+        monitorUserProfile()   // UNTUK NAMA
+        monitorTotalBalance()  // UNTUK SALDO
+        monitorLoanStatus()    // UNTUK STATUS PINJAMAN
+        loadAnnouncement()
     }
 
-    // --- REVISI: Fungsi Cek Status Pinjaman ---
-    private fun checkLoanStatus() {
-        if (userId == null) return
+    // --- FIX 1: Ambil Nama dari 'members' (Bukan users) ---
+    private fun monitorUserProfile() {
+        val uid = userId ?: return
+        db.collection("members").document(uid)
+            .addSnapshotListener { document, _ ->
+                if (_binding != null && document != null) {
+                    // Fallback ke "Anggota" hanya jika field 'name' benar-benar kosong
+                    val name = document.getString("name") ?: "Anggota"
+                    // Ambil kata pertama saja biar rapi
+                    val firstName = name.split(" ")[0]
+                    binding.tvGreeting.text = "Selamat Datang, $firstName!"
+                }
+            }
+    }
 
-        // Kita urutkan berdasarkan 'requestDate' (sesuai screenshot firebase kamu)
+    // --- FIX 2: Hitung Saldo dari History Transaksi (Agar 400rb + 100rb terbaca) ---
+    private fun monitorTotalBalance() {
+        val uid = userId ?: return
+
+        db.collection("transactions")
+            .whereEqualTo("userId", uid)
+            .addSnapshotListener { documents, error ->
+                if (error != null) return@addSnapshotListener
+
+                var total = 0.0
+                if (documents != null) {
+                    for (doc in documents) {
+                        // Pastikan model Transaction kamu punya field 'amount' dan 'type'
+                        val amount = doc.getDouble("amount") ?: 0.0
+                        val type = doc.getString("type") ?: "" // "Pemasukan" atau "Pengeluaran"
+
+                        // LOGIKA SALDO:
+                        // Sesuaikan string ini dengan apa yang kamu simpan di database
+                        if (type.equals("Pemasukan", ignoreCase = true) ||
+                            type.equals("credit", ignoreCase = true) ||
+                            type.equals("Simpanan", ignoreCase = true)) {
+                            total += amount
+                        } else {
+                            total -= amount
+                        }
+                    }
+                }
+
+                if (_binding != null) {
+                    binding.tvTotalBalance.tag = total
+                    updateBalanceUI(total)
+                }
+            }
+    }
+
+    private fun monitorLoanStatus() {
+        if (userId == null) return
         db.collection("loan_applications")
             .whereEqualTo("userId", userId)
-            .orderBy("requestDate", Query.Direction.DESCENDING) // Ambil yang paling baru
+            .orderBy("requestDate", Query.Direction.DESCENDING)
             .limit(1)
             .addSnapshotListener { snapshots, e ->
                 if (e != null) return@addSnapshotListener
 
-                if (snapshots != null && !snapshots.isEmpty) {
-                    val document = snapshots.documents[0]
-                    val status = document.getString("status") ?: ""
+                if (_binding != null) {
+                    if (snapshots != null && !snapshots.isEmpty) {
+                        val document = snapshots.documents[0]
+                        val status = document.getString("status") ?: ""
 
-                    if (_binding != null) {
                         binding.tvPinjamanStatus.visibility = View.VISIBLE
-
                         when (status) {
                             "pending" -> {
                                 binding.tvPinjamanStatus.text = "Menunggu Konfirmasi"
-                                binding.tvPinjamanStatus.setTextColor(Color.parseColor("#F57C00")) // Orange
+                                binding.tvPinjamanStatus.setTextColor(Color.parseColor("#F57C00"))
                             }
                             "approved" -> {
                                 binding.tvPinjamanStatus.text = "Disetujui"
-                                binding.tvPinjamanStatus.setTextColor(Color.parseColor("#388E3C")) // Hijau
+                                binding.tvPinjamanStatus.setTextColor(Color.parseColor("#388E3C"))
                             }
                             "rejected" -> {
                                 binding.tvPinjamanStatus.text = "Ditolak"
@@ -78,14 +123,9 @@ class HomeFragment : Fragment() {
                                 binding.tvPinjamanStatus.text = "Lunas"
                                 binding.tvPinjamanStatus.setTextColor(Color.BLUE)
                             }
-                            else -> {
-                                binding.tvPinjamanStatus.visibility = View.GONE
-                            }
+                            else -> binding.tvPinjamanStatus.visibility = View.GONE
                         }
-                    }
-                } else {
-                    // Kalau user belum pernah pinjam
-                    if (_binding != null) {
+                    } else {
                         binding.tvPinjamanStatus.visibility = View.GONE
                     }
                 }
@@ -94,12 +134,8 @@ class HomeFragment : Fragment() {
 
     private fun loadAnnouncement() {
         db.collection("announcements").document("latest_info")
-            .addSnapshotListener { document, e ->
-                if (e != null || document == null || !document.exists()) {
-                    if (_binding != null) binding.tvAnnouncementText.text = "Belum ada pengumuman terbaru."
-                    return@addSnapshotListener
-                }
-                val message = document.getString("message")
+            .addSnapshotListener { document, _ ->
+                val message = document?.getString("message")
                 if (_binding != null) binding.tvAnnouncementText.text = message ?: "Tidak ada informasi."
             }
     }
@@ -107,58 +143,27 @@ class HomeFragment : Fragment() {
     private fun setupUI() {
         binding.ivToggleBalance.setOnClickListener {
             isBalanceVisible = !isBalanceVisible
-            updateBalanceUI(binding.tvTotalBalance.tag as? Double ?: 0.0)
+            val currentAmount = binding.tvTotalBalance.tag as? Double ?: 0.0
+            updateBalanceUI(currentAmount)
         }
-
+        // Pastikan ID navigasi ini benar sesuai nav_graph kamu
         binding.cardSimpanan.setOnClickListener {
-            try { findNavController().navigate(R.id.action_homeFragment_to_addSavingsFragment) }
-            catch (e: Exception) { Toast.makeText(context, "Navigasi belum dibuat", Toast.LENGTH_SHORT).show() }
+            safeNavigate(R.id.action_homeFragment_to_addSavingsFragment)
         }
-
         binding.cardPinjaman.setOnClickListener {
-            try { findNavController().navigate(R.id.action_homeFragment_to_loanApplicationFragment) } catch (e: Exception) { }
+            safeNavigate(R.id.action_homeFragment_to_loanApplicationFragment)
         }
-
         binding.cardLaporan.setOnClickListener {
-            try { findNavController().navigate(R.id.action_homeFragment_to_historyFragment) } catch (e: Exception) { }
+            safeNavigate(R.id.action_homeFragment_to_historyFragment)
         }
     }
 
-    private fun loadUserData() {
-        val uid = userId ?: return
-        db.collection("members").document(uid).get()
-            .addOnSuccessListener { document ->
-                if (_binding != null) {
-                    val name = document.getString("name") ?: "Anggota"
-                    val firstName = name.split(" ")[0]
-                    binding.tvGreeting.text = "Selamat Datang, $firstName!"
-                }
-            }
-    }
-
-    private fun calculateTotalBalance() {
-        val uid = userId ?: return
-        db.collection("transactions")
-            .whereEqualTo("userId", uid)
-            .whereEqualTo("type", "credit")
-            .get()
-            .addOnSuccessListener { documents ->
-                var total = 0.0
-                for (doc in documents) {
-                    val trx = doc.toObject(Transaction::class.java)
-                    total += trx.amount
-                }
-                if (_binding != null) {
-                    binding.tvTotalBalance.tag = total
-                    updateBalanceUI(total)
-                }
-            }
-            .addOnFailureListener {
-                if (_binding != null) binding.tvTotalBalance.text = "Rp -"
-            }
+    private fun safeNavigate(actionId: Int) {
+        try { findNavController().navigate(actionId) } catch (e: Exception) { e.printStackTrace() }
     }
 
     private fun updateBalanceUI(amount: Double) {
+        if (_binding == null) return
         if (isBalanceVisible) {
             binding.tvTotalBalance.text = "Rp ${"%,.0f".format(amount)}"
             binding.ivToggleBalance.setImageResource(R.drawable.ic_eye_open)
